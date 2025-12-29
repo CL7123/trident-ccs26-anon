@@ -1,0 +1,168 @@
+{
+  "dataset": "nfcorpus",
+  "timestamp": "20251105_131142",
+  "num_queries": 10,
+  "statistics": {
+    "key_gen": {
+      "mean": 1.3357772000745172,
+      "std": 0.39788247018034206,
+      "min": 0.7935100002214313,
+      "max": 2.2261249978328124,
+      "count": 10
+    },
+    "key_size": {
+      "mean": 0.7431640625,
+      "std": 0.0,
+      "min": 0.7431640625,
+      "max": 0.7431640625,
+      "count": 10
+    },
+    "reconstruction": {
+      "mean": 9.590965999814216,
+      "std": 0.1194272153493757,
+      "min": 9.46720399952028,
+      "max": 9.91293900005985,
+      "count": 10
+    },
+    "distance": {
+      "mean": 0.013086400213069282,
+      "std": 0.02251730672329769,
+      "min": 0.0014950019249226898,
+      "max": 0.058898000133922324,
+      "count": 10
+    },
+    "network": {
+      "mean": 464.9012229998334,
+      "std": 8.41077594031075,
+      "min": 445.6197069994232,
+      "max": 475.6111819988291,
+      "count": 10
+    },
+    "total_client": {
+      "mean": 475.85673879875685,
+      "std": 8.395178866037808,
+      "min": 456.585185998847,
+      "max": 486.4827499986859,
+      "count": 10
+    },
+    "memory": {
+      "mean": 0.0,
+      "std": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "count": 10
+    }
+  },
+  "raw_results": [
+    {
+      "node_id": 6282,
+      "key_gen_time_ms": 1.2970229981874581,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 475.6111819988291,
+      "recon_time_ms": 9.555537002597703,
+      "distance_time_ms": 0.002392000169493258,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 486.4827499986859,
+      "success": true
+    },
+    {
+      "node_id": 1229,
+      "key_gen_time_ms": 1.5502290007134434,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 465.2996490003716,
+      "recon_time_ms": 9.667239999544108,
+      "distance_time_ms": 0.058898000133922324,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 476.5944499995385,
+      "success": true
+    },
+    {
+      "node_id": 8756,
+      "key_gen_time_ms": 1.5583839995088056,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 463.89746900240425,
+      "recon_time_ms": 9.561238999594934,
+      "distance_time_ms": 0.0016529993445146829,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 475.03672299717437,
+      "success": true
+    },
+    {
+      "node_id": 6535,
+      "key_gen_time_ms": 1.4274180030042771,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 445.6197069994232,
+      "recon_time_ms": 9.521377000055509,
+      "distance_time_ms": 0.0016230005712714046,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 456.585185998847,
+      "success": true
+    },
+    {
+      "node_id": 9184,
+      "key_gen_time_ms": 0.7951320003485307,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 458.4873969979526,
+      "recon_time_ms": 9.46720399952028,
+      "distance_time_ms": 0.002020999090746045,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 468.76469400012866,
+      "success": true
+    },
+    {
+      "node_id": 7594,
+      "key_gen_time_ms": 1.4287129997683223,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 460.50846299840487,
+      "recon_time_ms": 9.5138249998854,
+      "distance_time_ms": 0.00171599822351709,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 471.4670289977221,
+      "success": true
+    },
+    {
+      "node_id": 6170,
+      "key_gen_time_ms": 0.7935100002214313,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 475.487019000866,
+      "recon_time_ms": 9.61862099939026,
+      "distance_time_ms": 0.001776999852154404,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 485.9160259984492,
+      "success": true
+    },
+    {
+      "node_id": 4531,
+      "key_gen_time_ms": 1.2236270013090689,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 471.4812919992255,
+      "recon_time_ms": 9.540487997583114,
+      "distance_time_ms": 0.0014950019249226898,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 482.26221000004443,
+      "success": true
+    },
+    {
+      "node_id": 808,
+      "key_gen_time_ms": 2.2261249978328124,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 466.3640239996312,
+      "recon_time_ms": 9.551189999911003,
+      "distance_time_ms": 0.05732800127589144,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 478.2143829979759,
+      "success": true
+    },
+    {
+      "node_id": 9505,
+      "key_gen_time_ms": 1.057610999851022,
+      "key_size_kb": 0.7431640625,
+      "network_time_ms": 466.2560280012258,
+      "recon_time_ms": 9.91293900005985,
+      "distance_time_ms": 0.0019610015442594886,
+      "memory_mb": 0.0,
+      "total_client_time_ms": 477.24393699900247,
+      "success": true
+    }
+  ]
+}

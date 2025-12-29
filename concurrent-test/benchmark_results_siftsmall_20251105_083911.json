@@ -1,0 +1,2016 @@
+{
+  "dataset": "siftsmall",
+  "timestamp": "20251105_083911",
+  "summaries": [
+    {
+      "concurrency": 1,
+      "total_queries": 40,
+      "successful": 40,
+      "failed": 0,
+      "success_rate": 100.0,
+      "total_time": 22.064636945724487,
+      "throughput": 1.8128555705853517,
+      "avg_latency": 0.4609730660915375,
+      "p50_latency": 0.4702615737915039,
+      "p95_latency": 0.47849440574645996,
+      "p99_latency": 0.4849535894393921,
+      "all_results": [
+        {
+          "success": true,
+          "latency": 0.47109198570251465,
+          "query_id": "benchmark_1762331849.4711735_0",
+          "node_id": 8015,
+          "start_time": 1762331849.5781808,
+          "end_time": 1762331850.0492728
+        },
+        {
+          "success": true,
+          "latency": 0.47449254989624023,
+          "query_id": "benchmark_1762331850.0496511_1",
+          "node_id": 2348,
+          "start_time": 1762331850.1522582,
+          "end_time": 1762331850.6267507
+        },
+        {
+          "success": true,
+          "latency": 0.4750828742980957,
+          "query_id": "benchmark_1762331850.6270924_2",
+          "node_id": 3530,
+          "start_time": 1762331850.7268438,
+          "end_time": 1762331851.2019267
+        },
+        {
+          "success": true,
+          "latency": 0.46204209327697754,
+          "query_id": "benchmark_1762331851.2022707_3",
+          "node_id": 9408,
+          "start_time": 1762331851.3010035,
+          "end_time": 1762331851.7630455
+        },
+        {
+          "success": true,
+          "latency": 0.47384119033813477,
+          "query_id": "benchmark_1762331851.763378_4",
+          "node_id": 5201,
+          "start_time": 1762331851.8615985,
+          "end_time": 1762331852.3354397
+        },
+        {
+          "success": true,
+          "latency": 0.4702737331390381,
+          "query_id": "benchmark_1762331852.3358047_5",
+          "node_id": 4952,
+          "start_time": 1762331852.4335046,
+          "end_time": 1762331852.9037783
+        },
+        {
+          "success": true,
+          "latency": 0.3729410171508789,
+          "query_id": "benchmark_1762331852.9041417_6",
+          "node_id": 1881,
+          "start_time": 1762331853.00191,
+          "end_time": 1762331853.374851
+        },
+        {
+          "success": true,
+          "latency": 0.4581749439239502,
+          "query_id": "benchmark_1762331853.3752277_7",
+          "node_id": 1396,
+          "start_time": 1762331853.4733691,
+          "end_time": 1762331853.931544
+        },
+        {
+          "success": true,
+          "latency": 0.4712402820587158,
+          "query_id": "benchmark_1762331853.931923_8",
+          "node_id": 8690,
+          "start_time": 1762331854.0288258,
+          "end_time": 1762331854.500066
+        },
+        {
+          "success": true,
+          "latency": 0.4630701541900635,
+          "query_id": "benchmark_1762331854.5004144_9",
+          "node_id": 5317,
+          "start_time": 1762331854.5968368,
+          "end_time": 1762331855.059907
+        },
+        {
+          "success": true,
+          "latency": 0.4607734680175781,
+          "query_id": "benchmark_1762331855.0602567_10",
+          "node_id": 8702,
+          "start_time": 1762331855.1552665,
+          "end_time": 1762331855.61604
+        },
+        {
+          "success": true,
+          "latency": 0.47600746154785156,
+          "query_id": "benchmark_1762331855.6164076_11",
+          "node_id": 6947,
+          "start_time": 1762331855.711769,
+          "end_time": 1762331856.1877766
+        },
+        {
+          "success": true,
+          "latency": 0.47623467445373535,
+          "query_id": "benchmark_1762331856.1881306_12",
+          "node_id": 371,
+          "start_time": 1762331856.2824075,
+          "end_time": 1762331856.7586422
+        },
+        {
+          "success": true,
+          "latency": 0.4667015075683594,
+          "query_id": "benchmark_1762331856.7589958_13",
+          "node_id": 718,
+          "start_time": 1762331856.8521998,
+          "end_time": 1762331857.3189013
+        },
+        {
+          "success": true,
+          "latency": 0.46958184242248535,
+          "query_id": "benchmark_1762331857.319255_14",
+          "node_id": 1280,
+          "start_time": 1762331857.4117985,
+          "end_time": 1762331857.8813803
+        },
+        {
+          "success": true,
+          "latency": 0.4731934070587158,
+          "query_id": "benchmark_1762331857.881766_15",
+          "node_id": 5464,
+          "start_time": 1762331857.9740527,
+          "end_time": 1762331858.447246
+        },
+        {
+          "success": true,
+          "latency": 0.4604361057281494,
+          "query_id": "benchmark_1762331858.447612_16",
+          "node_id": 2994,
+          "start_time": 1762331858.5392456,
+          "end_time": 1762331858.9996817
+        },
+        {
+          "success": true,
+          "latency": 0.4689929485321045,
+          "query_id": "benchmark_1762331859.0000408_17",
+          "node_id": 1084,
+          "start_time": 1762331859.0964355,
+          "end_time": 1762331859.5654285
+        },
+        {
+          "success": true,
+          "latency": 0.4808816909790039,
+          "query_id": "benchmark_1762331859.565818_18",
+          "node_id": 8766,
+          "start_time": 1762331859.65701,
+          "end_time": 1762331860.1378918
+        },
+        {
+          "success": true,
+          "latency": 0.46732091903686523,
+          "query_id": "benchmark_1762331860.1382408_19",
+          "node_id": 8376,
+          "start_time": 1762331860.2284973,
+          "end_time": 1762331860.6958182
+        },
+        {
+          "success": true,
+          "latency": 0.4741654396057129,
+          "query_id": "benchmark_1762331860.6961944_20",
+          "node_id": 559,
+          "start_time": 1762331860.7863097,
+          "end_time": 1762331861.2604752
+        },
+        {
+          "success": true,
+          "latency": 0.37110447883605957,
+          "query_id": "benchmark_1762331861.260865_21",
+          "node_id": 1501,
+          "start_time": 1762331861.3498287,
+          "end_time": 1762331861.7209332
+        },
+        {
+          "success": true,
+          "latency": 0.46761488914489746,
+          "query_id": "benchmark_1762331861.721291_22",
+          "node_id": 2899,
+          "start_time": 1762331861.8103743,
+          "end_time": 1762331862.2779891
+        },
+        {
+          "success": true,
+          "latency": 0.4710252285003662,
+          "query_id": "benchmark_1762331862.2783458_23",
+          "node_id": 9285,
+          "start_time": 1762331862.366011,
+          "end_time": 1762331862.8370361
+        },
+        {
+          "success": true,
+          "latency": 0.4756312370300293,
+          "query_id": "benchmark_1762331862.8373923_24",
+          "node_id": 3582,
+          "start_time": 1762331862.9247499,
+          "end_time": 1762331863.400381
+        },
+        {
+          "success": true,
+          "latency": 0.4598827362060547,
+          "query_id": "benchmark_1762331863.4007492_25",
+          "node_id": 4947,
+          "start_time": 1762331863.4872768,
+          "end_time": 1762331863.9471595
+        },
+        {
+          "success": true,
+          "latency": 0.4674198627471924,
+          "query_id": "benchmark_1762331863.9475102_26",
+          "node_id": 2625,
+          "start_time": 1762331864.0332377,
+          "end_time": 1762331864.5006576
+        },
+        {
+          "success": true,
+          "latency": 0.47548723220825195,
+          "query_id": "benchmark_1762331864.5010116_27",
+          "node_id": 6437,
+          "start_time": 1762331864.586833,
+          "end_time": 1762331865.0623202
+        },
+        {
+          "success": true,
+          "latency": 0.477524995803833,
+          "query_id": "benchmark_1762331865.062707_28",
+          "node_id": 6330,
+          "start_time": 1762331865.1475441,
+          "end_time": 1762331865.6250691
+        },
+        {
+          "success": true,
+          "latency": 0.4592597484588623,
+          "query_id": "benchmark_1762331865.625425_29",
+          "node_id": 3007,
+          "start_time": 1762331865.7099514,
+          "end_time": 1762331866.1692111
+        },
+        {
+          "success": true,
+          "latency": 0.46847009658813477,
+          "query_id": "benchmark_1762331866.1696024_30",
+          "node_id": 2023,
+          "start_time": 1762331866.2532847,
+          "end_time": 1762331866.7217548
+        },
+        {
+          "success": true,
+          "latency": 0.4726114273071289,
+          "query_id": "benchmark_1762331866.7221107_31",
+          "node_id": 1009,
+          "start_time": 1762331866.80529,
+          "end_time": 1762331867.2779014
+        },
+        {
+          "success": true,
+          "latency": 0.4702494144439697,
+          "query_id": "benchmark_1762331867.2782547_32",
+          "node_id": 6200,
+          "start_time": 1762331867.3608942,
+          "end_time": 1762331867.8311436
+        },
+        {
+          "success": true,
+          "latency": 0.46330904960632324,
+          "query_id": "benchmark_1762331867.831501_33",
+          "node_id": 3980,
+          "start_time": 1762331867.9140744,
+          "end_time": 1762331868.3773835
+        },
+        {
+          "success": true,
+          "latency": 0.48755693435668945,
+          "query_id": "benchmark_1762331868.377756_34",
+          "node_id": 7276,
+          "start_time": 1762331868.459623,
+          "end_time": 1762331868.94718
+        },
+        {
+          "success": true,
+          "latency": 0.47836875915527344,
+          "query_id": "benchmark_1762331868.9475334_35",
+          "node_id": 2459,
+          "start_time": 1762331869.0286903,
+          "end_time": 1762331869.507059
+        },
+        {
+          "success": true,
+          "latency": 0.47731542587280273,
+          "query_id": "benchmark_1762331869.5074298_36",
+          "node_id": 9330,
+          "start_time": 1762331869.5878317,
+          "end_time": 1762331870.0651472
+        },
+        {
+          "success": true,
+          "latency": 0.3825099468231201,
+          "query_id": "benchmark_1762331870.065495_37",
+          "node_id": 6549,
+          "start_time": 1762331870.1454592,
+          "end_time": 1762331870.5279691
+        },
+        {
+          "success": true,
+          "latency": 0.3739809989929199,
+          "query_id": "benchmark_1762331870.528313_38",
+          "node_id": 9529,
+          "start_time": 1762331870.6079264,
+          "end_time": 1762331870.9819074
+        },
+        {
+          "success": true,
+          "latency": 0.47305989265441895,
+          "query_id": "benchmark_1762331870.9822738_39",
+          "node_id": 1858,
+          "start_time": 1762331871.062101,
+          "end_time": 1762331871.5351608
+        }
+      ]
+    },
+    {
+      "concurrency": 2,
+      "total_queries": 40,
+      "successful": 40,
+      "failed": 0,
+      "success_rate": 100.0,
+      "total_time": 12.911289691925049,
+      "throughput": 3.098063861506935,
+      "avg_latency": 0.5513440489768981,
+      "p50_latency": 0.5516331195831299,
+      "p95_latency": 0.6819217324256897,
+      "p99_latency": 0.6992782998085022,
+      "all_results": [
+        {
+          "success": true,
+          "latency": 0.6818835735321045,
+          "query_id": "benchmark_1762331876.541554_0",
+          "node_id": 5803,
+          "start_time": 1762331876.6290863,
+          "end_time": 1762331877.3109698
+        },
+        {
+          "success": true,
+          "latency": 0.709911584854126,
+          "query_id": "benchmark_1762331876.5418868_1",
+          "node_id": 6803,
+          "start_time": 1762331876.7088847,
+          "end_time": 1762331877.4187963
+        },
+        {
+          "success": true,
+          "latency": 0.4086616039276123,
+          "query_id": "benchmark_1762331877.3113477_2",
+          "node_id": 7208,
+          "start_time": 1762331877.3916454,
+          "end_time": 1762331877.800307
+        },
+        {
+          "success": true,
+          "latency": 0.6826467514038086,
+          "query_id": "benchmark_1762331877.4191499_3",
+          "node_id": 2410,
+          "start_time": 1762331877.5012457,
+          "end_time": 1762331878.1838925
+        },
+        {
+          "success": true,
+          "latency": 0.4806652069091797,
+          "query_id": "benchmark_1762331877.800707_4",
+          "node_id": 7884,
+          "start_time": 1762331877.8810258,
+          "end_time": 1762331878.361691
+        },
+        {
+          "success": true,
+          "latency": 0.554628849029541,
+          "query_id": "benchmark_1762331878.1842763_5",
+          "node_id": 6888,
+          "start_time": 1762331878.2643542,
+          "end_time": 1762331878.818983
+        },
+        {
+          "success": true,
+          "latency": 0.497600793838501,
+          "query_id": "benchmark_1762331878.3620737_6",
+          "node_id": 9923,
+          "start_time": 1762331878.442059,
+          "end_time": 1762331878.9396598
+        },
+        {
+          "success": true,
+          "latency": 0.5566260814666748,
+          "query_id": "benchmark_1762331878.8193736_7",
+          "node_id": 3286,
+          "start_time": 1762331878.8993132,
+          "end_time": 1762331879.4559393
+        },
+        {
+          "success": true,
+          "latency": 0.5516166687011719,
+          "query_id": "benchmark_1762331878.940021_8",
+          "node_id": 970,
+          "start_time": 1762331879.0203843,
+          "end_time": 1762331879.572001
+        },
+        {
+          "success": true,
+          "latency": 0.569345235824585,
+          "query_id": "benchmark_1762331879.4563236_9",
+          "node_id": 4510,
+          "start_time": 1762331879.5365043,
+          "end_time": 1762331880.1058495
+        },
+        {
+          "success": true,
+          "latency": 0.5592775344848633,
+          "query_id": "benchmark_1762331879.5723648_10",
+          "node_id": 5595,
+          "start_time": 1762331879.6521902,
+          "end_time": 1762331880.2114677
+        },
+        {
+          "success": true,
+          "latency": 0.5516495704650879,
+          "query_id": "benchmark_1762331880.1062355_11",
+          "node_id": 3832,
+          "start_time": 1762331880.18653,
+          "end_time": 1762331880.7381797
+        },
+        {
+          "success": true,
+          "latency": 0.5597574710845947,
+          "query_id": "benchmark_1762331880.2118688_12",
+          "node_id": 2906,
+          "start_time": 1762331880.2924325,
+          "end_time": 1762331880.85219
+        },
+        {
+          "success": true,
+          "latency": 0.541407585144043,
+          "query_id": "benchmark_1762331880.7386055_13",
+          "node_id": 3639,
+          "start_time": 1762331880.8190372,
+          "end_time": 1762331881.3604448
+        },
+        {
+          "success": true,
+          "latency": 0.5566158294677734,
+          "query_id": "benchmark_1762331880.8525846_14",
+          "node_id": 1665,
+          "start_time": 1762331880.932531,
+          "end_time": 1762331881.489147
+        },
+        {
+          "success": true,
+          "latency": 0.5549342632293701,
+          "query_id": "benchmark_1762331881.3608587_15",
+          "node_id": 1331,
+          "start_time": 1762331881.4414914,
+          "end_time": 1762331881.9964256
+        },
+        {
+          "success": true,
+          "latency": 0.5370650291442871,
+          "query_id": "benchmark_1762331881.4895372_16",
+          "node_id": 3858,
+          "start_time": 1762331881.5701573,
+          "end_time": 1762331882.1072223
+        },
+        {
+          "success": true,
+          "latency": 0.539778470993042,
+          "query_id": "benchmark_1762331881.996831_17",
+          "node_id": 8798,
+          "start_time": 1762331882.0778623,
+          "end_time": 1762331882.6176407
+        },
+        {
+          "success": true,
+          "latency": 0.5646979808807373,
+          "query_id": "benchmark_1762331882.107641_18",
+          "node_id": 9527,
+          "start_time": 1762331882.1882157,
+          "end_time": 1762331882.7529137
+        },
+        {
+          "success": true,
+          "latency": 0.544550895690918,
+          "query_id": "benchmark_1762331882.6180334_19",
+          "node_id": 4506,
+          "start_time": 1762331882.6983457,
+          "end_time": 1762331883.2428966
+        },
+        {
+          "success": true,
+          "latency": 0.5328478813171387,
+          "query_id": "benchmark_1762331882.7533023_20",
+          "node_id": 2143,
+          "start_time": 1762331882.8391871,
+          "end_time": 1762331883.372035
+        },
+        {
+          "success": true,
+          "latency": 0.5650503635406494,
+          "query_id": "benchmark_1762331883.2432902_21",
+          "node_id": 6018,
+          "start_time": 1762331883.3235414,
+          "end_time": 1762331883.8885918
+        },
+        {
+          "success": true,
+          "latency": 0.5548818111419678,
+          "query_id": "benchmark_1762331883.3724189_22",
+          "node_id": 3973,
+          "start_time": 1762331883.452537,
+          "end_time": 1762331884.0074189
+        },
+        {
+          "success": true,
+          "latency": 0.5524260997772217,
+          "query_id": "benchmark_1762331883.8889873_23",
+          "node_id": 275,
+          "start_time": 1762331883.969453,
+          "end_time": 1762331884.5218792
+        },
+        {
+          "success": true,
+          "latency": 0.5599946975708008,
+          "query_id": "benchmark_1762331884.0078306_24",
+          "node_id": 8357,
+          "start_time": 1762331884.0882528,
+          "end_time": 1762331884.6482475
+        },
+        {
+          "success": true,
+          "latency": 0.5401382446289062,
+          "query_id": "benchmark_1762331884.5222726_25",
+          "node_id": 6493,
+          "start_time": 1762331884.60291,
+          "end_time": 1762331885.1430483
+        },
+        {
+          "success": true,
+          "latency": 0.5367231369018555,
+          "query_id": "benchmark_1762331884.6486452_26",
+          "node_id": 9066,
+          "start_time": 1762331884.7287738,
+          "end_time": 1762331885.265497
+        },
+        {
+          "success": true,
+          "latency": 0.5156867504119873,
+          "query_id": "benchmark_1762331885.1434455_27",
+          "node_id": 9304,
+          "start_time": 1762331885.2241151,
+          "end_time": 1762331885.739802
+        },
+        {
+          "success": true,
+          "latency": 0.5341320037841797,
+          "query_id": "benchmark_1762331885.2659006_28",
+          "node_id": 3943,
+          "start_time": 1762331885.346144,
+          "end_time": 1762331885.880276
+        },
+        {
+          "success": true,
+          "latency": 0.567070722579956,
+          "query_id": "benchmark_1762331885.7401958_29",
+          "node_id": 2586,
+          "start_time": 1762331885.8208694,
+          "end_time": 1762331886.3879402
+        },
+        {
+          "success": true,
+          "latency": 0.5436007976531982,
+          "query_id": "benchmark_1762331885.8806732_30",
+          "node_id": 7563,
+          "start_time": 1762331885.961132,
+          "end_time": 1762331886.5047328
+        },
+        {
+          "success": true,
+          "latency": 0.5357625484466553,
+          "query_id": "benchmark_1762331886.3883536_31",
+          "node_id": 8055,
+          "start_time": 1762331886.4686315,
+          "end_time": 1762331887.004394
+        },
+        {
+          "success": true,
+          "latency": 0.5792744159698486,
+          "query_id": "benchmark_1762331886.5051236_32",
+          "node_id": 8196,
+          "start_time": 1762331886.5859144,
+          "end_time": 1762331887.1651888
+        },
+        {
+          "success": true,
+          "latency": 0.5532119274139404,
+          "query_id": "benchmark_1762331887.0048082_33",
+          "node_id": 905,
+          "start_time": 1762331887.0856795,
+          "end_time": 1762331887.6388915
+        },
+        {
+          "success": true,
+          "latency": 0.5149891376495361,
+          "query_id": "benchmark_1762331887.1655993_34",
+          "node_id": 1046,
+          "start_time": 1762331887.2459683,
+          "end_time": 1762331887.7609575
+        },
+        {
+          "success": true,
+          "latency": 0.5501303672790527,
+          "query_id": "benchmark_1762331887.6392908_35",
+          "node_id": 9502,
+          "start_time": 1762331887.719372,
+          "end_time": 1762331888.2695024
+        },
+        {
+          "success": true,
+          "latency": 0.5546209812164307,
+          "query_id": "benchmark_1762331887.7613544_36",
+          "node_id": 2130,
+          "start_time": 1762331887.841974,
+          "end_time": 1762331888.396595
+        },
+        {
+          "success": true,
+          "latency": 0.5458884239196777,
+          "query_id": "benchmark_1762331888.269917_37",
+          "node_id": 4395,
+          "start_time": 1762331888.3501492,
+          "end_time": 1762331888.8960376
+        },
+        {
+          "success": true,
+          "latency": 0.5390496253967285,
+          "query_id": "benchmark_1762331888.396995_38",
+          "node_id": 541,
+          "start_time": 1762331888.4771962,
+          "end_time": 1762331889.0162458
+        },
+        {
+          "success": true,
+          "latency": 0.4749610424041748,
+          "query_id": "benchmark_1762331888.8964474_39",
+          "node_id": 6317,
+          "start_time": 1762331888.9770937,
+          "end_time": 1762331889.4520547
+        }
+      ]
+    },
+    {
+      "concurrency": 4,
+      "total_queries": 40,
+      "successful": 40,
+      "failed": 0,
+      "success_rate": 100.0,
+      "total_time": 8.723703622817993,
+      "throughput": 4.585208499676072,
+      "avg_latency": 0.7433421790599823,
+      "p50_latency": 0.7141786813735962,
+      "p95_latency": 0.9459867477416989,
+      "p99_latency": 1.1192218112945556,
+      "all_results": [
+        {
+          "success": true,
+          "latency": 0.6294140815734863,
+          "query_id": "benchmark_1762331894.4541762_1",
+          "node_id": 2273,
+          "start_time": 1762331894.6634028,
+          "end_time": 1762331895.2928169
+        },
+        {
+          "success": true,
+          "latency": 0.7547924518585205,
+          "query_id": "benchmark_1762331894.4538789_0",
+          "node_id": 7512,
+          "start_time": 1762331894.8383348,
+          "end_time": 1762331895.5931273
+        },
+        {
+          "success": true,
+          "latency": 1.049989938735962,
+          "query_id": "benchmark_1762331894.4550183_3",
+          "node_id": 7864,
+          "start_time": 1762331894.8422985,
+          "end_time": 1762331895.8922884
+        },
+        {
+          "success": true,
+          "latency": 1.163484811782837,
+          "query_id": "benchmark_1762331894.4546638_2",
+          "node_id": 4666,
+          "start_time": 1762331894.8437057,
+          "end_time": 1762331896.0071905
+        },
+        {
+          "success": true,
+          "latency": 0.7192587852478027,
+          "query_id": "benchmark_1762331895.293217_4",
+          "node_id": 8470,
+          "start_time": 1762331895.3729565,
+          "end_time": 1762331896.0922153
+        },
+        {
+          "success": true,
+          "latency": 0.6790788173675537,
+          "query_id": "benchmark_1762331895.593524_5",
+          "node_id": 9609,
+          "start_time": 1762331895.6738203,
+          "end_time": 1762331896.352899
+        },
+        {
+          "success": true,
+          "latency": 0.6237435340881348,
+          "query_id": "benchmark_1762331895.892669_6",
+          "node_id": 3497,
+          "start_time": 1762331895.975137,
+          "end_time": 1762331896.5988805
+        },
+        {
+          "success": true,
+          "latency": 0.6988394260406494,
+          "query_id": "benchmark_1762331896.0075533_7",
+          "node_id": 6541,
+          "start_time": 1762331896.0949557,
+          "end_time": 1762331896.793795
+        },
+        {
+          "success": true,
+          "latency": 0.8424675464630127,
+          "query_id": "benchmark_1762331896.0926173_8",
+          "node_id": 4115,
+          "start_time": 1762331896.175411,
+          "end_time": 1762331897.0178785
+        },
+        {
+          "success": true,
+          "latency": 0.7756102085113525,
+          "query_id": "benchmark_1762331896.3533092_9",
+          "node_id": 1618,
+          "start_time": 1762331896.4340436,
+          "end_time": 1762331897.2096539
+        },
+        {
+          "success": true,
+          "latency": 0.6678194999694824,
+          "query_id": "benchmark_1762331896.5992372_10",
+          "node_id": 1854,
+          "start_time": 1762331896.6793313,
+          "end_time": 1762331897.3471508
+        },
+        {
+          "success": true,
+          "latency": 0.7672688961029053,
+          "query_id": "benchmark_1762331896.794149_11",
+          "node_id": 8988,
+          "start_time": 1762331896.874869,
+          "end_time": 1762331897.642138
+        },
+        {
+          "success": true,
+          "latency": 0.7075352668762207,
+          "query_id": "benchmark_1762331897.0182488_12",
+          "node_id": 1004,
+          "start_time": 1762331897.09891,
+          "end_time": 1762331897.8064454
+        },
+        {
+          "success": true,
+          "latency": 0.7009234428405762,
+          "query_id": "benchmark_1762331897.2100544_13",
+          "node_id": 1844,
+          "start_time": 1762331897.2904077,
+          "end_time": 1762331897.991331
+        },
+        {
+          "success": true,
+          "latency": 0.7334425449371338,
+          "query_id": "benchmark_1762331897.3475084_14",
+          "node_id": 5323,
+          "start_time": 1762331897.4272609,
+          "end_time": 1762331898.1607034
+        },
+        {
+          "success": true,
+          "latency": 0.7470691204071045,
+          "query_id": "benchmark_1762331897.6425188_15",
+          "node_id": 153,
+          "start_time": 1762331897.723583,
+          "end_time": 1762331898.470652
+        },
+        {
+          "success": true,
+          "latency": 0.6640479564666748,
+          "query_id": "benchmark_1762331897.8068664_16",
+          "node_id": 8782,
+          "start_time": 1762331897.8875494,
+          "end_time": 1762331898.5515974
+        },
+        {
+          "success": true,
+          "latency": 0.6398401260375977,
+          "query_id": "benchmark_1762331897.9917572_17",
+          "node_id": 6835,
+          "start_time": 1762331898.0725138,
+          "end_time": 1762331898.712354
+        },
+        {
+          "success": true,
+          "latency": 0.8089022636413574,
+          "query_id": "benchmark_1762331898.1610708_18",
+          "node_id": 5745,
+          "start_time": 1762331898.241015,
+          "end_time": 1762331899.0499172
+        },
+        {
+          "success": true,
+          "latency": 0.7929279804229736,
+          "query_id": "benchmark_1762331898.4710457_19",
+          "node_id": 6763,
+          "start_time": 1762331898.5545337,
+          "end_time": 1762331899.3474617
+        },
+        {
+          "success": true,
+          "latency": 0.7988052368164062,
+          "query_id": "benchmark_1762331898.5519743_20",
+          "node_id": 4880,
+          "start_time": 1762331898.6348803,
+          "end_time": 1762331899.4336855
+        },
+        {
+          "success": true,
+          "latency": 0.7839617729187012,
+          "query_id": "benchmark_1762331898.7127728_21",
+          "node_id": 8869,
+          "start_time": 1762331898.793763,
+          "end_time": 1762331899.5777247
+        },
+        {
+          "success": true,
+          "latency": 0.6865143775939941,
+          "query_id": "benchmark_1762331899.0502968_22",
+          "node_id": 330,
+          "start_time": 1762331899.1317477,
+          "end_time": 1762331899.818262
+        },
+        {
+          "success": true,
+          "latency": 0.6568090915679932,
+          "query_id": "benchmark_1762331899.3478622_23",
+          "node_id": 3804,
+          "start_time": 1762331899.4380248,
+          "end_time": 1762331900.0948339
+        },
+        {
+          "success": true,
+          "latency": 0.7697758674621582,
+          "query_id": "benchmark_1762331899.4340954_24",
+          "node_id": 2794,
+          "start_time": 1762331899.518604,
+          "end_time": 1762331900.28838
+        },
+        {
+          "success": true,
+          "latency": 0.9405128955841064,
+          "query_id": "benchmark_1762331899.57813_25",
+          "node_id": 7530,
+          "start_time": 1762331899.6592772,
+          "end_time": 1762331900.59979
+        },
+        {
+          "success": true,
+          "latency": 0.847858190536499,
+          "query_id": "benchmark_1762331899.81866_26",
+          "node_id": 2463,
+          "start_time": 1762331899.9001791,
+          "end_time": 1762331900.7480373
+        },
+        {
+          "success": true,
+          "latency": 0.6546032428741455,
+          "query_id": "benchmark_1762331900.0952158_27",
+          "node_id": 9520,
+          "start_time": 1762331900.1752768,
+          "end_time": 1762331900.82988
+        },
+        {
+          "success": true,
+          "latency": 0.7090985774993896,
+          "query_id": "benchmark_1762331900.2887812_28",
+          "node_id": 5323,
+          "start_time": 1762331900.369472,
+          "end_time": 1762331901.0785706
+        },
+        {
+          "success": true,
+          "latency": 0.6721386909484863,
+          "query_id": "benchmark_1762331900.6001995_29",
+          "node_id": 8660,
+          "start_time": 1762331900.6810563,
+          "end_time": 1762331901.353195
+        },
+        {
+          "success": true,
+          "latency": 0.6618924140930176,
+          "query_id": "benchmark_1762331900.7484176_30",
+          "node_id": 4006,
+          "start_time": 1762331900.8329275,
+          "end_time": 1762331901.4948199
+        },
+        {
+          "success": true,
+          "latency": 0.8849632740020752,
+          "query_id": "benchmark_1762331900.830406_31",
+          "node_id": 8951,
+          "start_time": 1762331900.9136407,
+          "end_time": 1762331901.798604
+        },
+        {
+          "success": true,
+          "latency": 0.8052475452423096,
+          "query_id": "benchmark_1762331901.078965_32",
+          "node_id": 3948,
+          "start_time": 1762331901.1596985,
+          "end_time": 1762331901.964946
+        },
+        {
+          "success": true,
+          "latency": 0.6756374835968018,
+          "query_id": "benchmark_1762331901.353611_33",
+          "node_id": 4178,
+          "start_time": 1762331901.4342217,
+          "end_time": 1762331902.1098592
+        },
+        {
+          "success": true,
+          "latency": 0.8606297969818115,
+          "query_id": "benchmark_1762331901.4951844_34",
+          "node_id": 9634,
+          "start_time": 1762331901.5764525,
+          "end_time": 1762331902.4370823
+        },
+        {
+          "success": true,
+          "latency": 0.6397819519042969,
+          "query_id": "benchmark_1762331901.7989974_35",
+          "node_id": 2809,
+          "start_time": 1762331901.8789015,
+          "end_time": 1762331902.5186834
+        },
+        {
+          "success": true,
+          "latency": 0.6007473468780518,
+          "query_id": "benchmark_1762331901.9653375_36",
+          "node_id": 6428,
+          "start_time": 1762331902.045919,
+          "end_time": 1762331902.6466663
+        },
+        {
+          "success": true,
+          "latency": 0.7594382762908936,
+          "query_id": "benchmark_1762331902.1102583_37",
+          "node_id": 2076,
+          "start_time": 1762331902.1913815,
+          "end_time": 1762331902.9508197
+        },
+        {
+          "success": true,
+          "latency": 0.5828192234039307,
+          "query_id": "benchmark_1762331902.4374754_38",
+          "node_id": 2838,
+          "start_time": 1762331902.5210385,
+          "end_time": 1762331903.1038578
+        },
+        {
+          "success": true,
+          "latency": 0.5759952068328857,
+          "query_id": "benchmark_1762331902.5190566_39",
+          "node_id": 9630,
+          "start_time": 1762331902.6007667,
+          "end_time": 1762331903.1767619
+        }
+      ]
+    },
+    {
+      "concurrency": 8,
+      "total_queries": 40,
+      "successful": 40,
+      "failed": 0,
+      "success_rate": 100.0,
+      "total_time": 8.275733470916748,
+      "throughput": 4.833408439333049,
+      "avg_latency": 1.3601934552192687,
+      "p50_latency": 1.4263375997543335,
+      "p95_latency": 1.5917951941490174,
+      "p99_latency": 1.648019471168518,
+      "all_results": [
+        {
+          "success": true,
+          "latency": 0.5720398426055908,
+          "query_id": "benchmark_1762331908.1817443_2",
+          "node_id": 1760,
+          "start_time": 1762331908.3789485,
+          "end_time": 1762331908.9509883
+        },
+        {
+          "success": true,
+          "latency": 0.7851862907409668,
+          "query_id": "benchmark_1762331908.1787815_0",
+          "node_id": 4274,
+          "start_time": 1762331908.4007988,
+          "end_time": 1762331909.185985
+        },
+        {
+          "success": true,
+          "latency": 0.658008337020874,
+          "query_id": "benchmark_1762331908.179115_1",
+          "node_id": 6506,
+          "start_time": 1762331908.7735913,
+          "end_time": 1762331909.4315996
+        },
+        {
+          "success": true,
+          "latency": 0.8631231784820557,
+          "query_id": "benchmark_1762331908.185461_3",
+          "node_id": 6864,
+          "start_time": 1762331908.9516778,
+          "end_time": 1762331909.814801
+        },
+        {
+          "success": true,
+          "latency": 0.9734301567077637,
+          "query_id": "benchmark_1762331908.1867697_4",
+          "node_id": 4070,
+          "start_time": 1762331908.9526782,
+          "end_time": 1762331909.9261084
+        },
+        {
+          "success": true,
+          "latency": 1.1358394622802734,
+          "query_id": "benchmark_1762331908.2071483_7",
+          "node_id": 3005,
+          "start_time": 1762331908.9589791,
+          "end_time": 1762331910.0948186
+        },
+        {
+          "success": true,
+          "latency": 1.5091471672058105,
+          "query_id": "benchmark_1762331908.206085_6",
+          "node_id": 5271,
+          "start_time": 1762331908.960677,
+          "end_time": 1762331910.469824
+        },
+        {
+          "success": true,
+          "latency": 1.59055495262146,
+          "query_id": "benchmark_1762331908.205551_5",
+          "node_id": 425,
+          "start_time": 1762331908.963848,
+          "end_time": 1762331910.554403
+        },
+        {
+          "success": true,
+          "latency": 1.6774585247039795,
+          "query_id": "benchmark_1762331908.9513712_8",
+          "node_id": 4131,
+          "start_time": 1762331909.0446584,
+          "end_time": 1762331910.722117
+        },
+        {
+          "success": true,
+          "latency": 1.6019737720489502,
+          "query_id": "benchmark_1762331909.1864338_9",
+          "node_id": 9392,
+          "start_time": 1762331909.2689471,
+          "end_time": 1762331910.870921
+        },
+        {
+          "success": true,
+          "latency": 1.5833220481872559,
+          "query_id": "benchmark_1762331909.4320464_10",
+          "node_id": 9104,
+          "start_time": 1762331909.5128164,
+          "end_time": 1762331911.0961385
+        },
+        {
+          "success": true,
+          "latency": 1.3423669338226318,
+          "query_id": "benchmark_1762331909.8152456_11",
+          "node_id": 1465,
+          "start_time": 1762331909.897112,
+          "end_time": 1762331911.2394788
+        },
+        {
+          "success": true,
+          "latency": 1.4516456127166748,
+          "query_id": "benchmark_1762331909.9265714_12",
+          "node_id": 1011,
+          "start_time": 1762331910.0111592,
+          "end_time": 1762331911.4628048
+        },
+        {
+          "success": true,
+          "latency": 1.3681082725524902,
+          "query_id": "benchmark_1762331910.095216_13",
+          "node_id": 299,
+          "start_time": 1762331910.1776078,
+          "end_time": 1762331911.545716
+        },
+        {
+          "success": true,
+          "latency": 1.2779076099395752,
+          "query_id": "benchmark_1762331910.470239_14",
+          "node_id": 9607,
+          "start_time": 1762331910.5597088,
+          "end_time": 1762331911.8376164
+        },
+        {
+          "success": true,
+          "latency": 1.3797705173492432,
+          "query_id": "benchmark_1762331910.5548332_15",
+          "node_id": 1254,
+          "start_time": 1762331910.642663,
+          "end_time": 1762331912.0224335
+        },
+        {
+          "success": true,
+          "latency": 1.4341826438903809,
+          "query_id": "benchmark_1762331910.7225533_16",
+          "node_id": 2320,
+          "start_time": 1762331910.803411,
+          "end_time": 1762331912.2375937
+        },
+        {
+          "success": true,
+          "latency": 1.5283091068267822,
+          "query_id": "benchmark_1762331910.8713431_17",
+          "node_id": 34,
+          "start_time": 1762331910.9517665,
+          "end_time": 1762331912.4800756
+        },
+        {
+          "success": true,
+          "latency": 1.4533202648162842,
+          "query_id": "benchmark_1762331911.096681_18",
+          "node_id": 7270,
+          "start_time": 1762331911.179248,
+          "end_time": 1762331912.6325684
+        },
+        {
+          "success": true,
+          "latency": 1.5383679866790771,
+          "query_id": "benchmark_1762331911.239917_19",
+          "node_id": 8420,
+          "start_time": 1762331911.3226306,
+          "end_time": 1762331912.8609986
+        },
+        {
+          "success": true,
+          "latency": 1.4578523635864258,
+          "query_id": "benchmark_1762331911.4632318_20",
+          "node_id": 8429,
+          "start_time": 1762331911.5485928,
+          "end_time": 1762331913.0064452
+        },
+        {
+          "success": true,
+          "latency": 1.558427333831787,
+          "query_id": "benchmark_1762331911.5461025_21",
+          "node_id": 2032,
+          "start_time": 1762331911.6291788,
+          "end_time": 1762331913.187606
+        },
+        {
+          "success": true,
+          "latency": 1.364344596862793,
+          "query_id": "benchmark_1762331911.8380198_22",
+          "node_id": 2110,
+          "start_time": 1762331911.9209082,
+          "end_time": 1762331913.2852528
+        },
+        {
+          "success": true,
+          "latency": 1.4125559329986572,
+          "query_id": "benchmark_1762331912.0228562_23",
+          "node_id": 481,
+          "start_time": 1762331912.1139538,
+          "end_time": 1762331913.5265098
+        },
+        {
+          "success": true,
+          "latency": 1.4043498039245605,
+          "query_id": "benchmark_1762331912.238017_24",
+          "node_id": 5620,
+          "start_time": 1762331912.3187714,
+          "end_time": 1762331913.7231212
+        },
+        {
+          "success": true,
+          "latency": 1.3668489456176758,
+          "query_id": "benchmark_1762331912.4804885_25",
+          "node_id": 1465,
+          "start_time": 1762331912.5610476,
+          "end_time": 1762331913.9278965
+        },
+        {
+          "success": true,
+          "latency": 1.4184925556182861,
+          "query_id": "benchmark_1762331912.632991_26",
+          "node_id": 8777,
+          "start_time": 1762331912.713667,
+          "end_time": 1762331914.1321595
+        },
+        {
+          "success": true,
+          "latency": 1.37642502784729,
+          "query_id": "benchmark_1762331912.8614225_27",
+          "node_id": 4741,
+          "start_time": 1762331912.9439163,
+          "end_time": 1762331914.3203413
+        },
+        {
+          "success": true,
+          "latency": 1.502659797668457,
+          "query_id": "benchmark_1762331913.0069017_28",
+          "node_id": 1116,
+          "start_time": 1762331913.0873342,
+          "end_time": 1762331914.589994
+        },
+        {
+          "success": true,
+          "latency": 1.5461194515228271,
+          "query_id": "benchmark_1762331913.1880069_29",
+          "node_id": 9800,
+          "start_time": 1762331913.2694514,
+          "end_time": 1762331914.8155708
+        },
+        {
+          "success": true,
+          "latency": 1.591259479522705,
+          "query_id": "benchmark_1762331913.285672_30",
+          "node_id": 6012,
+          "start_time": 1762331913.3683412,
+          "end_time": 1762331914.9596007
+        },
+        {
+          "success": true,
+          "latency": 1.5239806175231934,
+          "query_id": "benchmark_1762331913.5269556_31",
+          "node_id": 3915,
+          "start_time": 1762331913.6094706,
+          "end_time": 1762331915.1334512
+        },
+        {
+          "success": true,
+          "latency": 1.4499566555023193,
+          "query_id": "benchmark_1762331913.7235422_32",
+          "node_id": 4480,
+          "start_time": 1762331913.8038778,
+          "end_time": 1762331915.2538345
+        },
+        {
+          "success": true,
+          "latency": 1.514758825302124,
+          "query_id": "benchmark_1762331913.928326_33",
+          "node_id": 1090,
+          "start_time": 1762331914.0089679,
+          "end_time": 1762331915.5237267
+        },
+        {
+          "success": true,
+          "latency": 1.4730663299560547,
+          "query_id": "benchmark_1762331914.1326044_34",
+          "node_id": 602,
+          "start_time": 1762331914.212637,
+          "end_time": 1762331915.6857033
+        },
+        {
+          "success": true,
+          "latency": 1.4842021465301514,
+          "query_id": "benchmark_1762331914.320777_35",
+          "node_id": 7,
+          "start_time": 1762331914.4027197,
+          "end_time": 1762331915.886922
+        },
+        {
+          "success": true,
+          "latency": 1.3274102210998535,
+          "query_id": "benchmark_1762331914.590424_36",
+          "node_id": 2999,
+          "start_time": 1762331914.6711829,
+          "end_time": 1762331915.998593
+        },
+        {
+          "success": true,
+          "latency": 1.3846776485443115,
+          "query_id": "benchmark_1762331914.8159878_37",
+          "node_id": 6415,
+          "start_time": 1762331914.8974838,
+          "end_time": 1762331916.2821615
+        },
+        {
+          "success": true,
+          "latency": 1.2908151149749756,
+          "query_id": "benchmark_1762331914.9600189_38",
+          "node_id": 9513,
+          "start_time": 1762331915.042204,
+          "end_time": 1762331916.333019
+        },
+        {
+          "success": true,
+          "latency": 1.2354726791381836,
+          "query_id": "benchmark_1762331915.1338928_39",
+          "node_id": 919,
+          "start_time": 1762331915.2170522,
+          "end_time": 1762331916.452525
+        }
+      ]
+    },
+    {
+      "concurrency": 16,
+      "total_queries": 40,
+      "successful": 40,
+      "failed": 0,
+      "success_rate": 100.0,
+      "total_time": 9.131854772567749,
+      "throughput": 4.380271149313576,
+      "avg_latency": 2.510758191347122,
+      "p50_latency": 2.8474291563034058,
+      "p95_latency": 3.35897718667984,
+      "p99_latency": 3.4765404224395753,
+      "all_results": [
+        {
+          "success": true,
+          "latency": 1.298198938369751,
+          "query_id": "benchmark_1762331921.4560382_1",
+          "node_id": 8432,
+          "start_time": 1762331921.7137299,
+          "end_time": 1762331923.0119288
+        },
+        {
+          "success": true,
+          "latency": 1.3032541275024414,
+          "query_id": "benchmark_1762331921.4571679_3",
+          "node_id": 3735,
+          "start_time": 1762331921.7185218,
+          "end_time": 1762331923.021776
+        },
+        {
+          "success": true,
+          "latency": 0.8778345584869385,
+          "query_id": "benchmark_1762331921.4567115_2",
+          "node_id": 5822,
+          "start_time": 1762331922.1457763,
+          "end_time": 1762331923.0236108
+        },
+        {
+          "success": true,
+          "latency": 1.0372779369354248,
+          "query_id": "benchmark_1762331921.4780836_8",
+          "node_id": 5471,
+          "start_time": 1762331922.5888653,
+          "end_time": 1762331923.6261432
+        },
+        {
+          "success": true,
+          "latency": 1.1145169734954834,
+          "query_id": "benchmark_1762331921.4608488_4",
+          "node_id": 9684,
+          "start_time": 1762331922.6599698,
+          "end_time": 1762331923.7744868
+        },
+        {
+          "success": true,
+          "latency": 1.0216691493988037,
+          "query_id": "benchmark_1762331921.4769213_6",
+          "node_id": 5081,
+          "start_time": 1762331923.0071542,
+          "end_time": 1762331924.0288234
+        },
+        {
+          "success": true,
+          "latency": 1.2075104713439941,
+          "query_id": "benchmark_1762331921.474119_5",
+          "node_id": 2616,
+          "start_time": 1762331923.018846,
+          "end_time": 1762331924.2263565
+        },
+        {
+          "success": true,
+          "latency": 1.3502271175384521,
+          "query_id": "benchmark_1762331921.5009649_11",
+          "node_id": 7760,
+          "start_time": 1762331923.1215942,
+          "end_time": 1762331924.4718213
+        },
+        {
+          "success": true,
+          "latency": 1.4584758281707764,
+          "query_id": "benchmark_1762331921.5992465_13",
+          "node_id": 5387,
+          "start_time": 1762331923.302291,
+          "end_time": 1762331924.7607667
+        },
+        {
+          "success": true,
+          "latency": 1.7095146179199219,
+          "query_id": "benchmark_1762331921.4556823_0",
+          "node_id": 8930,
+          "start_time": 1762331923.1357484,
+          "end_time": 1762331924.845263
+        },
+        {
+          "success": true,
+          "latency": 1.7362253665924072,
+          "query_id": "benchmark_1762331921.5026357_12",
+          "node_id": 2204,
+          "start_time": 1762331923.3049212,
+          "end_time": 1762331925.0411465
+        },
+        {
+          "success": true,
+          "latency": 2.091665506362915,
+          "query_id": "benchmark_1762331921.4991734_10",
+          "node_id": 9608,
+          "start_time": 1762331923.3037431,
+          "end_time": 1762331925.3954086
+        },
+        {
+          "success": true,
+          "latency": 2.544506788253784,
+          "query_id": "benchmark_1762331921.672551_14",
+          "node_id": 6063,
+          "start_time": 1762331923.3108177,
+          "end_time": 1762331925.8553245
+        },
+        {
+          "success": true,
+          "latency": 2.764111042022705,
+          "query_id": "benchmark_1762331921.4777117_7",
+          "node_id": 9632,
+          "start_time": 1762331923.3119292,
+          "end_time": 1762331926.0760403
+        },
+        {
+          "success": true,
+          "latency": 2.853180170059204,
+          "query_id": "benchmark_1762331921.4796371_9",
+          "node_id": 7461,
+          "start_time": 1762331923.3047957,
+          "end_time": 1762331926.157976
+        },
+        {
+          "success": true,
+          "latency": 3.076127529144287,
+          "query_id": "benchmark_1762331923.0126297_16",
+          "node_id": 1222,
+          "start_time": 1762331923.3176017,
+          "end_time": 1762331926.3937292
+        },
+        {
+          "success": true,
+          "latency": 3.285604476928711,
+          "query_id": "benchmark_1762331923.0241265_17",
+          "node_id": 4637,
+          "start_time": 1762331923.320764,
+          "end_time": 1762331926.6063685
+        },
+        {
+          "success": true,
+          "latency": 3.380256414413452,
+          "query_id": "benchmark_1762331921.672913_15",
+          "node_id": 8156,
+          "start_time": 1762331923.3081183,
+          "end_time": 1762331926.6883748
+        },
+        {
+          "success": true,
+          "latency": 3.5380990505218506,
+          "query_id": "benchmark_1762331923.0255518_18",
+          "node_id": 1378,
+          "start_time": 1762331923.3234267,
+          "end_time": 1762331926.8615258
+        },
+        {
+          "success": true,
+          "latency": 3.3273396492004395,
+          "query_id": "benchmark_1762331923.626627_19",
+          "node_id": 3022,
+          "start_time": 1762331923.7098355,
+          "end_time": 1762331927.0371752
+        },
+        {
+          "success": true,
+          "latency": 3.3578572273254395,
+          "query_id": "benchmark_1762331923.7750046_20",
+          "node_id": 4868,
+          "start_time": 1762331923.856842,
+          "end_time": 1762331927.2146993
+        },
+        {
+          "success": true,
+          "latency": 3.245720386505127,
+          "query_id": "benchmark_1762331924.0292811_21",
+          "node_id": 211,
+          "start_time": 1762331924.1212099,
+          "end_time": 1762331927.3669302
+        },
+        {
+          "success": true,
+          "latency": 3.1974570751190186,
+          "query_id": "benchmark_1762331924.2268622_22",
+          "node_id": 9706,
+          "start_time": 1762331924.30789,
+          "end_time": 1762331927.505347
+        },
+        {
+          "success": true,
+          "latency": 3.15057110786438,
+          "query_id": "benchmark_1762331924.4722795_23",
+          "node_id": 1255,
+          "start_time": 1762331924.5570037,
+          "end_time": 1762331927.7075748
+        },
+        {
+          "success": true,
+          "latency": 2.943633794784546,
+          "query_id": "benchmark_1762331924.7612169_24",
+          "node_id": 3372,
+          "start_time": 1762331924.8488972,
+          "end_time": 1762331927.792531
+        },
+        {
+          "success": true,
+          "latency": 3.025580883026123,
+          "query_id": "benchmark_1762331924.84576_25",
+          "node_id": 8919,
+          "start_time": 1762331924.9359372,
+          "end_time": 1762331927.961518
+        },
+        {
+          "success": true,
+          "latency": 3.1861133575439453,
+          "query_id": "benchmark_1762331925.0416336_26",
+          "node_id": 7582,
+          "start_time": 1762331925.12634,
+          "end_time": 1762331928.3124533
+        },
+        {
+          "success": true,
+          "latency": 3.0016696453094482,
+          "query_id": "benchmark_1762331925.3958898_27",
+          "node_id": 1920,
+          "start_time": 1762331925.4805415,
+          "end_time": 1762331928.482211
+        },
+        {
+          "success": true,
+          "latency": 2.7172329425811768,
+          "query_id": "benchmark_1762331925.8558202_28",
+          "node_id": 2810,
+          "start_time": 1762331925.9393144,
+          "end_time": 1762331928.6565473
+        },
+        {
+          "success": true,
+          "latency": 2.7346549034118652,
+          "query_id": "benchmark_1762331926.0765374_29",
+          "node_id": 6656,
+          "start_time": 1762331926.161053,
+          "end_time": 1762331928.8957078
+        },
+        {
+          "success": true,
+          "latency": 2.7341928482055664,
+          "query_id": "benchmark_1762331926.3941824_31",
+          "node_id": 1251,
+          "start_time": 1762331926.4747405,
+          "end_time": 1762331929.2089334
+        },
+        {
+          "success": true,
+          "latency": 2.981257438659668,
+          "query_id": "benchmark_1762331926.1584637_30",
+          "node_id": 7413,
+          "start_time": 1762331926.246183,
+          "end_time": 1762331929.2274404
+        },
+        {
+          "success": true,
+          "latency": 2.7195563316345215,
+          "query_id": "benchmark_1762331926.6068587_32",
+          "node_id": 5854,
+          "start_time": 1762331926.690567,
+          "end_time": 1762331929.4101233
+        },
+        {
+          "success": true,
+          "latency": 2.8416781425476074,
+          "query_id": "benchmark_1762331926.688832_33",
+          "node_id": 4297,
+          "start_time": 1762331926.7773654,
+          "end_time": 1762331929.6190436
+        },
+        {
+          "success": true,
+          "latency": 3.038154363632202,
+          "query_id": "benchmark_1762331926.8620074_34",
+          "node_id": 826,
+          "start_time": 1762331926.942543,
+          "end_time": 1762331929.9806974
+        },
+        {
+          "success": true,
+          "latency": 2.9167606830596924,
+          "query_id": "benchmark_1762331927.0376503_35",
+          "node_id": 5220,
+          "start_time": 1762331927.1188366,
+          "end_time": 1762331930.0355973
+        },
+        {
+          "success": true,
+          "latency": 2.976626396179199,
+          "query_id": "benchmark_1762331927.215151_36",
+          "node_id": 2742,
+          "start_time": 1762331927.2977118,
+          "end_time": 1762331930.2743382
+        },
+        {
+          "success": true,
+          "latency": 2.9498844146728516,
+          "query_id": "benchmark_1762331927.3673708_37",
+          "node_id": 5933,
+          "start_time": 1762331927.4483695,
+          "end_time": 1762331930.398254
+        },
+        {
+          "success": true,
+          "latency": 2.950049638748169,
+          "query_id": "benchmark_1762331927.5058184_38",
+          "node_id": 5682,
+          "start_time": 1762331927.5869584,
+          "end_time": 1762331930.537008
+        },
+        {
+          "success": true,
+          "latency": 2.7860803604125977,
+          "query_id": "benchmark_1762331927.7080238_39",
+          "node_id": 2399,
+          "start_time": 1762331927.7939155,
+          "end_time": 1762331930.5799959
+        }
+      ]
+    },
+    {
+      "concurrency": 32,
+      "total_queries": 40,
+      "successful": 40,
+      "failed": 0,
+      "success_rate": 100.0,
+      "total_time": 11.124117851257324,
+      "throughput": 3.5957907435760332,
+      "avg_latency": 4.496524518728256,
+      "p50_latency": 5.535928964614868,
+      "p95_latency": 6.842382454872131,
+      "p99_latency": 7.1442866897583,
+      "all_results": [
+        {
+          "success": true,
+          "latency": 3.003896951675415,
+          "query_id": "benchmark_1762331935.5950391_3",
+          "node_id": 6383,
+          "start_time": 1762331935.826952,
+          "end_time": 1762331938.830849
+        },
+        {
+          "success": true,
+          "latency": 2.8475863933563232,
+          "query_id": "benchmark_1762331935.5886486_0",
+          "node_id": 9773,
+          "start_time": 1762331936.0827425,
+          "end_time": 1762331938.9303288
+        },
+        {
+          "success": true,
+          "latency": 2.0865116119384766,
+          "query_id": "benchmark_1762331935.5964758_5",
+          "node_id": 1880,
+          "start_time": 1762331936.9461515,
+          "end_time": 1762331939.032663
+        },
+        {
+          "success": true,
+          "latency": 0.6740450859069824,
+          "query_id": "benchmark_1762331935.5892448_2",
+          "node_id": 5669,
+          "start_time": 1762331938.8448057,
+          "end_time": 1762331939.5188508
+        },
+        {
+          "success": true,
+          "latency": 0.9324140548706055,
+          "query_id": "benchmark_1762331935.5889094_1",
+          "node_id": 7276,
+          "start_time": 1762331938.9084973,
+          "end_time": 1762331939.8409114
+        },
+        {
+          "success": true,
+          "latency": 1.054776668548584,
+          "query_id": "benchmark_1762331935.6048598_7",
+          "node_id": 6701,
+          "start_time": 1762331938.920921,
+          "end_time": 1762331939.9756978
+        },
+        {
+          "success": true,
+          "latency": 1.302619218826294,
+          "query_id": "benchmark_1762331935.6249375_11",
+          "node_id": 8459,
+          "start_time": 1762331938.9248242,
+          "end_time": 1762331940.2274435
+        },
+        {
+          "success": true,
+          "latency": 1.5547866821289062,
+          "query_id": "benchmark_1762331935.609347_9",
+          "node_id": 1261,
+          "start_time": 1762331938.9260194,
+          "end_time": 1762331940.480806
+        },
+        {
+          "success": true,
+          "latency": 1.7587318420410156,
+          "query_id": "benchmark_1762331935.5953543_4",
+          "node_id": 8223,
+          "start_time": 1762331938.927496,
+          "end_time": 1762331940.6862278
+        },
+        {
+          "success": true,
+          "latency": 1.9852368831634521,
+          "query_id": "benchmark_1762331935.6301312_14",
+          "node_id": 1289,
+          "start_time": 1762331938.9447718,
+          "end_time": 1762331940.9300086
+        },
+        {
+          "success": true,
+          "latency": 2.400902271270752,
+          "query_id": "benchmark_1762331935.6279058_13",
+          "node_id": 728,
+          "start_time": 1762331938.9470491,
+          "end_time": 1762331941.3479514
+        },
+        {
+          "success": true,
+          "latency": 2.436939001083374,
+          "query_id": "benchmark_1762331935.603841_6",
+          "node_id": 9275,
+          "start_time": 1762331939.0265987,
+          "end_time": 1762331941.4635377
+        },
+        {
+          "success": true,
+          "latency": 2.4914770126342773,
+          "query_id": "benchmark_1762331935.6058216_8",
+          "node_id": 9239,
+          "start_time": 1762331939.0333214,
+          "end_time": 1762331941.5247984
+        },
+        {
+          "success": true,
+          "latency": 2.977351427078247,
+          "query_id": "benchmark_1762331935.6640737_24",
+          "node_id": 776,
+          "start_time": 1762331939.0331314,
+          "end_time": 1762331942.0104828
+        },
+        {
+          "success": true,
+          "latency": 3.024401903152466,
+          "query_id": "benchmark_1762331935.6467202_19",
+          "node_id": 2012,
+          "start_time": 1762331939.0456307,
+          "end_time": 1762331942.0700326
+        },
+        {
+          "success": true,
+          "latency": 3.088560104370117,
+          "query_id": "benchmark_1762331935.6520169_21",
+          "node_id": 9261,
+          "start_time": 1762331939.03433,
+          "end_time": 1762331942.12289
+        },
+        {
+          "success": true,
+          "latency": 3.6162867546081543,
+          "query_id": "benchmark_1762331935.618788_10",
+          "node_id": 59,
+          "start_time": 1762331939.1238444,
+          "end_time": 1762331942.7401311
+        },
+        {
+          "success": true,
+          "latency": 4.615570306777954,
+          "query_id": "benchmark_1762331935.6614559_23",
+          "node_id": 3885,
+          "start_time": 1762331939.1307647,
+          "end_time": 1762331943.746335
+        },
+        {
+          "success": true,
+          "latency": 5.009227514266968,
+          "query_id": "benchmark_1762331935.6343017_15",
+          "node_id": 4110,
+          "start_time": 1762331939.1336427,
+          "end_time": 1762331944.1428702
+        },
+        {
+          "success": true,
+          "latency": 5.538877010345459,
+          "query_id": "benchmark_1762331935.658697_22",
+          "node_id": 3878,
+          "start_time": 1762331939.1279533,
+          "end_time": 1762331944.6668303
+        },
+        {
+          "success": true,
+          "latency": 5.532980918884277,
+          "query_id": "benchmark_1762331935.7875943_29",
+          "node_id": 9197,
+          "start_time": 1762331939.1487527,
+          "end_time": 1762331944.6817336
+        },
+        {
+          "success": true,
+          "latency": 5.748244524002075,
+          "query_id": "benchmark_1762331935.6263726_12",
+          "node_id": 9326,
+          "start_time": 1762331939.1254692,
+          "end_time": 1762331944.8737137
+        },
+        {
+          "success": true,
+          "latency": 5.790001392364502,
+          "query_id": "benchmark_1762331935.6732328_25",
+          "node_id": 1975,
+          "start_time": 1762331939.1316326,
+          "end_time": 1762331944.921634
+        },
+        {
+          "success": true,
+          "latency": 5.8247199058532715,
+          "query_id": "benchmark_1762331935.8010018_30",
+          "node_id": 3115,
+          "start_time": 1762331939.1363142,
+          "end_time": 1762331944.961034
+        },
+        {
+          "success": true,
+          "latency": 5.847766399383545,
+          "query_id": "benchmark_1762331935.6482363_20",
+          "node_id": 9819,
+          "start_time": 1762331939.1438365,
+          "end_time": 1762331944.991603
+        },
+        {
+          "success": true,
+          "latency": 6.006845474243164,
+          "query_id": "benchmark_1762331935.8074605_31",
+          "node_id": 3141,
+          "start_time": 1762331939.1400285,
+          "end_time": 1762331945.146874
+        },
+        {
+          "success": true,
+          "latency": 6.1847593784332275,
+          "query_id": "benchmark_1762331935.6367743_16",
+          "node_id": 6847,
+          "start_time": 1762331939.1461043,
+          "end_time": 1762331945.3308637
+        },
+        {
+          "success": true,
+          "latency": 6.230849504470825,
+          "query_id": "benchmark_1762331938.931496_33",
+          "node_id": 8773,
+          "start_time": 1762331939.1576555,
+          "end_time": 1762331945.388505
+        },
+        {
+          "success": true,
+          "latency": 6.4536824226379395,
+          "query_id": "benchmark_1762331938.831704_32",
+          "node_id": 6786,
+          "start_time": 1762331939.1545186,
+          "end_time": 1762331945.608201
+        },
+        {
+          "success": true,
+          "latency": 6.789423227310181,
+          "query_id": "benchmark_1762331935.6453388_18",
+          "node_id": 8953,
+          "start_time": 1762331939.1294615,
+          "end_time": 1762331945.9188848
+        },
+        {
+          "success": true,
+          "latency": 6.821138620376587,
+          "query_id": "benchmark_1762331935.7777154_27",
+          "node_id": 5486,
+          "start_time": 1762331939.1389043,
+          "end_time": 1762331945.960043
+        },
+        {
+          "success": true,
+          "latency": 6.822865009307861,
+          "query_id": "benchmark_1762331935.762308_26",
+          "node_id": 374,
+          "start_time": 1762331939.1416862,
+          "end_time": 1762331945.9645512
+        },
+        {
+          "success": true,
+          "latency": 6.834784746170044,
+          "query_id": "benchmark_1762331935.6425743_17",
+          "node_id": 7989,
+          "start_time": 1762331939.1384263,
+          "end_time": 1762331945.973211
+        },
+        {
+          "success": true,
+          "latency": 6.986738920211792,
+          "query_id": "benchmark_1762331939.0342264_34",
+          "node_id": 3616,
+          "start_time": 1762331939.1605532,
+          "end_time": 1762331946.1472921
+        },
+        {
+          "success": true,
+          "latency": 6.7350263595581055,
+          "query_id": "benchmark_1762331939.519383_35",
+          "node_id": 5600,
+          "start_time": 1762331939.6021323,
+          "end_time": 1762331946.3371587
+        },
+        {
+          "success": true,
+          "latency": 7.245013952255249,
+          "query_id": "benchmark_1762331935.779749_28",
+          "node_id": 8936,
+          "start_time": 1762331939.1351774,
+          "end_time": 1762331946.3801913
+        },
+        {
+          "success": true,
+          "latency": 6.611621856689453,
+          "query_id": "benchmark_1762331939.8414302_36",
+          "node_id": 8907,
+          "start_time": 1762331939.9245148,
+          "end_time": 1762331946.5361366
+        },
+        {
+          "success": true,
+          "latency": 6.534595966339111,
+          "query_id": "benchmark_1762331939.9762104_37",
+          "node_id": 6336,
+          "start_time": 1762331940.0586987,
+          "end_time": 1762331946.5932946
+        },
+        {
+          "success": true,
+          "latency": 6.316441774368286,
+          "query_id": "benchmark_1762331940.227979_38",
+          "node_id": 9245,
+          "start_time": 1762331940.3098814,
+          "end_time": 1762331946.6263232
+        },
+        {
+          "success": true,
+          "latency": 6.143281698226929,
+          "query_id": "benchmark_1762331940.4812956_39",
+          "node_id": 5826,
+          "start_time": 1762331940.5626924,
+          "end_time": 1762331946.705974
+        }
+      ]
+    }
+  ]
+}

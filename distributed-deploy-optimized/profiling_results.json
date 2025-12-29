@@ -1,0 +1,197 @@
+{
+  "query_id": "profiling_1761314969.9827633_1723",
+  "node_id": 1723,
+  "client_metrics": {
+    "dpf_key_generation": {
+      "start_time": 1761314969.9827926,
+      "end_time": 1761314969.9853008,
+      "duration_ms": 2.5081634521484375
+    },
+    "per_server_communication": {
+      "3": {
+        "server_id": 3,
+        "connection_start": 1761314969.9870791,
+        "bytes_sent": 923,
+        "bytes_received": 2550,
+        "send_duration_ms": 0.05698204040527344,
+        "receive_duration_ms": 370.21493911743164,
+        "rtt_ms": 370.3160285949707,
+        "success": true,
+        "upload_speed_mbps": 129.58468927196654,
+        "download_speed_mbps": 0.05510312481887488
+      },
+      "2": {
+        "server_id": 2,
+        "connection_start": 1761314969.9868846,
+        "bytes_sent": 923,
+        "bytes_received": 2551,
+        "send_duration_ms": 0.09775161743164062,
+        "receive_duration_ms": 370.7306385040283,
+        "rtt_ms": 370.87416648864746,
+        "success": true,
+        "upload_speed_mbps": 75.53839203902439,
+        "download_speed_mbps": 0.05504805343941987
+      },
+      "1": {
+        "server_id": 1,
+        "connection_start": 1761314969.986666,
+        "bytes_sent": 923,
+        "bytes_received": 2550,
+        "send_duration_ms": 0.10395050048828125,
+        "receive_duration_ms": 465.8668041229248,
+        "rtt_ms": 466.02416038513184,
+        "success": true,
+        "upload_speed_mbps": 71.03380902752293,
+        "download_speed_mbps": 0.04378934025661378
+      }
+    }
+  },
+  "server_responses": {
+    "3": {
+      "timing": {
+        "phase1_time": 216.82000160217285,
+        "phase2_time": 71.08473777770996,
+        "phase3_time": 23.757219314575195,
+        "phase4_time": 51.04637145996094,
+        "total": 363.6772632598877,
+        "triples_used": 10000
+      },
+      "detailed_profiling": {
+        "phase3_send": {
+          "1": {
+            "start_time": 1761314970.2768588,
+            "end_time": 1761314970.2997658,
+            "duration_ms": 22.39537239074707,
+            "data_sent_bytes": 10320173,
+            "speed_mbps": 3515.7562943800367,
+            "success": true
+          },
+          "2": {
+            "start_time": 1761314970.2772803,
+            "end_time": 1761314970.30004,
+            "duration_ms": 22.21965789794922,
+            "data_sent_bytes": 10320173,
+            "speed_mbps": 3543.559122709129,
+            "success": true
+          }
+        },
+        "phase3_receive": {
+          "1": {
+            "start_time": 1761314970.2760744,
+            "end_time": 1761314970.2941496,
+            "duration_ms": 18.075227737426758,
+            "data_received_bytes": 10320169,
+            "speed_mbps": 4356.052497592761
+          },
+          "2": {
+            "start_time": 1761314970.2807987,
+            "end_time": 1761314970.2977285,
+            "duration_ms": 16.92986488342285,
+            "data_received_bytes": 10320169,
+            "speed_mbps": 4650.754242419975
+          }
+        },
+        "phase3_receive_start": 1761314970.2766576
+      },
+      "server_id": 3
+    },
+    "2": {
+      "timing": {
+        "phase1_time": 213.70911598205566,
+        "phase2_time": 72.46875762939453,
+        "phase3_time": 25.620698928833008,
+        "phase4_time": 51.93758010864258,
+        "total": 364.17293548583984,
+        "triples_used": 10000
+      },
+      "detailed_profiling": {
+        "phase3_send": {
+          "3": {
+            "start_time": 1761314970.2750084,
+            "end_time": 1761314970.2987032,
+            "duration_ms": 23.027420043945312,
+            "data_sent_bytes": 10320173,
+            "speed_mbps": 3419.257185455148,
+            "success": true
+          },
+          "1": {
+            "start_time": 1761314970.274627,
+            "end_time": 1761314970.2994933,
+            "duration_ms": 24.65033531188965,
+            "data_sent_bytes": 10320173,
+            "speed_mbps": 3194.1420046232265,
+            "success": true
+          }
+        },
+        "phase3_receive": {
+          "1": {
+            "start_time": 1761314970.274725,
+            "end_time": 1761314970.2943938,
+            "duration_ms": 19.6688175201416,
+            "data_received_bytes": 10320169,
+            "speed_mbps": 4003.1202104318945
+          },
+          "3": {
+            "start_time": 1761314970.280837,
+            "end_time": 1761314970.2988029,
+            "duration_ms": 17.96579360961914,
+            "data_received_bytes": 10320169,
+            "speed_mbps": 4382.586299333811
+          }
+        },
+        "phase3_receive_start": 1761314970.2742417
+      },
+      "server_id": 2
+    },
+    "1": {
+      "timing": {
+        "phase1_time": 199.68843460083008,
+        "phase2_time": 71.86126708984375,
+        "phase3_time": 136.31916046142578,
+        "phase4_time": 51.73015594482422,
+        "total": 460.071325302124,
+        "triples_used": 10000
+      },
+      "detailed_profiling": {
+        "phase3_send": {
+          "3": {
+            "start_time": 1761314970.2599192,
+            "end_time": 1761314970.2948096,
+            "duration_ms": 34.615278244018555,
+            "data_sent_bytes": 10320173,
+            "speed_mbps": 2274.6219427359197,
+            "success": true
+          },
+          "2": {
+            "start_time": 1761314970.2595932,
+            "end_time": 1761314970.2951317,
+            "duration_ms": 35.3398323059082,
+            "data_sent_bytes": 10320173,
+            "speed_mbps": 2227.986561062162,
+            "success": true
+          }
+        },
+        "phase3_receive": {
+          "3": {
+            "start_time": 1761314970.28083,
+            "end_time": 1761314970.2984915,
+            "duration_ms": 17.661571502685547,
+            "data_received_bytes": 10320169,
+            "speed_mbps": 4458.076729933314
+          },
+          "2": {
+            "start_time": 1761314970.277031,
+            "end_time": 1761314970.298958,
+            "duration_ms": 21.9271183013916,
+            "data_received_bytes": 10320169,
+            "speed_mbps": 3590.8339549195925
+          }
+        },
+        "phase3_receive_start": 1761314970.2593648
+      },
+      "server_id": 1
+    }
+  },
+  "success": true,
+  "timestamp": "2025-10-24T14:09:30.454188"
+}

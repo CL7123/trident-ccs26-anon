@@ -1,0 +1,101 @@
+{
+  "dataset": "laion",
+  "timestamp": "2025-07-27T17:59:24.462361",
+  "file_sizes": {
+    "base.fvecs": {
+      "size_bytes": 205200000,
+      "size_mb": 195.6939697265625,
+      "size_gb": 0.1911073923110962
+    },
+    "query.fvecs": {
+      "size_bytes": 2052000,
+      "size_mb": 1.956939697265625,
+      "size_gb": 0.001911073923110962
+    },
+    "neighbors.bin": {
+      "size_bytes": 156000012,
+      "size_mb": 148.7732048034668,
+      "size_gb": 0.14528633281588554
+    },
+    "nodes.bin": {
+      "size_bytes": 205200012,
+      "size_mb": 195.6939811706543,
+      "size_gb": 0.1911074034869671
+    },
+    "gt.ivecs": {
+      "size_bytes": 44000,
+      "size_mb": 0.041961669921875,
+      "size_gb": 4.0978193283081055e-05
+    }
+  },
+  "server_sizes": {
+    "server_1": {
+      "total_bytes": 358400696,
+      "total_mb": 341.7975387573242,
+      "total_gb": 0.33378665894269943,
+      "breakdown": {
+        "neighbors_shares.npy": {
+          "size_bytes": 153600128,
+          "size_mb": 146.4844970703125
+        },
+        "nodes_shares.npy": {
+          "size_bytes": 204800128,
+          "size_mb": 195.3126220703125
+        },
+        "metadata.json": {
+          "size_bytes": 440,
+          "size_mb": 0.00041961669921875
+        }
+      }
+    },
+    "server_2": {
+      "total_bytes": 358400696,
+      "total_mb": 341.7975387573242,
+      "total_gb": 0.33378665894269943,
+      "breakdown": {
+        "neighbors_shares.npy": {
+          "size_bytes": 153600128,
+          "size_mb": 146.4844970703125
+        },
+        "nodes_shares.npy": {
+          "size_bytes": 204800128,
+          "size_mb": 195.3126220703125
+        },
+        "metadata.json": {
+          "size_bytes": 440,
+          "size_mb": 0.00041961669921875
+        }
+      }
+    },
+    "server_3": {
+      "total_bytes": 358400696,
+      "total_mb": 341.7975387573242,
+      "total_gb": 0.33378665894269943,
+      "breakdown": {
+        "neighbors_shares.npy": {
+          "size_bytes": 153600128,
+          "size_mb": 146.4844970703125
+        },
+        "nodes_shares.npy": {
+          "size_bytes": 204800128,
+          "size_mb": 195.3126220703125
+        },
+        "metadata.json": {
+          "size_bytes": 440,
+          "size_mb": 0.00041961669921875
+        }
+      }
+    }
+  },
+  "total_storage": {
+    "base_data_bytes": 568496024,
+    "base_data_mb": 542.1600570678711,
+    "base_data_gb": 0.5294531807303429,
+    "shares_total_bytes": 1075202088,
+    "shares_total_mb": 1025.3926162719727,
+    "shares_total_gb": 1.0013599768280983,
+    "grand_total_bytes": 1643698112,
+    "grand_total_mb": 1567.5526733398438,
+    "grand_total_gb": 1.5308131575584412
+  }
+}

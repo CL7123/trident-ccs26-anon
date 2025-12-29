@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+ENV/
+env/
+
+# Dataset files (large binary files)
+*.fvecs
+*.ivecs
+*.bin
+*.npy
+*.npz
+*.hdf5
+*.h5
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# SSH keys and credentials
+*.pem
+*.key
+*.crt
+*.cer
+
+# Results and outputs
+results/
+output/
+*.md.backup
+
+# System files
+.directory
+Thumbs.db
