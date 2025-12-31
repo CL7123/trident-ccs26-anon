@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-客户端成本分析测试脚本
-测量 DPF key 生成、重构、距离计算等客户端侧的开销
+[CN]
+[CN] DPF key [CN]、[CN]、[CN]calculate[CN]
 """
 
 import sys
@@ -16,14 +16,14 @@ import psutil
 from typing import Dict, List
 from collections import defaultdict
 
-# 添加路径
+# [CN]
 sys.path.append('~/trident/distributed-deploy')
 sys.path.append('~/trident/src')
 
 from client import DistributedClient
-from config import SERVERS  # 导入当前目录的配置（新IP）
+from config import SERVERS  # [CN]（[CN]IP）
 
-# 设置日志
+# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] [ClientCost] %(message)s',
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class ClientCostBenchmark:
-    """客户端成本测试"""
+    """[CN]"""
 
     def __init__(self, dataset: str = "siftsmall"):
         self.dataset = dataset
@@ -41,14 +41,14 @@ class ClientCostBenchmark:
         self.process = psutil.Process()
         self.results = []
 
-        # 连接到服务器
+        # connect[CN]
         if not self.client.connect_to_servers():
-            raise RuntimeError("无法连接到服务器")
+            raise RuntimeError("[CN]connect[CN]")
 
-        logger.info(f"客户端成本测试初始化完成 - 数据集: {dataset}")
+        logger.info(f"[CN]initialize[CN] - Dataset: {dataset}")
 
     def measure_single_query(self, node_id: int) -> Dict:
-        """测量单个查询的各项成本指标"""
+        """[CN]"""
         metrics = {
             'node_id': node_id,
             'key_gen_time_ms': 0,
@@ -61,31 +61,31 @@ class ClientCostBenchmark:
             'success': False
         }
 
-        # 记录初始内存
+        # [CN]
         mem_before = self.process.memory_info().rss / 1024 / 1024  # MB
 
-        # 开始计时
+        # [CN]
         total_start = time.perf_counter()
 
         try:
-            # 1. 测量 DPF Key Generation
+            # 1. [CN] DPF Key Generation
             keygen_start = time.perf_counter()
             keys = self.client.dpf_wrapper.generate_keys('node', node_id)
             keygen_time = (time.perf_counter() - keygen_start) * 1000  # ms
 
-            # 测量 Key Size (平均每个key的大小)
+            # [CN] Key Size ([CN]key[CN])
             key_sizes = [len(k) for k in keys]
             avg_key_size = sum(key_sizes) / len(key_sizes) / 1024  # KB
 
             metrics['key_gen_time_ms'] = keygen_time
             metrics['key_size_kb'] = avg_key_size
 
-            # 2. 发送查询到服务器 (网络时间)
+            # 2. send[CN] ([CN])
             query_id = f'cost_benchmark_{time.time()}_{node_id}'
 
             network_start = time.perf_counter()
 
-            # 并行查询所有服务器
+            # [CN]
             import concurrent.futures
             def query_server(server_id):
                 request = {
@@ -105,26 +105,26 @@ class ClientCostBenchmark:
                         server_id, response = future.result()
                         results[server_id] = response
                     except Exception as e:
-                        logger.error(f"查询服务器时出错: {e}")
+                        logger.error(f"[CN]: {e}")
 
             network_time = (time.perf_counter() - network_start) * 1000  # ms
             metrics['network_time_ms'] = network_time
 
-            # 检查结果
+            # [CN]
             successful_responses = {sid: r for sid, r in results.items()
                                   if r and r.get('status') == 'success'}
 
             if len(successful_responses) < 2:
-                logger.warning(f"查询 {node_id} 失败：成功响应的服务器少于2个")
+                logger.warning(f"[CN] {node_id} [CN]：[CN]2[CN]")
                 return metrics
 
-            # 3. 测量 Secret Share Reconstruction
+            # 3. [CN] Secret Share Reconstruction
             recon_start = time.perf_counter()
             final_result = self.client._reconstruct_final_result(successful_responses)
             recon_time = (time.perf_counter() - recon_start) * 1000  # ms
             metrics['recon_time_ms'] = recon_time
 
-            # 4. 测量 Distance Computation (余弦相似度)
+            # 4. [CN] Distance Computation ([CN])
             distance_start = time.perf_counter()
             similarity = self.client._verify_result(node_id, final_result)
             distance_time = (time.perf_counter() - distance_start) * 1000  # ms
@@ -133,43 +133,43 @@ class ClientCostBenchmark:
             metrics['success'] = True
 
         except Exception as e:
-            logger.error(f"测量查询 {node_id} 时出错: {e}")
+            logger.error(f"[CN] {node_id} [CN]: {e}")
             metrics['success'] = False
 
-        # 总时间
+        # [CN]
         total_time = (time.perf_counter() - total_start) * 1000  # ms
         metrics['total_client_time_ms'] = total_time
 
-        # 记录内存使用 (查询后的内存增量)
+        # [CN] ([CN])
         mem_after = self.process.memory_info().rss / 1024 / 1024  # MB
         metrics['memory_mb'] = mem_after - mem_before
 
         return metrics
 
     def run_benchmark(self, num_queries: int = 50):
-        """运行基准测试"""
+        """[CN]"""
         logger.info(f"\n{'='*80}")
-        logger.info(f"开始客户端成本测试")
-        logger.info(f"数据集: {self.dataset}")
-        logger.info(f"查询数量: {num_queries}")
+        logger.info(f"[CN]")
+        logger.info(f"Dataset: {self.dataset}")
+        logger.info(f"Number of queries[CN]: {num_queries}")
         logger.info(f"{'='*80}\n")
 
-        # 预热
-        logger.info("预热查询...")
+        # [CN]
+        logger.info("[CN]...")
         for i in range(5):
             node_id = random.randint(0, 9999)
             try:
                 self.measure_single_query(node_id)
             except Exception as e:
-                logger.warning(f"预热查询 {i+1} 失败: {e}")
+                logger.warning(f"[CN] {i+1} [CN]: {e}")
 
-        logger.info("预热完成，开始正式测试\n")
+        logger.info("[CN]，[CN]\n")
 
-        # 正式测试
+        # [CN]
         for i in range(num_queries):
             node_id = random.randint(0, 9999)
 
-            logger.info(f"测试查询 {i+1}/{num_queries} (node_id={node_id})...")
+            logger.info(f"[CN] {i+1}/{num_queries} (node_id={node_id})...")
             metrics = self.measure_single_query(node_id)
 
             if metrics['success']:
@@ -179,35 +179,35 @@ class ClientCostBenchmark:
                           f"Distance: {metrics['distance_time_ms']:.2f}ms, "
                           f"Total: {metrics['total_client_time_ms']:.2f}ms")
             else:
-                logger.warning(f"  ✗ 查询失败")
+                logger.warning(f"  ✗ [CN]")
 
-            # 每10个查询后等待一下
+            # [CN]10[CN]
             if (i + 1) % 10 == 0:
-                logger.info(f"已完成 {i+1}/{num_queries} 查询，等待2秒...\n")
+                logger.info(f"[CN] {i+1}/{num_queries} [CN]，[CN]2[CN]...\n")
                 time.sleep(2)
 
-        # 统计结果
+        # [CN]
         self.print_summary()
         self.save_results()
 
     def print_summary(self):
-        """打印统计摘要"""
+        """print[CN]"""
         if not self.results:
-            logger.error("没有成功的查询结果")
+            logger.error("[CN]")
             return
 
         logger.info(f"\n{'='*80}")
-        logger.info("客户端成本分析 - 统计摘要")
+        logger.info("[CN] - [CN]")
         logger.info(f"{'='*80}")
-        logger.info(f"数据集: {self.dataset}")
-        logger.info(f"成功查询数: {len(self.results)}")
+        logger.info(f"Dataset: {self.dataset}")
+        logger.info(f"[CN]Number of queries: {len(self.results)}")
         logger.info(f"{'='*80}\n")
 
-        # 计算统计量
+        # calculate[CN]
         def calc_stats(values):
-            """计算均值和标准差，移除异常值"""
+            """calculate[CN]，[CN]"""
             arr = np.array(values)
-            # 移除超过3倍标准差的异常值
+            # [CN]3[CN]
             mean = np.mean(arr)
             std = np.std(arr)
             filtered = arr[np.abs(arr - mean) <= 3 * std]
@@ -223,7 +223,7 @@ class ClientCostBenchmark:
                 'count': len(filtered)
             }
 
-        # 提取各项指标
+        # [CN]
         key_gen_times = [r['key_gen_time_ms'] for r in self.results]
         key_sizes = [r['key_size_kb'] for r in self.results]
         recon_times = [r['recon_time_ms'] for r in self.results]
@@ -232,7 +232,7 @@ class ClientCostBenchmark:
         total_times = [r['total_client_time_ms'] for r in self.results]
         memories = [r['memory_mb'] for r in self.results]
 
-        # 计算统计量
+        # calculate[CN]
         key_gen_stats = calc_stats(key_gen_times)
         key_size_stats = calc_stats(key_sizes)
         recon_stats = calc_stats(recon_times)
@@ -241,8 +241,8 @@ class ClientCostBenchmark:
         total_stats = calc_stats(total_times)
         memory_stats = calc_stats(memories)
 
-        # 打印结果
-        logger.info(f"{'指标':<25} {'均值':<15} {'标准差':<15} {'最小值':<15} {'最大值':<15}")
+        # print[CN]
+        logger.info(f"{'[CN]':<25} {'[CN]':<15} {'[CN]':<15} {'[CN]':<15} {'[CN]':<15}")
         logger.info(f"{'-'*85}")
         logger.info(f"{'DPF Key Gen (ms)':<25} {key_gen_stats['mean']:<15.3f} {key_gen_stats['std']:<15.3f} {key_gen_stats['min']:<15.3f} {key_gen_stats['max']:<15.3f}")
         logger.info(f"{'DPF Key Size (KB)':<25} {key_size_stats['mean']:<15.3f} {key_size_stats['std']:<15.3f} {key_size_stats['min']:<15.3f} {key_size_stats['max']:<15.3f}")
@@ -253,14 +253,14 @@ class ClientCostBenchmark:
         logger.info(f"{'Memory Usage (MB)':<25} {memory_stats['mean']:<15.3f} {memory_stats['std']:<15.3f} {memory_stats['min']:<15.3f} {memory_stats['max']:<15.3f}")
         logger.info(f"{'='*85}\n")
 
-        # 打印表格格式（用于论文）
-        logger.info("论文表格格式:")
+        # print[CN]（[CN]）
+        logger.info("[CN]:")
         logger.info(f"| {self.dataset:<10} | {key_gen_stats['mean']:>6.2f} ± {key_gen_stats['std']:>5.2f} | "
                    f"{key_size_stats['mean']:>8.2f} | {recon_stats['mean']:>6.2f} ± {recon_stats['std']:>5.2f} | "
                    f"{distance_stats['mean']:>6.2f} ± {distance_stats['std']:>5.2f} | "
                    f"{memory_stats['mean']:>7.2f} | {total_stats['mean']:>7.2f} ± {total_stats['std']:>6.2f} |")
 
-        # 存储统计信息
+        # [CN]
         self.stats = {
             'key_gen': key_gen_stats,
             'key_size': key_size_stats,
@@ -272,10 +272,10 @@ class ClientCostBenchmark:
         }
 
     def save_results(self):
-        """保存测试结果"""
+        """[CN]Test results"""
         timestamp = time.strftime("%Y%m%d_%H%M%S")
 
-        # 保存详细结果
+        # [CN]
         detail_filename = f"client_cost_{self.dataset}_{timestamp}.json"
         with open(detail_filename, 'w') as f:
             json.dump({
@@ -286,19 +286,19 @@ class ClientCostBenchmark:
                 'raw_results': self.results
             }, f, indent=2)
 
-        logger.info(f"详细结果已保存到: {detail_filename}")
+        logger.info(f"[CN]: {detail_filename}")
 
     def cleanup(self):
-        """清理资源"""
+        """[CN]"""
         self.client.disconnect_from_servers()
 
 
 def main():
-    parser = argparse.ArgumentParser(description='客户端成本分析测试')
+    parser = argparse.ArgumentParser(description='[CN]')
     parser.add_argument('--dataset', type=str, default='siftsmall',
-                       help='数据集名称 (siftsmall, nfcorpus, laion, tripclick)')
+                       help='Dataset[CN] (siftsmall, nfcorpus, laion, tripclick)')
     parser.add_argument('--num-queries', type=int, default=50,
-                       help='测试查询数量')
+                       help='[CN]Number of queries[CN]')
 
     args = parser.parse_args()
 
@@ -307,7 +307,7 @@ def main():
         benchmark.run_benchmark(num_queries=args.num_queries)
         benchmark.cleanup()
     except Exception as e:
-        logger.error(f"测试失败: {e}")
+        logger.error(f"[CN]: {e}")
         import traceback
         traceback.print_exc()
 

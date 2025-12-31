@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-并发性能测试脚本
-使用现有的 distributed-deploy/server.py（已支持并发）
-只需要客户端并发发送多个查询
+[CN]
+[CN] distributed-deploy/server.py（[CN]）
+[CN]send[CN]
 """
 
 import sys
@@ -17,15 +17,15 @@ from collections import defaultdict
 from typing import List, Dict
 import numpy as np
 
-# 添加路径
+# [CN]
 sys.path.append('~/trident/distributed-deploy')
 sys.path.append('~/trident/src')
 
-# 导入现有的客户端
+# [CN]
 from client import DistributedClient
 from config import SERVERS, DEFAULT_DATASET, CONCURRENT_LEVELS, QUERIES_PER_LEVEL
 
-# 设置日志
+# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] [%(levelname)s] %(message)s',
@@ -35,57 +35,57 @@ logger = logging.getLogger(__name__)
 
 
 class ConcurrentBenchmark:
-    """并发性能测试"""
+    """[CN]"""
 
     def __init__(self, dataset: str = "siftsmall"):
         self.dataset = dataset
-        # 不再使用单个共享客户端，每个查询创建独立连接
+        # [CN]，[CN]create[CN]connect
         self.servers_config = SERVERS
         self.results = defaultdict(list)
 
     def warmup(self, num_queries: int = 10):
-        """预热：发送一些查询让服务器准备好"""
-        logger.info(f"预热：发送 {num_queries} 个查询...")
+        """[CN]：send[CN]"""
+        logger.info(f"[CN]：send {num_queries} [CN]...")
 
         for i in range(num_queries):
             node_id = random.randint(0, 9999)
             try:
-                # 每个查询使用独立的客户端实例
+                # [CN]instance
                 client = DistributedClient(dataset=self.dataset, servers_config=self.servers_config)
                 if not client.connect_to_servers():
-                    raise RuntimeError("无法连接到服务器")
+                    raise RuntimeError("[CN]connect[CN]")
                 client.test_distributed_query(node_id)
             except Exception as e:
-                logger.warning(f"预热查询 {i+1} 失败: {e}")
+                logger.warning(f"[CN] {i+1} [CN]: {e}")
 
-        logger.info("预热完成")
+        logger.info("[CN]")
 
     def _calculate_concurrency_overlap(self, results: List[Dict]) -> float:
         """
-        计算并发重叠度：平均同时执行的查询数量
+        calculate[CN]：[CN]Number of queries[CN]
 
-        算法：
-        1. 收集所有查询的时间段
-        2. 在每个时间点统计有多少查询在执行
-        3. 返回平均值
+        [CN]：
+        1. [CN]
+        2. [CN]
+        3. return[CN]
 
-        返回值：
-        - 1.0 = 完全串行（没有重叠）
-        - N = 平均有N个查询同时执行
+        return[CN]：
+        - 1.0 = [CN]（[CN]）
+        - N = [CN]N[CN]
         """
         if not results:
             return 0.0
 
-        # 收集所有事件（开始和结束）
+        # [CN]（[CN]）
         events = []
         for r in results:
             events.append(('start', r['start_time']))
             events.append(('end', r['end_time']))
 
-        # 按时间排序
+        # [CN]
         events.sort(key=lambda x: x[1])
 
-        # 计算每个时间段的并发数
+        # calculate[CN]
         current_concurrent = 0
         total_weighted_concurrent = 0
         total_time = 0
@@ -93,7 +93,7 @@ class ConcurrentBenchmark:
 
         for event_type, event_time in events:
             if event_time > last_time:
-                # 计算上一时间段的贡献
+                # calculate[CN]
                 duration = event_time - last_time
                 total_weighted_concurrent += current_concurrent * duration
                 total_time += duration
@@ -109,15 +109,15 @@ class ConcurrentBenchmark:
         return 0.0
 
     def query_single(self, query_idx: int) -> Dict:
-        """执行单个查询并返回结果"""
+        """[CN]return[CN]"""
         node_id = random.randint(0, 9999)
         query_id = f"benchmark_{time.time()}_{query_idx}"
 
         try:
-            # 每个查询创建独立的客户端实例（独立连接）
+            # [CN]create[CN]instance（[CN]connect）
             client = DistributedClient(dataset=self.dataset, servers_config=self.servers_config)
             if not client.connect_to_servers():
-                raise RuntimeError("无法连接到服务器")
+                raise RuntimeError("[CN]connect[CN]")
 
             start_time = time.time()
             result = client.test_distributed_query(node_id)
@@ -130,11 +130,11 @@ class ConcurrentBenchmark:
                 'latency': latency,
                 'query_id': query_id,
                 'node_id': node_id,
-                'start_time': start_time,  # 记录开始时间
-                'end_time': end_time        # 记录结束时间
+                'start_time': start_time,  # [CN]
+                'end_time': end_time        # [CN]
             }
         except Exception as e:
-            logger.error(f"查询 {query_id} 失败: {e}")
+            logger.error(f"[CN] {query_id} [CN]: {e}")
             return {
                 'success': False,
                 'latency': 0,
@@ -145,33 +145,33 @@ class ConcurrentBenchmark:
             }
 
     def test_concurrent_level(self, concurrency: int, num_queries: int) -> Dict:
-        """测试特定并发级别"""
+        """[CN]"""
         logger.info(f"\n{'='*60}")
-        logger.info(f"测试并发级别: {concurrency}")
-        logger.info(f"总查询数: {num_queries}")
+        logger.info(f"[CN]: {concurrency}")
+        logger.info(f"[CN]Number of queries: {num_queries}")
         logger.info(f"{'='*60}")
 
         results = []
         start_time = time.time()
 
-        # 使用ThreadPoolExecutor并发执行查询
+        # [CN]ThreadPoolExecutor[CN]
         with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
-            # 提交所有查询
+            # [CN]
             futures = [executor.submit(self.query_single, i) for i in range(num_queries)]
 
-            # 等待完成并收集结果
+            # [CN]
             for i, future in enumerate(concurrent.futures.as_completed(futures)):
                 result = future.result()
                 results.append(result)
 
-                # 进度显示
+                # [CN]
                 if (i + 1) % 10 == 0 or (i + 1) == num_queries:
-                    logger.info(f"已完成: {i+1}/{num_queries} 查询")
+                    logger.info(f"[CN]: {i+1}/{num_queries} [CN]")
 
         end_time = time.time()
         total_time = end_time - start_time
 
-        # 统计结果
+        # [CN]
         successful = [r for r in results if r['success']]
         failed = [r for r in results if not r['success']]
 
@@ -183,7 +183,7 @@ class ConcurrentBenchmark:
             p99_latency = np.percentile(latencies, 99)
             throughput = len(successful) / total_time
 
-            # 计算并发重叠度（验证真实并发）
+            # calculate[CN]（[CN]）
             concurrency_overlap = self._calculate_concurrency_overlap(successful)
         else:
             avg_latency = p50_latency = p95_latency = p99_latency = 0
@@ -205,51 +205,51 @@ class ConcurrentBenchmark:
             'all_results': results
         }
 
-        # 打印结果
-        logger.info(f"\n结果总结:")
-        logger.info(f"  成功查询: {len(successful)}/{num_queries} ({summary['success_rate']:.1f}%)")
-        logger.info(f"  失败查询: {len(failed)}")
-        logger.info(f"  总耗时: {total_time:.2f}秒")
-        logger.info(f"  吞吐量: {throughput:.2f} queries/sec")
-        logger.info(f"  平均延迟: {avg_latency:.3f}秒")
-        logger.info(f"  P50延迟: {p50_latency:.3f}秒")
-        logger.info(f"  P95延迟: {p95_latency:.3f}秒")
-        logger.info(f"  P99延迟: {p99_latency:.3f}秒")
+        # print[CN]
+        logger.info(f"\n[CN]:")
+        logger.info(f"  [CN]: {len(successful)}/{num_queries} ({summary['success_rate']:.1f}%)")
+        logger.info(f"  [CN]: {len(failed)}")
+        logger.info(f"  [CN]: {total_time:.2f}[CN]")
+        logger.info(f"  [CN]: {throughput:.2f} queries/sec")
+        logger.info(f"  Average latency: {avg_latency:.3f}[CN]")
+        logger.info(f"  P50[CN]: {p50_latency:.3f}[CN]")
+        logger.info(f"  P95[CN]: {p95_latency:.3f}[CN]")
+        logger.info(f"  P99[CN]: {p99_latency:.3f}[CN]")
 
         return summary
 
     def run_benchmark(self, concurrent_levels: List[int], queries_per_level: int):
-        """运行完整的基准测试"""
+        """[CN]"""
         logger.info("="*80)
-        logger.info("并发性能基准测试")
-        logger.info(f"数据集: {self.dataset}")
-        logger.info(f"并发级别: {concurrent_levels}")
-        logger.info(f"每级别查询数: {queries_per_level}")
+        logger.info("[CN]")
+        logger.info(f"Dataset: {self.dataset}")
+        logger.info(f"[CN]: {concurrent_levels}")
+        logger.info(f"[CN]Number of queries: {queries_per_level}")
         logger.info("="*80)
 
-        # 预热
+        # [CN]
         self.warmup()
 
-        # 测试每个并发级别
+        # [CN]
         all_summaries = []
         for concurrency in concurrent_levels:
             summary = self.test_concurrent_level(concurrency, queries_per_level)
             all_summaries.append(summary)
 
-            # 等待系统恢复
-            logger.info(f"等待5秒让系统恢复...")
+            # [CN]
+            logger.info(f"[CN]5[CN]...")
             time.sleep(5)
 
-        # 保存结果
+        # [CN]
         self.save_results(all_summaries)
 
-        # 打印最终总结
+        # print[CN]
         self.print_summary(all_summaries)
 
         return all_summaries
 
     def save_results(self, summaries: List[Dict]):
-        """保存测试结果到JSON文件"""
+        """[CN]Test results[CN]JSON[CN]"""
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         filename = f"benchmark_results_{self.dataset}_{timestamp}.json"
 
@@ -260,14 +260,14 @@ class ConcurrentBenchmark:
                 'summaries': summaries
             }, f, indent=2)
 
-        logger.info(f"\n结果已保存到: {filename}")
+        logger.info(f"\n[CN]: {filename}")
 
     def print_summary(self, summaries: List[Dict]):
-        """打印性能总结表格"""
+        """print[CN]"""
         logger.info("\n" + "="*100)
-        logger.info("性能总结")
+        logger.info("[CN]")
         logger.info("="*100)
-        logger.info(f"{'并发级别':<12} {'成功率':<10} {'吞吐量(qps)':<15} {'平均延迟(s)':<15} {'P95延迟(s)':<15} {'P99延迟(s)':<15}")
+        logger.info(f"{'[CN]':<12} {'[CN]':<10} {'[CN](qps)':<15} {'Average latency(s)':<15} {'P95[CN](s)':<15} {'P99[CN](s)':<15}")
         logger.info("-"*100)
 
         for s in summaries:
@@ -284,20 +284,20 @@ class ConcurrentBenchmark:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='并发性能基准测试')
+    parser = argparse.ArgumentParser(description='[CN]')
     parser.add_argument('--dataset', type=str, default=DEFAULT_DATASET,
-                       help='数据集名称')
+                       help='Dataset[CN]')
     parser.add_argument('--concurrent-levels', type=str, default='1,2,4,8,16',
-                       help='并发级别列表（逗号分隔）')
+                       help='[CN]（[CN]）')
     parser.add_argument('--queries-per-level', type=int, default=50,
-                       help='每个并发级别的查询数量')
+                       help='[CN]Number of queries[CN]')
 
     args = parser.parse_args()
 
-    # 解析并发级别
+    # [CN]
     concurrent_levels = [int(x.strip()) for x in args.concurrent_levels.split(',')]
 
-    # 运行测试
+    # [CN]
     benchmark = ConcurrentBenchmark(dataset=args.dataset)
     benchmark.run_benchmark(concurrent_levels, args.queries_per_level)
 

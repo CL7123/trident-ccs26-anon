@@ -1,21 +1,21 @@
-稳定版本 - 2025-07-31
+[CN] - 2025-07-31
 ====================
 
-这是可以成功运行 siftsmall 数据集的稳定版本。
+[CN]run siftsmall dataset[CN]。
 
-主要特性：
-- 持久连接优化
-- 32个进程的VDPF并行计算
-- 增加的网络超时时间（30秒）
-- 增加的socket缓冲区（16MB）
+[CN]：
+- [CN]
+- 32[CN]VDPF[CN]
+- [CN]（30[CN]）
+- [CN]socket[CN]（16MB）
 
-已知限制：
-- laion 数据集存在数据类型不匹配问题（uint32 vs uint64）
-- 需要进一步优化才能支持大数据集
+[CN]：
+- laion dataset[CN]（uint32 vs uint64）
+- [CN]dataset
 
-性能指标（siftsmall）：
-- 阶段1 (VDPF评估): ~0.10秒
-- 阶段2 (e/f计算): ~0.01秒
-- 阶段3 (数据交换): ~0.17秒
-- 阶段4 (重构): ~0.001秒
-- 总计: ~0.28秒
+[CN]（siftsmall）：
+- [CN]1 (VDPF[CN]): ~0.10[CN]
+- [CN]2 (e/f[CN]): ~0.01[CN]
+- [CN]3 ([CN]): ~0.17[CN]
+- [CN]4 ([CN]): ~0.001[CN]
+- [CN]: ~0.28[CN]

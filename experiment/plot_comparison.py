@@ -84,8 +84,8 @@ axes = axes.flatten()
 # Define colors and markers using the specified color scheme
 # Convert RGB to hex
 colors = {
-    'FAISS HNSW': '#386641',      # rgb(56, 102, 65) - 深绿色
-    'TridentSearcher': '#F97A00'   # rgb(249, 122, 0) - 橙色
+    'FAISS HNSW': '#386641',      # rgb(56, 102, 65) - [CN]
+    'TridentSearcher': '#F97A00'   # rgb(249, 122, 0) - [CN]
 }
 markers = {'FAISS HNSW': 'o', 'TridentSearcher': 's'}
 

@@ -13,7 +13,7 @@ import datetime
 import logging
 from typing import Dict, List, Optional
 
-# 添加项目路径
+# Add project path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('~/trident/src')
 sys.path.append('~/trident/standardDPF')
@@ -25,24 +25,24 @@ from binary_protocol import BinaryProtocol
 from basic_functionalities import get_config, MPC23SSS, Share
 from share_data import DatasetLoader
 
-# 加载配置
+# Load configuration
 try:
     from config import CLIENT_SERVERS as SERVERS
 except ImportError:
-    # 默认配置 - 客户端使用公网IP
+    # Default configuration - Client uses public IP
     SERVERS = {
         1: {"host": "192.168.1.101", "port": 9001},
         2: {"host": "192.168.1.102", "port": 9002},
         3: {"host": "192.168.1.103", "port": 9003}
     }
 
-# 设置日志
+# Set up logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [NL-Client] %(message)s')
 logger = logging.getLogger(__name__)
 
 
 class DistributedNeighborClient:
-    """分布式邻居列表查询客户端"""
+    """Distributed neighbor list query client"""
     
     def __init__(self, dataset: str = "siftsmall", servers_config: Dict = None):
         self.dataset = dataset
@@ -50,36 +50,36 @@ class DistributedNeighborClient:
         self.dpf_wrapper = OptimizedVDPFVectorWrapper(dataset_name=dataset)
         self.mpc = MPC23SSS(self.config)
         
-        # 预加载原始邻居数据用于验证
+        # [CN]
         data_dir = f"~/trident/dataset/{dataset}"
         
-        # 尝试加载邻居列表数据
+        # [CN]
         neighbors_path = os.path.join(data_dir, "neighbors.bin")
         if os.path.exists(neighbors_path):
-            # 加载HNSW格式的邻居列表
+            # [CN]HNSW[CN]
             self.original_neighbors = self._load_hnsw_neighbors(neighbors_path)
             if self.original_neighbors is not None:
-                # 计算实际的节点数（线性索引数 / 层数）
+                # calculate[CN]number of nodes（[CN] / [CN]）
                 num_layers = 3
                 num_nodes = len(self.original_neighbors) // num_layers
-                logger.info(f"预加载了HNSW邻居数据: 线性索引数={len(self.original_neighbors)}, 节点数={num_nodes}")
+                logger.info(f"[CN]HNSW[CN]: [CN]={len(self.original_neighbors)}, [CN]={num_nodes}")
             else:
-                logger.warning("加载neighbors.bin失败")
+                logger.warning("[CN]neighbors.bin[CN]")
         else:
-            # 尝试ivecs格式的groundtruth作为备选
+            # [CN]ivecs[CN]groundtruth[CN]
             gt_path = os.path.join(data_dir, "gt.ivecs")
             if os.path.exists(gt_path):
                 self.original_neighbors = self._load_ivecs(gt_path)
-                logger.info(f"预加载了groundtruth邻居数据: {self.original_neighbors.shape}")
+                logger.info(f"[CN]groundtruth[CN]: {self.original_neighbors.shape}")
             else:
                 self.original_neighbors = None
-                logger.warning("未找到邻居列表数据，无法进行结果验证")
+                logger.warning("[CN]，[CN]")
         
-        # 服务器配置 - 更新端口号为9001-9003
+        # [CN] - [CN]9001-9003
         self.servers_config = servers_config or {
             server_id: {
                 "host": info["host"],
-                "port": 9000 + server_id  # 邻居列表服务使用9001-9003端口
+                "port": 9000 + server_id  # [CN]9001-9003[CN]
             }
             for server_id, info in SERVERS.items()
         }
@@ -88,7 +88,7 @@ class DistributedNeighborClient:
         self.connection_timeout = 10
         
     def _load_ivecs(self, filename):
-        """加载ivecs格式文件"""
+        """[CN]ivecs[CN]"""
         with open(filename, 'rb') as f:
             vectors = []
             while True:
@@ -101,55 +101,55 @@ class DistributedNeighborClient:
             return np.array(vectors)
     
     def _load_hnsw_neighbors(self, filename):
-        """加载HNSW格式的neighbors.bin文件"""
+        """[CN]HNSW[CN]neighbors.bin[CN]"""
         try:
             import struct
             with open(filename, 'rb') as f:
-                # 读取header
+                # [CN]header
                 num_nodes = struct.unpack('<I', f.read(4))[0]
                 num_layers = struct.unpack('<I', f.read(4))[0]
                 max_neighbors = struct.unpack('<I', f.read(4))[0]
-                _ = struct.unpack('<I', f.read(4))[0]  # 跳过额外的0
+                _ = struct.unpack('<I', f.read(4))[0]  # [CN]0
                 
-                logger.info(f"HNSW数据: 节点数={num_nodes}, 层数={num_layers}, 最大邻居数={max_neighbors}")
+                logger.info(f"HNSW[CN]: [CN]={num_nodes}, [CN]={num_layers}, [CN]={max_neighbors}")
                 
-                # 每个节点的数据大小：2个元数据 + 各层的邻居数据
+                # [CN]：2[CN] + [CN]
                 ints_per_node = 2 + num_layers * max_neighbors
                 
-                # 创建线性化的邻居数据数组，与服务器端的存储格式一致
-                # 线性索引 = node_id * num_layers + layer
+                # create[CN]，[CN]
+                # [CN] = node_id * num_layers + layer
                 linear_neighbors = {}
                 
                 for node_id in range(num_nodes):
-                    # 读取该节点的所有数据
+                    # [CN]
                     node_data = struct.unpack(f'<{ints_per_node}I', f.read(ints_per_node * 4))
                     
-                    # 跳过前2个元数据值
-                    # 数据布局：[metadata1, metadata2, layer0_neighbors, layer1_neighbors, layer2_neighbors]
+                    # [CN]2[CN]
+                    # [CN]：[metadata1, metadata2, layer0_neighbors, layer1_neighbors, layer2_neighbors]
                     
-                    # 存储每层的邻居数据
+                    # [CN]
                     for layer in range(num_layers):
-                        # 正确的格式应该跳过前2个元数据
+                        # [CN]2[CN]
                         start_idx = 2 + layer * max_neighbors
                         end_idx = start_idx + max_neighbors
                         layer_neighbors = list(node_data[start_idx:end_idx])
                         
-                        # 计算线性索引
+                        # calculate[CN]
                         linear_idx = node_id * num_layers + layer
                         
-                        # 存储完整的128个邻居（包括4294967295填充值）
+                        # [CN]128[CN]（[CN]4294967295[CN]）
                         linear_neighbors[linear_idx] = layer_neighbors
                 
                 return linear_neighbors
                 
         except Exception as e:
-            logger.error(f"加载HNSW邻居数据时出错: {e}")
+            logger.error(f"[CN]HNSW[CN]: {e}")
             import traceback
             traceback.print_exc()
             return None
         
     def connect_to_servers(self):
-        """连接到所有邻居列表服务器"""
+        """connect[CN]"""
         successful_connections = 0
         
         for server_id, server_info in self.servers_config.items():
@@ -159,7 +159,7 @@ class DistributedNeighborClient:
             connected = False
             for attempt in range(self.connection_retry_count):
                 try:
-                    logger.info(f"尝试连接到邻居列表服务器 {server_id} ({host}:{port})，第 {attempt + 1} 次...")
+                    logger.info(f"[CN]connect[CN] {server_id} ({host}:{port})，[CN] {attempt + 1} [CN]...")
                     
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.settimeout(self.connection_timeout)
@@ -167,43 +167,43 @@ class DistributedNeighborClient:
                     
                     sock.connect((host, port))
                     self.connections[server_id] = sock
-                    logger.info(f"成功连接到邻居列表服务器 {server_id}")
+                    logger.info(f"[CN]connect[CN] {server_id}")
                     successful_connections += 1
                     connected = True
                     break
                     
                 except socket.timeout:
-                    logger.warning(f"连接邻居列表服务器 {server_id} 超时")
+                    logger.warning(f"connect[CN] {server_id} [CN]")
                 except ConnectionRefusedError:
-                    logger.warning(f"邻居列表服务器 {server_id} 拒绝连接")
+                    logger.warning(f"[CN] {server_id} [CN]connect")
                 except Exception as e:
-                    logger.warning(f"连接邻居列表服务器 {server_id} 失败: {e}")
+                    logger.warning(f"connect[CN] {server_id} [CN]: {e}")
                 
                 if attempt < self.connection_retry_count - 1:
-                    time.sleep(2)  # 重试前等待
+                    time.sleep(2)  # [CN]
             
             if not connected:
-                logger.error(f"无法连接到邻居列表服务器 {server_id}")
+                logger.error(f"[CN]connect[CN] {server_id}")
         
-        logger.info(f"成功连接到 {successful_connections}/{len(self.servers_config)} 个邻居列表服务器")
-        return successful_connections >= 2  # 至少需要2个服务器
+        logger.info(f"[CN]connect[CN] {successful_connections}/{len(self.servers_config)} [CN]")
+        return successful_connections >= 2  # [CN]2servers
     
     def _send_request(self, server_id: int, request: dict) -> Optional[dict]:
-        """向指定服务器发送请求，支持错误处理"""
+        """[CN]send[CN]，[CN]process"""
         if server_id not in self.connections:
-            logger.error(f"未连接到服务器 {server_id}")
+            logger.error(f"[CN]connect[CN] {server_id}")
             return None
         
         sock = self.connections[server_id]
         
         try:
-            # 使用二进制协议发送包含密钥的请求
+            # [CN]send[CN]
             if 'dpf_key' in request:
-                # 对于查询请求，增加超时时间
+                # [CN]，[CN]
                 old_timeout = sock.gettimeout()
-                sock.settimeout(60)  # 60秒超时
+                sock.settimeout(60)  # 60[CN]
                 
-                # 使用二进制协议发送请求
+                # [CN]send[CN]
                 BinaryProtocol.send_binary_request(
                     sock, 
                     request['command'],
@@ -211,48 +211,48 @@ class DistributedNeighborClient:
                     request.get('query_id')
                 )
                 
-                # 接收响应
+                # receive[CN]
                 response = BinaryProtocol.receive_response(sock)
                 
-                # 恢复原超时设置
+                # [CN]
                 sock.settimeout(old_timeout)
                 return response
             else:
-                # 其他请求使用JSON
+                # [CN]JSON
                 request_data = json.dumps(request).encode()
                 sock.sendall(len(request_data).to_bytes(4, 'big'))
                 sock.sendall(request_data)
                 
-                # 接收响应
+                # receive[CN]
                 length_bytes = sock.recv(4)
                 if not length_bytes:
-                    raise ConnectionError("连接已关闭")
+                    raise ConnectionError("connect[CN]")
                 
                 length = int.from_bytes(length_bytes, 'big')
                 data = b''
                 while len(data) < length:
                     chunk = sock.recv(min(length - len(data), 4096))
                     if not chunk:
-                        raise ConnectionError("接收数据时连接中断")
+                        raise ConnectionError("receive[CN]connect[CN]")
                     data += chunk
                 
                 return json.loads(data.decode())
                 
         except Exception as e:
-            logger.error(f"与服务器 {server_id} 通信时出错: {e}")
+            logger.error(f"[CN] {server_id} [CN]: {e}")
             return None
     
     def test_distributed_neighbor_query(self, query_node_id: int = 0):
-        """测试分布式邻居列表查询"""
-        # 生成VDPF密钥 - 用于邻居查询
+        """[CN]"""
+        # [CN]VDPF[CN] - [CN]
         keys = self.dpf_wrapper.generate_keys('neighbor', query_node_id)
         
-        # 生成查询ID
+        # [CN]ID
         query_id = f'nl_distributed_test_{time.time()}_{query_node_id}'
         
-        logger.info(f"开始分布式邻居列表查询，查询节点ID: {query_node_id}, 查询ID: {query_id}")
+        logger.info(f"[CN]，[CN]ID: {query_node_id}, [CN]ID: {query_id}")
         
-        # 并行查询所有服务器
+        # [CN]
         start_time = time.time()
         
         def query_server(server_id):
@@ -264,7 +264,7 @@ class DistributedNeighborClient:
             response = self._send_request(server_id, request)
             return server_id, response
         
-        # 并行执行查询
+        # [CN]
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.connections)) as executor:
             futures = [executor.submit(query_server, sid) for sid in self.connections]
             results = {}
@@ -274,20 +274,20 @@ class DistributedNeighborClient:
                     server_id, response = future.result()
                     results[server_id] = response
                 except Exception as e:
-                    logger.error(f"查询服务器时出错: {e}")
+                    logger.error(f"[CN]: {e}")
         
-        # 检查结果
+        # [CN]
         successful_responses = {sid: r for sid, r in results.items() 
                               if r and r.get('status') == 'success'}
         
         if len(successful_responses) < 2:
-            logger.error("查询失败：成功响应的服务器少于2个")
+            logger.error("[CN]：[CN]2[CN]")
             for server_id, result in results.items():
                 if not result or result.get('status') != 'success':
-                    logger.error(f"服务器 {server_id}: {result}")
+                    logger.error(f"[CN] {server_id}: {result}")
             return None, None
         
-        # 提取时间信息
+        # [CN]
         timings = {}
         for server_id, result in successful_responses.items():
             timing = result.get('timing', {})
@@ -299,48 +299,48 @@ class DistributedNeighborClient:
                 'total': timing.get('total', 0) / 1000
             }
         
-        # 计算平均时间
+        # calculate[CN]
         avg_timings = {}
         for phase in ['phase1', 'phase2', 'phase3', 'phase4', 'total']:
             phase_times = [t[phase] for t in timings.values()]
             avg_timings[phase] = np.mean(phase_times) if phase_times else 0
         
-        # 重构邻居列表
+        # [CN]
         final_result = self._reconstruct_neighbor_list(successful_responses)
         
-        # 验证结果
+        # [CN]
         accuracy = self._verify_neighbor_result(query_node_id, final_result)
         
-        # 打印结果
+        # print[CN]
         total_time = time.time() - start_time
-        logger.info(f"\n邻居列表查询结果:")
-        logger.info(f"  客户端总时间: {total_time:.2f}秒")
-        logger.info(f"  阶段1 (VDPF评估): {avg_timings['phase1']:.2f}秒")
-        logger.info(f"  阶段2 (e/f计算): {avg_timings['phase2']:.2f}秒")
-        logger.info(f"  阶段3 (数据交换): {avg_timings['phase3']:.2f}秒")
-        logger.info(f"  阶段4 (重构): {avg_timings['phase4']:.2f}秒")
-        logger.info(f"  服务器平均总计: {avg_timings['total']:.2f}秒")
+        logger.info(f"\n[CN]:")
+        logger.info(f"  [CN]: {total_time:.2f}[CN]")
+        logger.info(f"  [CN]1 (VDPF[CN]): {avg_timings['phase1']:.2f}[CN]")
+        logger.info(f"  [CN]2 (e/fcalculate): {avg_timings['phase2']:.2f}[CN]")
+        logger.info(f"  [CN]3 ([CN]): {avg_timings['phase3']:.2f}[CN]")
+        logger.info(f"  [CN]4 ([CN]): {avg_timings['phase4']:.2f}[CN]")
+        logger.info(f"  [CN]: {avg_timings['total']:.2f}[CN]")
         if accuracy is not None:
-            logger.info(f"  邻居列表准确率: {accuracy:.2%}")
-        logger.info(f"  返回邻居数: {len(final_result) if final_result is not None else 0}")
+            logger.info(f"  [CN]: {accuracy:.2%}")
+        logger.info(f"  return[CN]: {len(final_result) if final_result is not None else 0}")
         
         return avg_timings, final_result
     
     def _reconstruct_neighbor_list(self, results):
-        """重构邻居列表"""
-        # 获取至少两个服务器的响应
+        """[CN]"""
+        # [CN]servers[CN]
         server_ids = sorted([sid for sid, r in results.items() 
                            if r and r.get('status') == 'success'])[:2]
         
         if len(server_ids) < 2:
-            logger.error("重构失败：可用服务器少于2个")
+            logger.error("[CN]：[CN]2[CN]")
             return None
         
-        # 获取邻居列表长度
+        # [CN]
         first_result = results[server_ids[0]]['result_share']
         k_neighbors = len(first_result)
         
-        # 重构每个邻居索引
+        # [CN]
         reconstructed_neighbors = []
         
         for i in range(k_neighbors):
@@ -351,17 +351,17 @@ class DistributedNeighborClient:
             
             reconstructed = self.mpc.reconstruct(shares)
             
-            # 处理重构的值
-            # 秘密共享使用 field_size-1 (即 prime-1) 表示 -1
-            # 原始HNSW使用 4294967295 作为无效邻居
+            # process[CN]
+            # [CN] field_size-1 ([CN] prime-1) [CN] -1
+            # [CN]HNSW[CN] 4294967295 [CN]
             if reconstructed == self.config.prime - 1:
-                # 这是填充值 -1，在HNSW中表示为 4294967295
+                # [CN] -1，[CN]HNSW[CN] 4294967295
                 neighbor_idx = 4294967295
             elif reconstructed >= self.config.num_docs:
-                # 超出文档范围的索引也是无效的
+                # [CN]
                 neighbor_idx = 4294967295
             else:
-                # 正常的邻居索引
+                # [CN]
                 neighbor_idx = reconstructed
             
             reconstructed_neighbors.append(int(neighbor_idx))
@@ -369,109 +369,109 @@ class DistributedNeighborClient:
         return reconstructed_neighbors
     
     def _verify_neighbor_result(self, query_node_id: int, reconstructed_neighbors: List[int]):
-        """验证邻居列表结果的正确性"""
+        """[CN]"""
         try:
             if self.original_neighbors is None or reconstructed_neighbors is None:
                 return None
             
-            # 直接使用线性索引从original_neighbors字典中获取数据
+            # [CN]original_neighbors[CN]
             if query_node_id not in self.original_neighbors:
-                logger.warning(f"线性索引 {query_node_id} 不在原始数据中")
+                logger.warning(f"[CN] {query_node_id} [CN]")
                 return None
             
-            # 获取原始邻居列表（已经是特定节点特定层的数据）
+            # [CN]（[CN]）
             original_layer_neighbors = self.original_neighbors[query_node_id]
             
-            # 计算实际的节点ID和层（用于日志显示）
-            num_layers = 3  # HNSW的层数
+            # calculate[CN]ID[CN]（[CN]）
+            num_layers = 3  # HNSW[CN]
             actual_node_id = query_node_id // num_layers
             layer = query_node_id % num_layers
             
-            # 由于share_data.py的bug，数据有循环偏移
-            # 重构的前2个值来自上一个节点的末尾
-            # 原始的末尾2个值会出现在下一个节点的开头
+            # [CN]share_data.py[CN]bug，[CN]
+            # [CN]2[CN]
+            # [CN]2[CN]
             
-            # 为了正确比较，我们需要对齐数据
-            # 方法：比较集合而不是位置，因为数据是循环偏移的
+            # [CN]，[CN]
+            # [CN]：[CN]，[CN]
             
-            # 过滤有效邻居（不是4294967295的）
+            # [CN]（[CN]4294967295[CN]）
             valid_original = [n for n in original_layer_neighbors if n != 4294967295]
             valid_reconstructed = [n for n in reconstructed_neighbors if n != 4294967295 and n < self.config.num_docs]
             
-            # 计算准确率 - 基于有效邻居的匹配
+            # calculate[CN] - [CN]
             if len(valid_original) == 0:
-                # 如果原始没有有效邻居，检查重构是否也没有
+                # [CN]，[CN]
                 accuracy = 1.0 if len(valid_reconstructed) == 0 else 0.0
             else:
-                # 计算有效邻居的交集
-                # 由于是循环偏移，我们比较集合而不是位置
+                # calculate[CN]
+                # [CN]，[CN]
                 matches = len(set(valid_original) & set(valid_reconstructed))
-                # 如果重构的邻居数量和原始的不同，说明有问题
+                # [CN]，[CN]
                 if len(valid_reconstructed) != len(valid_original):
-                    # 可能有额外的邻居（来自其他节点的偏移）
+                    # [CN]（[CN]）
                     accuracy = matches / max(len(valid_original), len(valid_reconstructed))
                 else:
                     accuracy = matches / len(valid_original)
             
-            logger.info(f"邻居列表对比 (线性索引={query_node_id}, 节点={actual_node_id}, 层={layer}):")
-            logger.info(f"  原始邻居列表前10个: {original_layer_neighbors[:10]}")
-            logger.info(f"  原始邻居列表后10个: {original_layer_neighbors[-10:]}")
-            logger.info(f"  重构邻居列表前10个: {reconstructed_neighbors[:10]}")
-            logger.info(f"  重构邻居列表后10个: {reconstructed_neighbors[-10:]}")
-            logger.info(f"  原始有效邻居: {len(valid_original)} 个")
-            logger.info(f"  重构有效邻居: {len(valid_reconstructed)} 个")
+            logger.info(f"[CN] ([CN]={query_node_id}, [CN]={actual_node_id}, [CN]={layer}):")
+            logger.info(f"  [CN]10[CN]: {original_layer_neighbors[:10]}")
+            logger.info(f"  [CN]10[CN]: {original_layer_neighbors[-10:]}")
+            logger.info(f"  [CN]10[CN]: {reconstructed_neighbors[:10]}")
+            logger.info(f"  [CN]10[CN]: {reconstructed_neighbors[-10:]}")
+            logger.info(f"  [CN]: {len(valid_original)} [CN]")
+            logger.info(f"  [CN]: {len(valid_reconstructed)} [CN]")
             if len(valid_original) > 0:
-                logger.info(f"  匹配数: {matches}/{len(valid_original)}")
+                logger.info(f"  [CN]: {matches}/{len(valid_original)}")
             
             return accuracy
                 
         except Exception as e:
-            logger.error(f"验证邻居列表时出错: {e}")
+            logger.error(f"[CN]: {e}")
             return None
     
     def get_server_status(self):
-        """获取所有邻居列表服务器状态"""
-        logger.info("获取邻居列表服务器状态...")
+        """[CN]"""
+        logger.info("[CN]...")
         
         for server_id in self.connections:
             request = {'command': 'get_status'}
             response = self._send_request(server_id, request)
             
             if response and response.get('status') == 'success':
-                logger.info(f"\n邻居列表服务器 {server_id} 状态:")
-                logger.info(f"  模式: {response.get('mode')}")
-                logger.info(f"  地址: {response.get('host')}:{response.get('port')}")
-                logger.info(f"  数据集: {response.get('dataset')}")
-                logger.info(f"  VDPF进程数: {response.get('vdpf_processes')}")
-                logger.info(f"  数据加载: {response.get('data_loaded')}")
-                logger.info(f"  可用三元组: {response.get('triples_available')}")
+                logger.info(f"\n[CN] {server_id} [CN]:")
+                logger.info(f"  [CN]: {response.get('mode')}")
+                logger.info(f"  [CN]: {response.get('host')}:{response.get('port')}")
+                logger.info(f"  Dataset: {response.get('dataset')}")
+                logger.info(f"  VDPF[CN]: {response.get('vdpf_processes')}")
+                logger.info(f"  [CN]: {response.get('data_loaded')}")
+                logger.info(f"  [CN]: {response.get('triples_available')}")
             else:
-                logger.error(f"无法获取邻居列表服务器 {server_id} 的状态")
+                logger.error(f"[CN] {server_id} [CN]")
     
     def disconnect_from_servers(self):
-        """断开所有服务器连接"""
+        """[CN]connect"""
         for server_id, sock in self.connections.items():
             try:
                 sock.close()
-                logger.info(f"已断开与邻居列表服务器 {server_id} 的连接")
+                logger.info(f"[CN] {server_id} [CN]connect")
             except:
                 pass
         self.connections.clear()
 
 
 def generate_markdown_report(dataset, query_details, avg_phases, avg_accuracy):
-    """生成Markdown格式的测试报告"""
+    """[CN]Markdown[CN]"""
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    markdown = f"""# 分布式邻居列表测试报告 - {dataset}
+    markdown = f"""# [CN] - {dataset}
 
-**生成时间**: {timestamp}  
-**数据集**: {dataset}  
-**查询次数**: {len(query_details)}
+**[CN]**: {timestamp}  
+**Dataset**: {dataset}  
+**[CN]**: {len(query_details)}
 
-## 详细查询结果
+## [CN]
 
-| 查询编号 | 节点ID | 阶段1 (VDPF) | 阶段2 (e/f) | 阶段3 (交换) | 阶段4 (重构) | 总时间 | 准确率 |
+| [CN] | [CN]ID | [CN]1 (VDPF) | [CN]2 (e/f) | [CN]3 ([CN]) | [CN]4 ([CN]) | [CN] | [CN] |
 |---------|--------|--------------|-------------|--------------|--------------|--------|--------|
 """
     
@@ -488,21 +488,21 @@ def generate_markdown_report(dataset, query_details, avg_phases, avg_accuracy):
             markdown += "N/A |\n"
     
     markdown += f"""
-## 平均性能统计
+## [CN]
 
-- **阶段1 (VDPF评估)**: {avg_phases['phase1']:.2f}秒
-- **阶段2 (e/f计算)**: {avg_phases['phase2']:.2f}秒
-- **阶段3 (数据交换)**: {avg_phases['phase3']:.2f}秒
-- **阶段4 (重构)**: {avg_phases['phase4']:.2f}秒
-- **服务器平均总计**: {avg_phases['total']:.2f}秒
-- **平均准确率**: {avg_accuracy:.2%}
+- **[CN]1 (VDPF[CN])**: {avg_phases['phase1']:.2f}[CN]
+- **[CN]2 (e/fcalculate)**: {avg_phases['phase2']:.2f}[CN]
+- **[CN]3 ([CN])**: {avg_phases['phase3']:.2f}[CN]
+- **[CN]4 ([CN])**: {avg_phases['phase4']:.2f}[CN]
+- **[CN]**: {avg_phases['total']:.2f}[CN]
+- **[CN]**: {avg_accuracy:.2%}
 
-## 性能分析
+## [CN]
 
-### 时间分布
+### [CN]
 """
     
-    # 计算各阶段时间占比
+    # calculate[CN]
     total_avg = avg_phases['total']
     if total_avg > 0:
         phase1_pct = (avg_phases['phase1'] / total_avg) * 100
@@ -511,57 +511,57 @@ def generate_markdown_report(dataset, query_details, avg_phases, avg_accuracy):
         phase4_pct = (avg_phases['phase4'] / total_avg) * 100
         
         markdown += f"""
-- 阶段1 (VDPF评估): {phase1_pct:.1f}%
-- 阶段2 (e/f计算): {phase2_pct:.1f}%
-- 阶段3 (数据交换): {phase3_pct:.1f}%
-- 阶段4 (重构): {phase4_pct:.1f}%
+- [CN]1 (VDPF[CN]): {phase1_pct:.1f}%
+- [CN]2 (e/fcalculate): {phase2_pct:.1f}%
+- [CN]3 ([CN]): {phase3_pct:.1f}%
+- [CN]4 ([CN]): {phase4_pct:.1f}%
 
-### 吞吐量
-- 平均查询时间: {total_avg:.2f}秒
-- 理论吞吐量: {1/total_avg:.2f} 查询/秒
+### [CN]
+- [CN]: {total_avg:.2f}[CN]
+- [CN]: {1/total_avg:.2f} [CN]/[CN]
 """
     
     return markdown
 
 
 def main():
-    """主函数"""
-    parser = argparse.ArgumentParser(description='分布式邻居列表查询客户端')
+    """[CN]"""
+    parser = argparse.ArgumentParser(description='Distributed neighbor list query client')
     parser.add_argument('--dataset', type=str, default='siftsmall', 
                         choices=['siftsmall', 'laion', 'tripclick', 'ms_marco', 'nfcorpus'],
-                        help='数据集名称 (默认: siftsmall)')
+                        help='Dataset[CN] ([CN]: siftsmall)')
     parser.add_argument('--num-queries', type=int, default=10,
-                        help='测试查询数量 (默认: 10)')
+                        help='[CN]Number of queries[CN] ([CN]: 10)')
     parser.add_argument('--no-report', action='store_true',
-                        help='不保存测试报告')
+                        help='[CN]')
     parser.add_argument('--config', type=str,
-                        help='服务器配置文件路径')
+                        help='[CN]')
     parser.add_argument('--status-only', action='store_true',
-                        help='只获取服务器状态')
+                        help='[CN]')
     
     args = parser.parse_args()
     
-    # 加载自定义配置
+    # [CN]
     servers_config = None
     if args.config:
         try:
             with open(args.config, 'r') as f:
                 servers_config = json.load(f)
         except Exception as e:
-            logger.error(f"加载配置文件失败: {e}")
+            logger.error(f"Load configuration[CN]: {e}")
             return
     
-    logger.info(f"=== 分布式邻居列表测试客户端 - 数据集: {args.dataset} ===")
+    logger.info(f"=== [CN] - Dataset: {args.dataset} ===")
     
     client = DistributedNeighborClient(args.dataset, servers_config)
     
     try:
-        # 连接服务器
+        # connect[CN]
         if not client.connect_to_servers():
-            logger.error("连接邻居列表服务器失败")
+            logger.error("connect[CN]")
             return
         
-        # 如果只是获取状态
+        # [CN]
         if args.status_only:
             client.get_server_status()
             return
@@ -570,16 +570,16 @@ def main():
         all_accuracies = []
         query_details = []
         
-        # 获取节点总数（查询节点数）
+        # [CN]（[CN]）
         total_nodes = len(client.original_neighbors) if client.original_neighbors is not None else 1000
         
-        # 随机选择查询节点
+        # [CN]
         random_nodes = random.sample(range(total_nodes), min(args.num_queries, total_nodes))
         
-        logger.info(f"将对 {len(random_nodes)} 个随机节点进行邻居列表查询测试...\n")
+        logger.info(f"[CN] {len(random_nodes)} [CN]...\n")
         
         for i, node_id in enumerate(random_nodes):
-            logger.info(f"查询 {i+1}/{len(random_nodes)}: 节点 {node_id} 的邻居列表")
+            logger.info(f"[CN] {i+1}/{len(random_nodes)}: [CN] {node_id} [CN]")
             timings, neighbors = client.test_distributed_neighbor_query(query_node_id=node_id)
             
             if timings:
@@ -593,29 +593,29 @@ def main():
                     'node_id': node_id,
                     'timings': timings,
                     'accuracy': accuracy,
-                    'neighbors': neighbors[:10] if neighbors else []  # 只保存前10个邻居
+                    'neighbors': neighbors[:10] if neighbors else []  # [CN]10[CN]
                 })
         
-        # 计算平均值
+        # calculate[CN]
         if all_timings:
-            logger.info(f"\n=== 平均性能统计 ({len(all_timings)} 个成功查询) ===")
+            logger.info(f"\n=== [CN] ({len(all_timings)} [CN]) ===")
             avg_phases = {}
             for phase in ['phase1', 'phase2', 'phase3', 'phase4', 'total']:
                 avg_phases[phase] = np.mean([t[phase] for t in all_timings])
             
-            logger.info(f"  阶段1 (VDPF评估): {avg_phases['phase1']:.2f}秒")
-            logger.info(f"  阶段2 (e/f计算): {avg_phases['phase2']:.2f}秒")
-            logger.info(f"  阶段3 (数据交换): {avg_phases['phase3']:.2f}秒")
-            logger.info(f"  阶段4 (重构): {avg_phases['phase4']:.2f}秒")
-            logger.info(f"  服务器平均总计: {avg_phases['total']:.2f}秒")
+            logger.info(f"  [CN]1 (VDPF[CN]): {avg_phases['phase1']:.2f}[CN]")
+            logger.info(f"  [CN]2 (e/fcalculate): {avg_phases['phase2']:.2f}[CN]")
+            logger.info(f"  [CN]3 ([CN]): {avg_phases['phase3']:.2f}[CN]")
+            logger.info(f"  [CN]4 ([CN]): {avg_phases['phase4']:.2f}[CN]")
+            logger.info(f"  [CN]: {avg_phases['total']:.2f}[CN]")
             
             if all_accuracies:
                 avg_accuracy = np.mean(all_accuracies)
-                logger.info(f"  平均准确率: {avg_accuracy:.2%}")
+                logger.info(f"  [CN]: {avg_accuracy:.2%}")
             else:
                 avg_accuracy = 0.0
             
-            # 保存报告
+            # [CN]
             if not args.no_report and query_details:
                 report_file = "~/trident/distributed-nl/nl_result.md"
                 markdown_report = generate_markdown_report(
@@ -625,20 +625,20 @@ def main():
                     avg_accuracy
                 )
                 
-                # 追加模式，添加分隔符
+                # [CN]，[CN]
                 with open(report_file, 'a', encoding='utf-8') as f:
-                    # 如果文件已存在且非空，添加分隔符
-                    f.seek(0, 2)  # 移到文件末尾
+                    # [CN]，[CN]
+                    f.seek(0, 2)  # [CN]
                     if f.tell() > 0:
                         f.write("\n\n---\n\n")
                     f.write(markdown_report)
                 
-                logger.info(f"\n测试报告已保存到: {report_file}")
+                logger.info(f"\n[CN]: {report_file}")
             
     except KeyboardInterrupt:
-        logger.info("\n用户中断")
+        logger.info("\n[CN]")
     except Exception as e:
-        logger.error(f"错误: {e}")
+        logger.error(f"[CN]: {e}")
         import traceback
         traceback.print_exc()
     finally:

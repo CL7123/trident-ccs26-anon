@@ -1,82 +1,82 @@
-# 分布式邻居列表查询系统 (Distributed-NL)
+# [CN]query[CN] (Distributed-NL)
 
-这是一个基于MPC的分布式邻居列表检索系统，专门用于安全地查询向量的K最近邻居索引。
+[CN]MPC[CN]，[CN]queryvector[CN]K[CN]index。
 
-## 系统架构
+## [CN]
 
-### 与distributed-deploy的区别
+### [CN]distributed-deploy[CN]
 
-| 特性 | distributed-deploy | distributed-nl |
+| [CN] | distributed-deploy | distributed-nl |
 |------|-------------------|----------------|
-| **功能** | 查询向量内容 | 查询邻居列表 |
-| **输入** | 节点索引 | 查询节点索引 |
-| **输出** | 完整向量值 | K个邻居索引 |
-| **端口** | 8001-8003 | 9001-9003 |
-| **数据** | nodes_shares.npy | neighbors_shares.npy |
+| **[CN]** | queryvector[CN] | query[CN] |
+| **input** | [CN]index | query[CN]index |
+| **output** | [CN]vector[CN] | K[CN]index |
+| **[CN]** | 8001-8003 | 9001-9003 |
+| **[CN]** | nodes_shares.npy | neighbors_shares.npy |
 
-## 网络配置
+## [CN]configure
 
-- **客户端 → 服务器**: 使用公网IP通信
+- **client → server**: [CN]IP[CN]
   - Server1: `192.168.1.101:9001`
   - Server2: `192.168.1.102:9002`
   - Server3: `192.168.1.103:9003`
 
-- **服务器 ↔ 服务器**: 使用私网IP通信
+- **server ↔ server**: [CN]IP[CN]
   - Server1: `10.0.1.101:9001`
   - Server2: `10.0.1.102:9002`
   - Server3: `10.0.1.103:9003`
 
-## 快速开始
+## [CN]
 
-### 1. 启动服务器
+### 1. startserver
 
-在每台服务器上运行：
+[CN]server[CN]run：
 
 ```bash
-# 服务器1
+# server1
 python server.py --server-id 1 --dataset siftsmall --vdpf-processes 4
 
-# 服务器2
+# server2
 python server.py --server-id 2 --dataset siftsmall --vdpf-processes 4
 
-# 服务器3
+# server3
 python server.py --server-id 3 --dataset siftsmall --vdpf-processes 4
 ```
 
-### 2. 运行客户端测试
+### 2. runclienttest
 
 ```bash
-# 基本测试
+# [CN]test
 python client.py --dataset siftsmall --num-queries 10
 
-# 测试其他数据集
+# test[CN]dataset
 python client.py --dataset laion --num-queries 5
 
-# 只查看服务器状态
+# [CN]server[CN]
 python client.py --status-only
 ```
 
-## 部署脚本
+## deploy[CN]
 
-### 同步到所有服务器
+### [CN]server
 
 ```bash
 ./deploy.sh
 ```
 
-### 在所有服务器上启动服务
+### [CN]server[CN]start[CN]
 
 ```bash
-# 启动所有邻居列表服务器
+# start[CN]server
 ./start-servers.sh
 
-# 停止所有服务器
+# stop[CN]server
 ./stop-servers.sh
 ```
 
-## 性能优化
+## [CN]
 
-### 1. TCP参数优化（在所有服务器执行）
+### 1. TCPparameters[CN]（[CN]server[CN]）
 
 ```bash
 sudo sysctl -w net.core.rmem_max=268435456
@@ -85,58 +85,58 @@ sudo sysctl -w net.ipv4.tcp_rmem="4096 87380 268435456"
 sudo sysctl -w net.ipv4.tcp_wmem="4096 65536 268435456"
 ```
 
-### 2. 进程数优化
+### 2. [CN]
 
-根据CPU核心数调整：
+[CN]CPU[CN]：
 ```bash
-python server.py --server-id 1 --vdpf-processes 32  # 对于64核机器
+python server.py --server-id 1 --vdpf-processes 32  # [CN]64[CN]
 ```
 
-## 数据集支持
+## dataset[CN]
 
-| 数据集 | 邻居数(K) | 节点数 | 状态 |
+| dataset | [CN](K) | [CN] | [CN] |
 |--------|-----------|--------|------|
-| siftsmall | 100 | 10,000 | ✅ 完全支持 |
-| laion | 36 | 100,000 | ✅ 完全支持 |
-| nfcorpus | 10 | 3,633 | ✅ 完全支持 |
-| tripclick | 36 | 1.5M | 🟡 需要数据准备 |
+| siftsmall | 100 | 10,000 | ✅ [CN] |
+| laion | 36 | 100,000 | ✅ [CN] |
+| nfcorpus | 10 | 3,633 | ✅ [CN] |
+| tripclick | 36 | 1.5M | 🟡 [CN] |
 
-## 监控功能
+## [CN]
 
-系统会自动记录并显示：
-- 每个阶段的执行时间
-- 网络传输大小和速度
-- 邻居列表查询准确率
-- 详细的性能统计
+[CN]：
+- [CN]
+- [CN]
+- [CN]query[CN]
+- [CN]
 
-## 测试报告
+## test[CN]
 
-测试结果会自动保存到 `nl_result.md`，包含：
-- 详细的查询时间分解
-- 网络传输统计
-- 准确率评估
-- 性能分析
+testresult[CN] `nl_result.md`，[CN]：
+- [CN]query[CN]
+- [CN]
+- [CN]
+- [CN]
 
-## 故障排除
+## [CN]
 
-### 连接失败
-- 检查安全组规则是否开放9001-9003端口
-- 确认服务器正在监听正确的端口
-- 验证网络连通性
+### [CN]
+- [CN]9001-9003[CN]
+- [CN]server[CN]
+- [CN]
 
-### 数据不完整错误
-- 系统已使用MSG_WAITALL优化，应该不会出现此问题
-- 如仍有问题，检查网络稳定性
+### [CN]
+- [CN]MSG_WAITALL[CN]，[CN]
+- [CN]，[CN]
 
-### 准确率问题
-- 确保neighbors_shares.npy数据正确生成
-- 验证groundtruth数据格式匹配
+### [CN]
+- [CN]neighbors_shares.npy[CN]generated
+- [CN]groundtruth[CN]
 
-## 高级功能
+## [CN]
 
-### 自定义服务器配置
+### [CN]serverconfigure
 
-创建 `custom_servers.json`:
+[CN] `custom_servers.json`:
 ```json
 {
   "1": {"host": "192.168.1.101", "port": 9001},
@@ -145,16 +145,16 @@ python server.py --server-id 1 --vdpf-processes 32  # 对于64核机器
 }
 ```
 
-使用自定义配置：
+[CN]configure：
 ```bash
 python client.py --config custom_servers.json
 ```
 
-## 与向量查询系统集成
+## [CN]vectorquery[CN]
 
-完整的向量搜索流程：
-1. 使用 `distributed-nl` 查询K个最近邻居索引
-2. 使用 `distributed-deploy` 检索这些邻居的向量内容
-3. 在客户端计算精确相似度并排序
+[CN]vector[CN]：
+1. [CN] `distributed-nl` queryK[CN]index
+2. [CN] `distributed-deploy` [CN]vector[CN]
+3. [CN]client[CN]
 
-这种分离设计提供了更好的灵活性和性能优化空间。
+[CN]。

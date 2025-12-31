@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-快速标准HNSW索引构建器 - 结合批量构建效率和标准HNSW的正确性
-生成真正层级稀疏的索引，但构建速度更快
+[CN]HNSW[CN] - [CN]HNSW[CN]
+[CN]，[CN]
 """
 
 import numpy as np
@@ -19,77 +19,77 @@ from pathlib import Path
 from domain_config import get_config, list_available_configs, SIFTSMALL, LAION, TRIPCLICK, MS_MARCO
 
 class FastStandardHNSWBuilder:
-    """快速标准HNSW索引构建器"""
+    """[CN]HNSW[CN]"""
     
     def __init__(self, config=None, seed: int = 42):
         """
-        初始化HNSW参数
+        initializeHNSW[CN]
         
         Args:
-            config: DomainConfig对象，包含所有配置参数
-            seed: 随机种子
+            config: DomainConfig[CN]，[CN]
+            seed: [CN]
         """
         if config is None:
-            raise ValueError("必须提供config参数")
+            raise ValueError("[CN]config[CN]")
             
         self.config = config
         self.M = config.M
-        self.M0 = config.M * 2  # Layer 0的最大连接数
+        self.M0 = config.M * 2  # Layer 0[CN]connect[CN]
         self.efConstruction = config.efconstruction
-        self.ml = 1.0 / np.log(2.0 * config.M)  # 层级分配概率
+        self.ml = 1.0 / np.log(2.0 * config.M)  # [CN]allocate[CN]
         self.max_layers = config.layer
         self.seed = seed
         
-        # 图结构
+        # [CN]
         self.graph = {layer: {} for layer in range(self.max_layers + 1)}
         self.node_levels = {}
         self.vectors = None
         self.entry_point = None
         
-        # 设置随机种子
+        # [CN]
         np.random.seed(seed)
         random.seed(seed)
         
-        print(f"FastStandardHNSWBuilder初始化:")
-        print(f"  数据集: {config.vector_dimension}维, {config.num_docs:,}文档")
-        print(f"  M = {self.M} (非0层连接数)")
-        print(f"  M0 = {self.M0} (第0层连接数)")
+        print(f"FastStandardHNSWBuilderinitialize:")
+        print(f"  Dataset: {config.vector_dimension}[CN], {config.num_docs:,}[CN]")
+        print(f"  M = {self.M} ([CN]0[CN]connect[CN])")
+        print(f"  M0 = {self.M0} ([CN]0[CN]connect[CN])")
         print(f"  efConstruction = {self.efConstruction}")
         print(f"  efSearch = {config.efsearch}")
-        print(f"  ml = {self.ml:.3f} (层级概率)")
-        print(f"  最大层数 = {self.max_layers}")
+        print(f"  ml = {self.ml:.3f} ([CN])")
+        print(f"  [CN] = {self.max_layers}")
     
     def build_index(self, vectors: np.ndarray):
-        """使用FAISS辅助的快速构建方法"""
+        """[CN]FAISS[CN]"""
         self.vectors = vectors
         n_vectors = len(vectors)
         d = vectors.shape[1]
         
-        print(f"\n开始快速构建HNSW索引，共{n_vectors}个向量...")
+        print(f"\n[CN]HNSW[CN]，[CN]{n_vectors}[CN]...")
         start_time = time.time()
         
-        # 1. 分配层级（符合标准HNSW）
-        print("1. 分配节点层级...")
+        # 1. allocate[CN]（[CN]HNSW）
+        print("1. allocate[CN]...")
         self._assign_levels(n_vectors)
         
-        # 2. 使用FAISS构建辅助索引
-        print("2. 构建FAISS辅助索引...")
+        # 2. [CN]FAISS[CN]
+        print("2. [CN]FAISS[CN]...")
         faiss_index = faiss.IndexHNSWFlat(d, self.M)
         faiss_index.hnsw.efConstruction = self.efConstruction
         faiss_index.add(vectors)
         
-        # 3. 构建层级稀疏的图结构
-        print("3. 构建层级稀疏的图结构...")
+        # 3. [CN]
+        print("3. [CN]...")
         self._build_sparse_graph(faiss_index)
         
         build_time = time.time() - start_time
-        print(f"\n索引构建完成，耗时: {build_time:.1f}秒")
+        print(f"\n[CN]，[CN]: {build_time:.1f}[CN]")
         
-        # 统计信息
+        # [CN]
         self._print_stats()
     
     def _assign_levels(self, n_vectors: int):
-        """分配节点层级，使用标准HNSW的概率分布"""
+        """allocate[CN]，[CN]HNSW[CN]"""
         level_counts = defaultdict(int)
         
         for i in range(n_vectors):
@@ -101,75 +101,75 @@ class FastStandardHNSWBuilder:
             for l in range(level + 1):
                 level_counts[l] += 1
         
-        # 选择最高层的节点作为入口点
+        # [CN]
         max_level_nodes = [n for n, l in self.node_levels.items() if l == self.max_layers]
         if max_level_nodes:
             self.entry_point = max_level_nodes[0]
         else:
-            # 如果没有最高层节点，选择次高层
+            # [CN]，[CN]
             for level in range(self.max_layers - 1, -1, -1):
                 level_nodes = [n for n, l in self.node_levels.items() if l == level]
                 if level_nodes:
                     self.entry_point = level_nodes[0]
                     break
         
-        print(f"  入口点: node_{self.entry_point} (层级: {self.node_levels[self.entry_point]})")
+        print(f"  [CN]: node_{self.entry_point} ([CN]: {self.node_levels[self.entry_point]})")
         for level in sorted(level_counts.keys()):
-            print(f"  Layer {level}: {level_counts[level]} 节点 ({level_counts[level]/n_vectors*100:.1f}%)")
+            print(f"  Layer {level}: {level_counts[level]} [CN] ({level_counts[level]/n_vectors*100:.1f}%)")
     
     def _build_sparse_graph(self, faiss_index: faiss.IndexHNSWFlat):
-        """构建层级稀疏的图结构"""
+        """[CN]"""
         n_vectors = len(self.vectors)
         
-        # 设置FAISS搜索参数
+        # [CN]FAISS[CN]
         faiss_index.hnsw.efSearch = max(200, self.config.efsearch * 3)
         
-        # 分层构建
+        # [CN]
         for layer in range(self.max_layers + 1):
-            print(f"\n  构建Layer {layer}...")
+            print(f"\n  [CN]Layer {layer}...")
             
-            # 获取该层的所有节点
+            # [CN]
             nodes_in_layer = [i for i in range(n_vectors) if self.node_levels[i] >= layer]
-            print(f"    节点数: {len(nodes_in_layer)}")
+            print(f"    [CN]: {len(nodes_in_layer)}")
             
-            # 批量搜索邻居
+            # [CN]
             batch_size = 1000
             for start_idx in range(0, len(nodes_in_layer), batch_size):
                 end_idx = min(start_idx + batch_size, len(nodes_in_layer))
                 batch_nodes = nodes_in_layer[start_idx:end_idx]
                 batch_vectors = self.vectors[batch_nodes]
                 
-                # 搜索候选邻居
+                # [CN]
                 k = self._get_search_k(layer)
                 D, I = faiss_index.search(batch_vectors, k)
                 
-                # 为每个节点选择邻居
+                # [CN]
                 for i, node_id in enumerate(batch_nodes):
-                    # 过滤掉自己和不在该层的节点
+                    # [CN]
                     valid_neighbors = []
                     for j, neighbor in enumerate(I[i]):
                         if neighbor >= 0 and neighbor != node_id and self.node_levels.get(neighbor, -1) >= layer:
                             valid_neighbors.append((D[i][j], neighbor))
                     
-                    # 选择邻居
+                    # [CN]
                     selected_neighbors = self._select_neighbors_standard(
                         node_id, valid_neighbors, layer
                     )
                     
                     self.graph[layer][node_id] = selected_neighbors
                 
-                print(f"\r    进度: {end_idx}/{len(nodes_in_layer)} ({end_idx/len(nodes_in_layer)*100:.1f}%)", end='')
+                print(f"\r    [CN]: {end_idx}/{len(nodes_in_layer)} ({end_idx/len(nodes_in_layer)*100:.1f}%)", end='')
             
-            # 统计该层的平均邻居数
+            # [CN]
             if nodes_in_layer:
                 avg_neighbors = np.mean([len(self.graph[layer].get(n, [])) for n in nodes_in_layer])
-                print(f"\n    平均邻居数: {avg_neighbors:.1f}")
+                print(f"\n    [CN]: {avg_neighbors:.1f}")
     
     def _get_search_k(self, layer: int) -> int:
-        """根据层级返回搜索的候选数量"""
+        """[CN]return[CN]"""
         base_k = self.config.efconstruction
         if layer == 0:
-            return min(base_k * 4, len(self.vectors))  # Layer 0需要更多候选
+            return min(base_k * 4, len(self.vectors))  # Layer 0[CN]
         elif layer == 1:
             return min(base_k * 2, len(self.vectors))
         else:  # layer >= 2
@@ -178,24 +178,24 @@ class FastStandardHNSWBuilder:
     def _select_neighbors_standard(self, node_id: int, candidates: List[Tuple[float, int]], 
                                   layer: int) -> List[int]:
         """
-        标准HNSW的邻居选择策略
-        高层选择更少、更多样化的邻居
+        [CN]HNSW[CN]
+        [CN]、[CN]
         """
         if not candidates:
             return []
         
-        # 根据层级设置目标邻居数（固定3层结构：0,1,2）
+        # [CN]（[CN]3[CN]：0,1,2）
         if layer == 0:
-            target_neighbors = min(self.M0, len(candidates))  # Layer 0: 最多连接数 (M*2)
+            target_neighbors = min(self.M0, len(candidates))  # Layer 0: [CN]connect[CN] (M*2)
         elif layer == 1:
-            target_neighbors = min(self.M // 2, len(candidates))  # Layer 1: M/2 连接数
+            target_neighbors = min(self.M // 2, len(candidates))  # Layer 1: M/2 connect[CN]
         else:  # layer == 2
-            target_neighbors = min(self.M // 4, len(candidates))  # Layer 2: M/4 连接数
+            target_neighbors = min(self.M // 4, len(candidates))  # Layer 2: M/4 connect[CN]
         
-        # 按距离排序
+        # [CN]
         candidates.sort()
         
-        # 对于高层，实施更严格的多样性选择
+        # [CN]，[CN]
         if layer >= 1:
             selected = []
             selected_set = set()
@@ -204,12 +204,12 @@ class FastStandardHNSWBuilder:
                 if len(selected) >= target_neighbors:
                     break
                 
-                # 检查多样性
+                # [CN]
                 should_add = True
                 if layer >= 2 and len(selected) > 0:
-                    # 高层要求更大的多样性
-                    min_diversity_dist = dist * 0.5  # 至少相距50%的距离
-                    for s in selected[:5]:  # 检查前几个已选邻居
+                    # [CN]
+                    min_diversity_dist = dist * 0.5  # [CN]50%[CN]
+                    for s in selected[:5]:  # [CN]
                         if self._distance(self.vectors[neighbor], self.vectors[s]) < min_diversity_dist:
                             should_add = False
                             break
@@ -218,7 +218,7 @@ class FastStandardHNSWBuilder:
                     selected.append(neighbor)
                     selected_set.add(neighbor)
             
-            # 如果选择太少，补充一些最近邻
+            # [CN]，[CN]
             if len(selected) < target_neighbors // 2:
                 for _, neighbor in candidates:
                     if neighbor not in selected_set:
@@ -229,16 +229,16 @@ class FastStandardHNSWBuilder:
             
             return selected
         else:
-            # Layer 0: 简单选择最近邻
+            # Layer 0: [CN]
             return [neighbor for _, neighbor in candidates[:target_neighbors]]
     
     def _distance(self, a: np.ndarray, b: np.ndarray) -> float:
-        """计算L2距离的平方"""
+        """calculateL2[CN]"""
         return np.sum((a - b) ** 2)
     
     def _print_stats(self):
-        """打印索引统计信息"""
-        print("\n索引统计信息:")
+        """print[CN]"""
+        print("\n[CN]:")
         
         total_nodes = len(self.vectors)
         for layer in range(self.max_layers + 1):
@@ -250,25 +250,25 @@ class FastStandardHNSWBuilder:
                 min_neighbors = np.min(neighbor_counts)
                 max_neighbors = np.max(neighbor_counts)
                 
-                print(f"  Layer {layer}: {len(nodes_in_layer)} 节点 "
+                print(f"  Layer {layer}: {len(nodes_in_layer)} [CN] "
                       f"({len(nodes_in_layer)/total_nodes*100:.1f}%)")
-                print(f"    邻居数 - 平均: {avg_neighbors:.1f}, "
-                      f"最小: {min_neighbors}, 最大: {max_neighbors}")
+                print(f"    [CN] - [CN]: {avg_neighbors:.1f}, "
+                      f"[CN]: {min_neighbors}, [CN]: {max_neighbors}")
             else:
-                print(f"  Layer {layer}: 0 节点")
+                print(f"  Layer {layer}: 0 [CN]")
         
-        print(f"\n  入口点: node_{self.entry_point} (最高层: {self.node_levels[self.entry_point]})")
+        print(f"\n  [CN]: node_{self.entry_point} ([CN]: {self.node_levels[self.entry_point]})")
     
     def save_trident_format(self, output_dir: str, dataset_name: str = "dataset"):
-        """保存为Trident格式"""
-        print(f"\n保存Trident格式到: {output_dir}")
+        """[CN]Trident[CN]"""
+        print(f"\n[CN]Trident[CN]: {output_dir}")
         
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         
         ntotal = len(self.vectors)
         d = self.vectors.shape[1]
         
-        # 保存节点文件
+        # [CN]
         node_file = f"{output_dir}/nodes.bin"
         with open(node_file, 'wb') as f:
             f.write(struct.pack('i', ntotal))
@@ -279,42 +279,42 @@ class FastStandardHNSWBuilder:
                 f.write(struct.pack('i', i))
                 f.write(self.vectors[i].tobytes())
         
-        print(f"  ✓ 节点文件: {node_file} ({Path(node_file).stat().st_size/1024/1024:.1f} MB)")
+        print(f"  ✓ [CN]: {node_file} ({Path(node_file).stat().st_size/1024/1024:.1f} MB)")
         
-        # 保存邻居文件
+        # [CN]
         neighbor_file = f"{output_dir}/neighbors.bin"
         num_levels = self.max_layers + 1
-        maxM0 = self.M0  # 使用配置的M0值
+        maxM0 = self.M0  # [CN]M0[CN]
         
         with open(neighbor_file, 'wb') as f:
             f.write(struct.pack('i', ntotal))
             f.write(struct.pack('i', num_levels))
             f.write(struct.pack('i', maxM0))
             
-            # 为每个节点的每层写入数据
+            # [CN]
             for node_id in range(ntotal):
                 for layer in range(num_levels):
                     f.write(struct.pack('i', node_id))
                     f.write(struct.pack('i', layer))
                     
-                    # 获取该节点在该层的邻居
+                    # [CN]
                     neighbors = []
                     if node_id in self.node_levels and self.node_levels[node_id] >= layer:
                         neighbors = self.graph[layer].get(node_id, [])
                     
-                    # 填充到maxM0长度，用-1填充
+                    # [CN]maxM0[CN]，[CN]-1[CN]
                     padded = list(neighbors) + [-1] * (maxM0 - len(neighbors))
                     
-                    for n in padded[:maxM0]:  # 确保不超过maxM0
+                    for n in padded[:maxM0]:  # [CN]maxM0
                         f.write(struct.pack('i', n))
         
-        print(f"  ✓ 邻居文件: {neighbor_file} ({Path(neighbor_file).stat().st_size/1024/1024:.1f} MB)")
+        print(f"  ✓ [CN]: {neighbor_file} ({Path(neighbor_file).stat().st_size/1024/1024:.1f} MB)")
         
         return node_file, neighbor_file
 
 
 def read_fvecs(filename):
-    """读取fvecs格式文件"""
+    """[CN]fvecs[CN]"""
     fvecs = []
     with open(filename, 'rb') as f:
         while True:
@@ -328,65 +328,65 @@ def read_fvecs(filename):
 
 
 def main():
-    """主函数 - 快速构建标准HNSW索引"""
-    parser = argparse.ArgumentParser(description='快速构建标准HNSW索引')
-    # 显示可用的数据集配置
+    """[CN] - [CN]HNSW[CN]"""
+    parser = argparse.ArgumentParser(description='[CN]HNSW[CN]')
+    # [CN]Dataset[CN]
     available_configs = list_available_configs()
     parser.add_argument('--dataset', type=str, required=True, 
                        choices=available_configs,
-                       help=f'数据集名称，可选: {available_configs}')
-    parser.add_argument('--data-path', type=str, help='输入数据文件路径（fvecs格式）')
-    parser.add_argument('--output-dir', type=str, help='输出目录（默认: ~/trident/dataset/数据集名/）')
-    parser.add_argument('--seed', type=int, default=42, help='随机种子（默认: 42）')
+                       help=f'Dataset[CN]，[CN]: {available_configs}')
+    parser.add_argument('--data-path', type=str, help='[CN]（fvecs[CN]）')
+    parser.add_argument('--output-dir', type=str, help='[CN]（[CN]: ~/trident/dataset/Dataset[CN]/）')
+    parser.add_argument('--seed', type=int, default=42, help='[CN]（[CN]: 42）')
     
     args = parser.parse_args()
     
-    print("=== 快速标准HNSW索引构建器 ===")
-    print("结合批量构建效率和标准HNSW的层级稀疏性\n")
+    print("=== [CN]HNSW[CN] ===")
+    print("[CN]HNSW[CN]\n")
     
-    # 获取数据集配置
+    # [CN]Dataset[CN]
     config = get_config(args.dataset)
-    print(f"使用数据集配置: {args.dataset}")
-    print(f"  向量维度: {config.vector_dimension}")
-    print(f"  预期文档数: {config.num_docs:,}")
-    print(f"  HNSW参数: M={config.M}, efConstruction={config.efconstruction}, layers={config.layer}")
+    print(f"[CN]Dataset[CN]: {args.dataset}")
+    print(f"  Vector dimension: {config.vector_dimension}")
+    print(f"  [CN]Number of documents: {config.num_docs:,}")
+    print(f"  HNSW[CN]: M={config.M}, efConstruction={config.efconstruction}, layers={config.layer}")
     print()
     
-    # 确定数据路径
+    # [CN]
     if args.data_path:
         base_path = args.data_path
     else:
-        # 默认路径
+        # [CN]
         base_path = f"~/trident/dataset/{args.dataset}/base.fvecs"
     
-    # 确定输出目录
+    # [CN]
     if args.output_dir:
         output_dir = args.output_dir
     else:
         output_dir = f"~/trident/dataset/{args.dataset}"
     
-    # 加载数据
-    print(f"加载数据: {base_path}")
+    # [CN]
+    print(f"[CN]: {base_path}")
     vectors = read_fvecs(base_path)
-    print(f"数据规模: {vectors.shape}")
+    print(f"[CN]: {vectors.shape}")
     
-    # 验证数据维度
+    # [CN]
     if vectors.shape[1] != config.vector_dimension:
-        print(f"警告: 数据维度({vectors.shape[1]})与配置维度({config.vector_dimension})不匹配")
+        print(f"[CN]: [CN]({vectors.shape[1]})[CN]({config.vector_dimension})[CN]")
     
-    # 创建构建器
+    # create[CN]
     builder = FastStandardHNSWBuilder(config=config, seed=args.seed)
     
-    # 构建索引
+    # [CN]
     builder.build_index(vectors)
     
-    # 保存为Trident格式
+    # [CN]Trident[CN]
     builder.save_trident_format(output_dir, dataset_name=args.dataset)
     
-    print("\n构建完成！")
-    print(f"索引文件保存在: {output_dir}/")
-    print(f"  - nodes.bin: 节点向量文件")
-    print(f"  - neighbors.bin: 邻居关系文件")
+    print("\n[CN]！")
+    print(f"[CN]: {output_dir}/")
+    print(f"  - nodes.bin: [CN]")
+    print(f"  - neighbors.bin: [CN]")
 
 
 if __name__ == "__main__":

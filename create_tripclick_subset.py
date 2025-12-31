@@ -6,11 +6,11 @@ from tqdm import tqdm
 import time
 
 def read_fvecs(filename, indices=None):
-    """读取fvecs文件，可选择性读取指定索引的向量"""
+    """[CN]fvecs[CN]，[CN]"""
     vectors = []
     with open(filename, 'rb') as f:
         if indices is None:
-            # 读取所有向量
+            # [CN]
             while True:
                 dim_bytes = f.read(4)
                 if not dim_bytes:
@@ -19,20 +19,20 @@ def read_fvecs(filename, indices=None):
                 vector = np.frombuffer(f.read(dim * 4), dtype=np.float32)
                 vectors.append(vector)
         else:
-            # 读取指定索引的向量
+            # [CN]
             indices = sorted(indices)
             current_idx = 0
             dim = struct.unpack('i', f.read(4))[0]
             f.seek(0)
             
             for target_idx in indices:
-                # 跳到目标位置
+                # [CN]
                 while current_idx < target_idx:
-                    f.seek(4, 1)  # 跳过维度
-                    f.seek(dim * 4, 1)  # 跳过向量数据
+                    f.seek(4, 1)  # [CN]
+                    f.seek(dim * 4, 1)  # [CN]
                     current_idx += 1
                 
-                # 读取目标向量
+                # [CN]
                 dim = struct.unpack('i', f.read(4))[0]
                 vector = np.frombuffer(f.read(dim * 4), dtype=np.float32)
                 vectors.append(vector)
@@ -41,7 +41,7 @@ def read_fvecs(filename, indices=None):
     return np.array(vectors)
 
 def write_fvecs(filename, vectors):
-    """写入fvecs文件"""
+    """[CN]fvecs[CN]"""
     with open(filename, 'wb') as f:
         for vector in vectors:
             dim = len(vector)
@@ -49,7 +49,7 @@ def write_fvecs(filename, vectors):
             f.write(vector.astype(np.float32).tobytes())
 
 def read_ivecs(filename):
-    """读取ivecs文件"""
+    """[CN]ivecs[CN]"""
     with open(filename, 'rb') as f:
         vectors = []
         while True:
@@ -62,7 +62,7 @@ def read_ivecs(filename):
     return np.array(vectors)
 
 def write_ivecs(filename, vectors):
-    """写入ivecs文件"""
+    """[CN]ivecs[CN]"""
     with open(filename, 'wb') as f:
         for vector in vectors:
             dim = len(vector)
@@ -70,17 +70,17 @@ def write_ivecs(filename, vectors):
             f.write(vector.astype(np.int32).tobytes())
 
 def create_subset(base_path, output_path, subset_ratio=0.1):
-    """创建数据子集，保留所有ground truth向量"""
+    """create[CN]，[CN]ground truth[CN]"""
     print(f"Creating {subset_ratio*100:.0f}% subset of TripClick dataset...")
     print(f"Strategy: Keep all ground truth vectors + random sampling\n")
     
-    # 1. 读取ground truth获取必需的向量索引
+    # 1. [CN]ground truth[CN]
     print("1. Reading ground truth...")
     gt = read_ivecs(os.path.join(base_path, 'gt.ivecs'))
     gt_indices = np.unique(gt.flatten())
     print(f"   Found {len(gt_indices):,} unique vectors in ground truth")
     
-    # 2. 计算需要的向量数量
+    # 2. calculate[CN]
     with open(os.path.join(base_path, 'base.fvecs'), 'rb') as f:
         dim = struct.unpack('i', f.read(4))[0]
         f.seek(0, 2)
@@ -96,30 +96,30 @@ def create_subset(base_path, output_path, subset_ratio=0.1):
     print(f"   Target subset size: {target_count:,} ({subset_ratio*100:.0f}%)")
     print(f"   Additional vectors needed: {additional_needed:,}")
     
-    # 3. 选择额外的向量
+    # 3. [CN]
     print(f"\n3. Selecting additional vectors...")
     all_indices = set(range(total_vectors))
     gt_indices_set = set(gt_indices.tolist())
     available_indices = list(all_indices - gt_indices_set)
     
-    # 随机选择额外的向量
-    np.random.seed(42)  # 固定随机种子以确保可重复性
+    # [CN]
+    np.random.seed(42)  # [CN]
     additional_indices = np.random.choice(available_indices, additional_needed, replace=False)
     
-    # 合并所有选中的索引
+    # [CN]
     selected_indices = np.concatenate([gt_indices, additional_indices])
     selected_indices = np.sort(selected_indices)
     
     print(f"   Total selected vectors: {len(selected_indices):,}")
     
-    # 创建输出目录
+    # create[CN]
     os.makedirs(output_path, exist_ok=True)
     
-    # 4. 创建索引映射
+    # 4. create[CN]
     print("\n4. Creating index mapping...")
     old_to_new = {old_idx: new_idx for new_idx, old_idx in enumerate(selected_indices)}
     
-    # 5. 读取并写入选中的base向量
+    # 5. [CN]base[CN]
     print("\n5. Writing base vectors...")
     start_time = time.time()
     
@@ -128,7 +128,7 @@ def create_subset(base_path, output_path, subset_ratio=0.1):
             current_idx = 0
             
             for target_idx in tqdm(selected_indices, desc="Writing vectors"):
-                # 跳到目标位置
+                # [CN]
                 while current_idx < target_idx:
                     dim_bytes = f_in.read(4)
                     if not dim_bytes:
@@ -137,7 +137,7 @@ def create_subset(base_path, output_path, subset_ratio=0.1):
                     f_in.seek(dim * 4, 1)
                     current_idx += 1
                 
-                # 读取并写入目标向量
+                # [CN]
                 dim_bytes = f_in.read(4)
                 vector_bytes = f_in.read(dim * 4)
                 f_out.write(dim_bytes)
@@ -146,13 +146,13 @@ def create_subset(base_path, output_path, subset_ratio=0.1):
     
     print(f"   Time taken: {time.time() - start_time:.2f} seconds")
     
-    # 6. 复制query向量
+    # 6. [CN]query[CN]
     print("\n6. Copying query vectors...")
     query_vectors = read_fvecs(os.path.join(base_path, 'query.fvecs'))
     write_fvecs(os.path.join(output_path, 'query.fvecs'), query_vectors)
     print(f"   Copied {len(query_vectors)} query vectors")
     
-    # 7. 更新ground truth索引
+    # 7. [CN]ground truth[CN]
     print("\n7. Updating ground truth indices...")
     new_gt = []
     for query_gt in gt:
@@ -162,7 +162,7 @@ def create_subset(base_path, output_path, subset_ratio=0.1):
     new_gt = np.array(new_gt)
     write_ivecs(os.path.join(output_path, 'gt.ivecs'), new_gt)
     
-    # 8. 验证结果
+    # 8. [CN]
     print("\n8. Verification:")
     print(f"   All ground truth indices valid: {np.all(new_gt >= 0) and np.all(new_gt < len(selected_indices))}")
     print(f"   Ground truth vectors preserved: {len(gt_indices)} / {len(gt_indices)}")

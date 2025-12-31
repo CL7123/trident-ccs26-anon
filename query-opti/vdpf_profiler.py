@@ -1,6 +1,6 @@
 """
-VDPF评估性能分析器
-用于详细测量VDPF评估过程中各个步骤的耗时
+VDPF[CN]
+[CN]VDPF[CN]
 """
 import time
 import sys
@@ -13,14 +13,14 @@ import numpy as np
 
 
 class ProfiledVDPF23(VDPF23):
-    """带性能分析的VDPF23"""
+    """[CN]VDPF23"""
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.reset_timers()
         
     def reset_timers(self):
-        """重置所有计时器"""
+        """[CN]"""
         self.timers = {
             'eval_calls': 0,
             'eval_total_time': 0.0,
@@ -33,11 +33,11 @@ class ProfiledVDPF23(VDPF23):
         }
         
     def eval(self, b: int, fb: VDPF23Key, x: int) -> int:
-        """带性能测量的eval"""
+        """[CN]eval"""
         start_time = time.time()
         self.timers['eval_calls'] += 1
         
-        # 原始逻辑，但添加时间测量
+        # [CN]，[CN]
         g = fb.g_key
         k = fb.k_key
         
@@ -48,22 +48,22 @@ class ProfiledVDPF23(VDPF23):
         else:  # b == 3
             b_g, b_k = 1, 1
         
-        # 测量VDPF+ G评估
+        # [CN]VDPF+ G[CN]
         t1 = time.time()
         y_g = self.vdpf_plus_g.eval(b_g, g, x)
         self.timers['vdpf_plus_g_time'] += time.time() - t1
         
-        # 测量VDPF+ K评估
+        # [CN]VDPF+ K[CN]
         t2 = time.time()
         y_k = self.vdpf_plus_k.eval(b_k, k, x)
         self.timers['vdpf_plus_k_time'] += time.time() - t2
         
-        # 测量XOR操作
+        # [CN]XOR[CN]
         t3 = time.time()
         y_xor = y_g ^ y_k
         self.timers['xor_operations'] += time.time() - t3
         
-        # 测量embed_mult操作
+        # [CN]embed_mult[CN]
         t4 = time.time()
         y = self.op_embed_mult(b, y_xor)
         self.timers['embed_mult'] += time.time() - t4
@@ -72,32 +72,32 @@ class ProfiledVDPF23(VDPF23):
         return y
         
     def get_timer_report(self):
-        """获取计时报告"""
+        """[CN]"""
         if self.timers['eval_calls'] == 0:
             return "No evaluations performed"
             
         avg_per_call = self.timers['eval_total_time'] / self.timers['eval_calls'] * 1000  # ms
         
         report = f"""
-VDPF评估性能分析报告:
-- 总调用次数: {self.timers['eval_calls']}
-- 总耗时: {self.timers['eval_total_time']*1000:.1f}ms
-- 平均每次调用: {avg_per_call:.3f}ms
+VDPF[CN]:
+- [CN]: {self.timers['eval_calls']}
+- [CN]: {self.timers['eval_total_time']*1000:.1f}ms
+- [CN]: {avg_per_call:.3f}ms
 
-时间分解:
-- VDPF+ G评估: {self.timers['vdpf_plus_g_time']*1000:.1f}ms ({self.timers['vdpf_plus_g_time']/self.timers['eval_total_time']*100:.1f}%)
-- VDPF+ K评估: {self.timers['vdpf_plus_k_time']*1000:.1f}ms ({self.timers['vdpf_plus_k_time']/self.timers['eval_total_time']*100:.1f}%)
-- XOR操作: {self.timers['xor_operations']*1000:.1f}ms ({self.timers['xor_operations']/self.timers['eval_total_time']*100:.1f}%)
-- Embed乘法: {self.timers['embed_mult']*1000:.1f}ms ({self.timers['embed_mult']/self.timers['eval_total_time']*100:.1f}%)
+[CN]:
+- VDPF+ G[CN]: {self.timers['vdpf_plus_g_time']*1000:.1f}ms ({self.timers['vdpf_plus_g_time']/self.timers['eval_total_time']*100:.1f}%)
+- VDPF+ K[CN]: {self.timers['vdpf_plus_k_time']*1000:.1f}ms ({self.timers['vdpf_plus_k_time']/self.timers['eval_total_time']*100:.1f}%)
+- XOR[CN]: {self.timers['xor_operations']*1000:.1f}ms ({self.timers['xor_operations']/self.timers['eval_total_time']*100:.1f}%)
+- Embed[CN]: {self.timers['embed_mult']*1000:.1f}ms ({self.timers['embed_mult']/self.timers['eval_total_time']*100:.1f}%)
 """
         return report
 
 
 class ProfiledBatchWrapper:
-    """带性能分析的批量VDPF包装器"""
+    """[CN]VDPF[CN]"""
     
     def __init__(self, dataset_name):
-        # 使用ProfiledVDPF23而不是普通的VDPF23
+        # [CN]ProfiledVDPF23[CN]VDPF23
         self.vdpf = ProfiledVDPF23(
             domain_bits=17 if dataset_name == "siftsmall" else 20,
             security_param=128,
@@ -106,17 +106,17 @@ class ProfiledBatchWrapper:
         self.batch_wrapper = OptimizedBatchVDPFWrapper(self.vdpf)
         
     def eval_batch_with_profiling(self, key, start_pos: int, end_pos: int, party_id: int):
-        """带性能分析的批量评估"""
+        """[CN]"""
         batch_start_time = time.time()
         
-        # 重置计时器
+        # [CN]
         self.vdpf.reset_timers()
         
-        # 执行批量评估
+        # [CN]
         results = {}
         batch_size = end_pos - start_pos
         
-        # 测量不同大小的子批次
+        # [CN]
         sub_batch_sizes = [1, 10, 100, min(1000, batch_size)]
         
         for sub_batch_size in sub_batch_sizes:
@@ -125,24 +125,24 @@ class ProfiledBatchWrapper:
                 
             sub_batch_start = time.time()
             
-            # 评估一个子批次
+            # [CN]
             for i in range(start_pos, min(start_pos + sub_batch_size, end_pos)):
                 results[i] = self.vdpf.eval(party_id, key, i)
                 
             sub_batch_time = time.time() - sub_batch_start
-            print(f"\n子批次大小 {sub_batch_size}: {sub_batch_time*1000:.1f}ms, "
-                  f"平均每个: {sub_batch_time/sub_batch_size*1000:.3f}ms")
+            print(f"\n[CN] {sub_batch_size}: {sub_batch_time*1000:.1f}ms, "
+                  f"[CN]: {sub_batch_time/sub_batch_size*1000:.3f}ms")
         
-        # 评估剩余的
+        # [CN]
         for i in range(start_pos + sub_batch_sizes[-1], end_pos):
             results[i] = self.vdpf.eval(party_id, key, i)
         
         batch_total_time = time.time() - batch_start_time
         
-        # 打印性能报告
+        # print[CN]
         print(self.vdpf.get_timer_report())
-        print(f"\n批量评估总时间: {batch_total_time*1000:.1f}ms")
-        print(f"批量大小: {batch_size}")
-        print(f"平均每个位置: {batch_total_time/batch_size*1000:.3f}ms")
+        print(f"\n[CN]: {batch_total_time*1000:.1f}ms")
+        print(f"[CN]: {batch_size}")
+        print(f"[CN]: {batch_total_time/batch_size*1000:.3f}ms")
         
         return results

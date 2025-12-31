@@ -1,39 +1,39 @@
-# 数据集配置参数对比表
+# datasetconfigureparameters[CN]
 
-根据 `/home/anonymous/Test-Trident/src/domain_config.py` 中的配置，四个数据集的参数如下：
+[CN] `/home/anonymous/Test-Trident/src/domain_config.py` [CN]configure，[CN]dataset[CN]parameters[CN]：
 
-## 基本参数对比
+## [CN]parameters[CN]
 
-| 参数 | SIFTSMALL | LAION | TRIPCLICK | NFCORPUS |
+| parameters | SIFTSMALL | LAION | TRIPCLICK | NFCORPUS |
 |------|-----------|--------|-----------|-----------|
-| **描述** | SIFT Small数据集 | LAION数据集 | TripClick数据集 | NFCorpus数据集（生物医学领域） |
-| **文档数量** | 10,000 | 100,000 | 1,523,871 | 3,633 |
-| **查询数量** | 100 | 1,000 | 1,175 | 323 |
-| **向量维度** | 128 | 512 | 768 | 768 |
+| **[CN]** | SIFT Smalldataset | LAIONdataset | TripClickdataset | NFCorpusdataset（[CN]） |
+| **number of documents[CN]** | 10,000 | 100,000 | 1,523,871 | 3,633 |
+| **query[CN]** | 100 | 1,000 | 1,175 | 323 |
+| **vector dimension** | 128 | 512 | 768 | 768 |
 
-## 域参数配置
+## domain parametersconfigure
 
-| 参数 | SIFTSMALL | LAION | TRIPCLICK | NFCORPUS |
+| parameters | SIFTSMALL | LAION | TRIPCLICK | NFCORPUS |
 |------|-----------|--------|-----------|-----------|
 | **domain_bits** | 16 | 19 | 21 | 15 |
 | **domain_size** | 65,536 | 524,288 | 2,097,152 | 32,768 |
-| **支持的邻居列表数** | 65k | 524k | 2M | 32k |
-| **素数域 (prime)** | 2³¹ - 1 | 2³¹ - 1 | 2³¹ - 1 | 2³¹ - 1 |
-| **输出位数 (output_bits)** | 31 | 31 | 31 | 31 |
-| **安全参数 (κ)** | 31 | 31 | 31 | 31 |
+| **[CN]** | 65k | 524k | 2M | 32k |
+| **[CN] (prime)** | 2³¹ - 1 | 2³¹ - 1 | 2³¹ - 1 | 2³¹ - 1 |
+| **output[CN] (output_bits)** | 31 | 31 | 31 | 31 |
+| **[CN]parameters (κ)** | 31 | 31 | 31 | 31 |
 
-## HNSW 索引参数
+## HNSW indexparameters
 
-| 参数 | SIFTSMALL | LAION | TRIPCLICK | NFCORPUS |
+| parameters | SIFTSMALL | LAION | TRIPCLICK | NFCORPUS |
 |------|-----------|--------|-----------|-----------|
 | **M** | 64 | 64 | 128 | 32 |
 | **efConstruction** | 80 | 80 | 160 | 80 |
 | **efSearch** | 32 | 32 | 36 | 32 |
 | **layer** | 2 | 2 | 2 | 2 |
 
-## 数据规模分析
+## [CN]
 
-| 数据集 | 文档数 | 邻居列表条目数 (文档数×3层) | domain_size | 容量利用率 |
+| dataset | number of documents | [CN] (number of documents×3[CN]) | domain_size | [CN] |
 |--------|--------|---------------------------|-------------|------------|
 | SIFTSMALL | 10,000 | 30,000 | 65,536 | 45.8% |
 | LAION | 100,000 | 300,000 | 524,288 | 57.2% |

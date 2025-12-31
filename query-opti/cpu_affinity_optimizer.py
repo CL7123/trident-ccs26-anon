@@ -1,46 +1,46 @@
 """
-CPU亲和性优化：将进程绑定到特定物理核心
+CPU[CN]：[CN]bind[CN]
 """
 import os
 import multiprocessing
 
 def get_physical_cores():
-    """获取物理核心列表（排除超线程）"""
-    # 在AMD EPYC上，物理核心通常是0-15，超线程是16-31
+    """[CN]（[CN]）"""
+    # [CN]AMD EPYC[CN]，[CN]0-15，[CN]16-31
     return list(range(16))
 
 def set_process_affinity(server_id, process_id, cores_per_server=4):
     """
-    设置进程CPU亲和性
+    [CN]CPU[CN]
     
     Args:
-        server_id: 服务器ID (1, 2, 3)
-        process_id: 进程ID (0, 1, 2, 3)
-        cores_per_server: 每个服务器分配的核心数
+        server_id: [CN]ID (1, 2, 3)
+        process_id: [CN]ID (0, 1, 2, 3)
+        cores_per_server: cores allocated per server
     """
-    # 计算该进程应该绑定的核心
-    # Server 1: 核心 0-3
-    # Server 2: 核心 4-7
-    # Server 3: 核心 8-11
+    # calculate[CN]bind[CN]
+    # Server 1: [CN] 0-3
+    # Server 2: [CN] 4-7
+    # Server 3: [CN] 8-11
     base_core = (server_id - 1) * cores_per_server
     target_core = base_core + process_id
     
-    # 绑定到特定核心
+    # bind[CN]
     pid = os.getpid()
     os.sched_setaffinity(pid, {target_core})
     
-    print(f"[Server {server_id}, Process {process_id}] 绑定到核心 {target_core}")
+    print(f"[Server {server_id}, Process {process_id}] bind[CN] {target_core}")
     
 def get_optimal_process_count():
-    """根据CPU配置返回最优进程数"""
-    # 对于16核CPU，3个server，每个server 4个进程最优
+    """[CN]CPU[CN]return[CN]"""
+    # [CN]16[CN]CPU，3[CN]server，[CN]server 4[CN]
     return 4
 
 def print_cpu_topology():
-    """打印CPU拓扑结构"""
-    print("CPU拓扑结构（AMD EPYC 7R32）:")
-    print("L3缓存0: 核心0-3   → Server 1")
-    print("L3缓存1: 核心4-7   → Server 2") 
-    print("L3缓存2: 核心8-11  → Server 3")
-    print("L3缓存3: 核心12-15 → 系统/客户端")
-    print("\n建议：每个server使用4个进程，绑定到同一L3缓存域")
+    """printCPU[CN]"""
+    print("CPU[CN]（AMD EPYC 7R32）:")
+    print("L3[CN]0: [CN]0-3   → Server 1")
+    print("L3[CN]1: [CN]4-7   → Server 2") 
+    print("L3[CN]2: [CN]8-11  → Server 3")
+    print("L3[CN]3: [CN]12-15 → [CN]/[CN]")
+    print("\n[CN]：[CN]server[CN]4[CN]，bind[CN]L3[CN]")

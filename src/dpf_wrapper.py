@@ -1,6 +1,6 @@
 
 """
-VDPF包装器 - 封装(2,3)-VDPF的序列化和向量查询功能
+VDPF[CN] - [CN](2,3)-VDPF[CN]
 """
 
 import sys
@@ -21,58 +21,58 @@ from domain_config import get_config
 
 
 class VDPFVectorWrapper:
-    """VDPF向量查询包装器"""
+    """VDPF[CN]"""
     
     def __init__(self, dataset_name: str = "laion"):
         """
-        初始化VDPF包装器
+        initializeVDPF[CN]
         
         Args:
-            dataset_name: 数据集名称（使用预定义的安全配置）
+            dataset_name: Dataset[CN]（[CN]）
         """
         self.dataset_name = dataset_name
         self.config = get_config(self.dataset_name)
-        self.domain_bits = self.config.domain_bits  # 使用数据集配置的domain_bits
+        self.domain_bits = self.config.domain_bits  # [CN]Dataset[CN]domain_bits
         self.field_size = self.config.prime
-        # 创建VDPF23时传递数据集名称
+        # createVDPF23[CN]Dataset[CN]
         self.vdpf = VDPF23(self.domain_bits, security_param=self.config.kappa, 
                           field_size=self.field_size, dataset_name=self.dataset_name)
         
     def generate_keys(self, query_type: str, node_id: int, layer: int = None) -> List[str]:
         """
-        生成VDPF密钥
+        [CN]VDPF[CN]
         
         Args:
-            query_type: 查询类型 ('node' 或 'neighbor')
-            node_id: 节点ID
-            layer: 层数（仅邻居查询需要）
+            query_type: [CN] ('node' [CN] 'neighbor')
+            node_id: [CN]ID
+            layer: [CN]（[CN]）
             
         Returns:
-            3个序列化的密钥字符串
+            3[CN]
         """
-        # # 计算查询索引
+        # # calculate[CN]
         # if query_type == 'node':
         #     alpha = node_id
-        #     # 节点查询使用较小的域（100,000个节点）
+        #     # [CN]（100,000[CN]）
         #     if alpha >= 100000:
-        #         raise ValueError(f"节点ID {alpha} 超出范围 [0, 99999]")
+        #         raise ValueError(f"[CN]ID {alpha} [CN] [0, 99999]")
         # elif query_type == 'neighbor':
         #     if layer is None:
-        #         raise ValueError("邻居查询需要指定layer")
-        #     # 邻居查询使用线性索引
+        #         raise ValueError("[CN]layer")
+        #     # [CN]
         #     alpha = node_id * 3 + layer
-        #     # 检查范围（300,000个条目）
+        #     # [CN]（300,000[CN]）
         #     if alpha >= 300000:
-        #         raise ValueError(f"邻居索引 {alpha} 超出范围 [0, 299999]")
+        #         raise ValueError(f"[CN] {alpha} [CN] [0, 299999]")
         # else:
-        #     raise ValueError(f"未知的查询类型: {query_type}")
+        #     raise ValueError(f"[CN]: {query_type}")
         
         alpha = node_id
-        # 生成VDPF密钥
-        # 使用1作为输出值（用于选择向量）
+        # [CN]VDPF[CN]
+        # [CN]1[CN]（[CN]）
         keys = self.vdpf.gen(alpha, 1)
         
-        # 序列化密钥
+        # [CN]
         serialized_keys = []
         for key in keys:
             serialized = self._serialize_key(key)
@@ -82,23 +82,23 @@ class VDPFVectorWrapper:
     
     def deserialize_and_eval(self, serialized_key: str, party_id: int) -> np.ndarray:
         """
-        反序列化密钥并评估得到选择器向量
+        Deserialize keys[CN]
         
         Args:
-            serialized_key: 序列化的密钥
-            party_id: 参与方ID (1, 2, 或 3)
+            serialized_key: [CN]
+            party_id: [CN]ID (1, 2, [CN] 3)
             
         Returns:
-            选择器向量（one-hot向量的秘密份额）
+            [CN]（one-hot[CN]）
         """
-        # 反序列化密钥
+        # Deserialize keys
         key = self._deserialize_key(serialized_key)
         
-        # 评估VDPF
+        # [CN]VDPF
         domain_size = 2 ** self.domain_bits
         selector = np.zeros(domain_size, dtype=np.uint32)
         
-        # 对整个域进行评估
+        # [CN]
         for i in range(domain_size):
             selector[i] = self.vdpf.eval(key, i, party_id)
         
@@ -106,40 +106,40 @@ class VDPFVectorWrapper:
     
     def eval_at_position(self, key: VDPF23Key, position: int, party_id: int) -> int:
         """
-        在特定位置评估VDPF
+        [CN]VDPF
         
         Args:
-            key: VDPF23密钥对象
-            position: 评估位置
-            party_id: 参与方ID (1, 2, 或 3)
+            key: VDPF23[CN]
+            position: [CN]
+            party_id: [CN]ID (1, 2, [CN] 3)
             
         Returns:
-            该位置的值
+            [CN]
         """
         return self.vdpf.eval(party_id, key, position)
     
     def _serialize_key(self, key: VDPF23Key) -> str:
-        """序列化VDPF密钥为base64字符串"""
-        # 使用pickle序列化
+        """[CN]VDPF[CN]base64[CN]"""
+        # [CN]pickle[CN]
         serialized_bytes = pickle.dumps(key)
-        # 转换为base64以便传输
+        # [CN]base64[CN]
         return base64.b64encode(serialized_bytes).decode('utf-8')
     
     def _deserialize_key(self, serialized: str) -> VDPF23Key:
-        """从base64字符串反序列化VDPF密钥"""
-        # 从base64解码
+        """[CN]base64[CN]VDPF[CN]"""
+        # [CN]base64[CN]
         serialized_bytes = base64.b64decode(serialized.encode('utf-8'))
-        # 使用pickle反序列化
+        # [CN]pickle[CN]
         return pickle.loads(serialized_bytes)
     
     # def get_query_domain_size(self, query_type: str) -> int:
-    #     """获取查询类型对应的域大小"""
+    #     """[CN]"""
     #     if query_type == 'node':
-    #         return 100000  # 100k个节点
+    #         return 100000  # 100k[CN]
     #     elif query_type == 'neighbor':
-    #         return 300000  # 100k * 3层
+    #         return 300000  # 100k * 3[CN]
     #     else:
-    #         raise ValueError(f"未知的查询类型: {query_type}")
+    #         raise ValueError(f"[CN]: {query_type}")
 
 
 

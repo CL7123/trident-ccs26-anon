@@ -63,15 +63,15 @@ class VDPF23:
         
         # Initialize (2,3)-SSS for secret sharing with correct field size
         if dataset_name:
-            # 使用数据集配置
+            # [CN]Dataset[CN]
             from domain_config import get_config
             config = get_config(dataset_name)
-            # 更新域大小相关参数
+            # [CN]
             config.domain_bits = self.domain_bits
             config.domain_size = self.domain_size
             self.sss = MPC23SSS(config)
         else:
-            # 直接创建MPC实例（向后兼容）
+            # [CN]createMPCinstance（[CN]）
             self.sss = MPC23SSS()
         
     def embed_prime_to_binary(self, x_prime: int) -> int:
