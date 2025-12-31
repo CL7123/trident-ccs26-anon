@@ -1,42 +1,42 @@
-# [CN]1[CN]
+# stage1optimization[CN]description
+
+## optimization objective
+
+resolveconcurrentquery[CN]performancebottleneck:[CN]query[CN]share[CN]server[CN]connect,[CN]serializableexecute.
 
 ## [CN]
 
-[CN]query[CN]：[CN]query[CN]server[CN]，[CN]。
+### file:`server.py`
 
-## [CN]
+**modifymethod:** `_send_binary_exchange_data` (line 490-589)
 
-### file：`server.py`
-
-**[CN]：** `_send_binary_exchange_data` (line 490-589)
-
-#### [CN]（[CN]）
+#### optimizationbefore(usageshareconnect)
 
 ```python
 def _send_binary_exchange_data(self, target_server_id: int, query_id: str,
                                 e_shares: np.ndarray, f_shares: np.ndarray) -> bool:
-    # [CN]：[CN]query[CN]socket[CN]
-    sock = self.server_connections[target_server_id]  # ← [CN]！
+    # issue:[CN]queryshare[CN]socketconnect
+    sock = self.server_connections[target_server_id]  # ← shareconnect!
 
     try:
-        # [CN]
+        # senddata
         sock.sendall(...)
-        # [CN]
+        # receiveresponse
         response = sock.recv(...)
         return response.get('status') == 'success'
     except Exception as e:
-        # [CN]
-        # [CN]socket[CN]self.server_connections
+        # complex[CN]
+        # [CN]after[CN]socket[CN]self.server_connections
         ...
 ```
 
-**[CN]：**
-- [CN]query[CN]socket
-- [CN]A[CN]，[CN]B[CN]
-- [CN]query[CN]
-- [CN]
+**issueanalysis:**
+- [CN]querythread[CN]socket
+- threadAsenddatahour,threadB[CN]wait
+- [CN]concurrentqueryserializableexecute
+- throughput[CN]concurrent[CN]extension
 
-#### [CN]（[CN]）
+#### optimizationafter(usage[CN]hourconnect)
 
 ```python
 def _send_binary_exchange_data(self, target_server_id: int, query_id: str,
@@ -44,7 +44,7 @@ def _send_binary_exchange_data(self, target_server_id: int, query_id: str,
     sock = None
 
     try:
-        # [CN]query[CN]
+        # [CN]querycreateindependent[CN]hourconnect
         server_info = self.server_config[target_server_id]
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -53,62 +53,62 @@ def _send_binary_exchange_data(self, target_server_id: int, query_id: str,
         sock.settimeout(30)
         sock.connect((server_info['host'], server_info['port']))
 
-        # [CN]
+        # senddata
         sock.sendall(...)
-        # [CN]
+        # receiveresponse
         response = sock.recv(...)
         return response.get('status') == 'success'
 
     except Exception as e:
-        logger.error(f"[CN]: {e}")
+        logger.error(f"sendfailure: {e}")
         return False
 
     finally:
-        # [CN]
+        # [CN]close[CN]hourconnect
         if sock:
             try:
                 sock.close()
             except Exception as e:
-                logger.warning(f"[CN]socket[CN]: {e}")
+                logger.warning(f"closesockethour[CN]: {e}")
 ```
 
-**[CN]：**
-- ✅ [CN]query[CN]，[CN]
-- ✅ [CN]（[CN]）
-- ✅ [CN]query[CN]
-- ✅ [CN]
+**optimization[CN]:**
+- ✅ [CN]queryindependentconnect,[CN]
+- ✅ simplificationerrorhandle[CN]([CN]shareconnectstate)
+- ✅ concurrentquery[CN]truepositiveparallelexecute
+- ✅ throughput[CN]concurrent[CN]extension
 
-## [CN]
+## performance[CN]
 
-### test[CN]
+### testscene[CN]
 
-**[CN] = 4，[CN]4[CN]query：**
+**concurrent[CN] = 4,[CN]hourexecute4[CN]query:**
 
-**[CN]：**
+**optimizationbefore:**
 ```
-query1: [===[CN]===][[CN]]                     0.0-0.1[CN]
-query2:            [===[CN]===][===[CN]===][[CN]]  0.1-0.2[CN]
-query3:                        [===[CN]===][===[CN]===][[CN]]  0.2-0.3[CN]
-query4:                                    [===[CN]===][===[CN]===][[CN]]  0.3-0.4[CN]
+query1: [===send===][receive]                     0.0-0.1second
+query2:            [===wait===][===send===][receive]  0.1-0.2second
+query3:                        [===wait===][===send===][receive]  0.2-0.3second
+query4:                                    [===wait===][===send===][receive]  0.3-0.4second
 
-[CN]: 0.4[CN]
-[CN]: 4/0.4 = 10 qps（[CN]）
-```
-
-**[CN]：**
-```
-query1: [===[CN]===][[CN]]  0.0-0.1[CN]
-query2: [===[CN]===][[CN]]  0.0-0.1[CN] ([CN]!)
-query3: [===[CN]===][[CN]]  0.0-0.1[CN] ([CN]!)
-query4: [===[CN]===][[CN]]  0.0-0.1[CN] ([CN]!)
-
-[CN]: 0.1[CN]
-[CN]: 4/0.1 = 40 qps（[CN]）
+[CN]hour: 0.4second
+throughput: 4/0.4 = 10 qps([CN]onyesserial)
 ```
 
-### [CN]
+**optimizationafter:**
+```
+query1: [===send===][receive]  0.0-0.1second
+query2: [===send===][receive]  0.0-0.1second (parallel!)
+query3: [===send===][receive]  0.0-0.1second (parallel!)
+query4: [===send===][receive]  0.0-0.1second (parallel!)
 
-| [CN] | [CN] | [CN] | [CN] |
+[CN]hour: 0.1second
+throughput: 4/0.1 = 40 qps(truepositive[CN]parallel)
+```
+
+### [CN]performance[CN]
+
+| concurrent[CN] | optimizationbeforethroughput | optimizationafterthroughput | [CN]multiple |
 |---------|-------------|-------------|---------|
 | 1       | 1.30 qps    | 1.30 qps    | 1x      |
 | 2       | 2.21 qps    | 2.60 qps    | 1.2x    |
@@ -116,37 +116,37 @@ query4: [===[CN]===][[CN]]  0.0-0.1[CN] ([CN]!)
 | 8       | 2.11 qps    | 10.40 qps   | 4.9x    |
 | 16      | ~2 qps      | 20.80 qps   | 10.4x   |
 
-## [CN]
+## [CN]modify[CN]minute
 
-[CN]，[CN]：
-- `self.server_connections` [CN]（[CN]query）
-- `_send_to_server` [CN]（[CN]，[CN]）
-- `_establish_persistent_connections` [CN]（start[CN]，[CN]1[CN]）
-- [CN]query[CN]
+[CN]underfunctionality[CN]invariance,[CN]backward compatible:
+- `self.server_connections` dictionary[CN]retention([CN]statequery)
+- `_send_to_server` method([CN]usage,retention[CN]usage)
+- `_establish_persistent_connections` method(starthour[CN]connect,[CN]stage1[CN]usage)
+- [CN]queryhandle[CN]
 
-## [CN]
+## after[CN]optimization[CN]
 
-[CN]1[CN]，[CN]：
+[CN]stage1[CN],[CN]continueoptimization:
 
-**[CN]2：[CN]**
-- [CN]（[CN]server4[CN]）
-- query[CN]，[CN]
-- [CN]
+**stage2:connection pool**
+- [CN]size[CN]connection pool([CN]server4[CN]connect)
+- query[CN]poolinfetchconnect,[CN]
+- balancedconnectoverhead[CN]concurrent[CN]
 
-**[CN]3：[CN]IO**
-- [CN] `asyncio` [CN]server
-- [CN]IO，[CN]
-- [CN]：20x+
+**stage3:asynchronousIO**
+- usage `asyncio` overrideserver
+- non-blockingIO,single-threadedhandle[CN]connect
+- [CN]performance[CN]:20x+
 
-## [CN]
+## verificationmethod
 
-run[CN]test：
+runconcurrenttest:
 ```bash
 cd ~/trident/concurrent-test
 python concurrent_benchmark.py --dataset siftsmall --concurrent-levels "1,2,4,8,16" --queries-per-level 50
 ```
 
-[CN]：
-1. [CN]
-2. [CN]
-3. [CN]100%
+[CN]:
+1. throughputyesno[CN]concurrent[CN]
+2. lateyesno[CN]stable
+3. success[CN]yesno[CN]100%

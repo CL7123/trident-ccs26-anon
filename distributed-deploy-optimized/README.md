@@ -1,30 +1,30 @@
-# [CN]deploy[CN]
+# distributeddeployment[CN]
 
-[CN]deploy Trident [CN]file。
+[CN]directorypackage[CN]true[CN]networkenvironmentindeployment Trident system[CN]file.
 
-## [CN]
+## directory[CN]
 
 ```
 distributed-deploy/
-├── server.py          # [CN]server[CN]
-├── client.py          # [CN]client[CN]
-├── config.py          # [CN]configurefile
-├── deploy.sh          # [CN]deploy[CN]
-└── README.md          # [CN]
+├── server.py          # distributedservercode
+├── client.py          # distributedclientcode
+├── config.py          # networkprofile
+├── deploy.sh          # automatic[CN]deployment[CN]
+└── README.md          # [CN]documentation
 ```
 
-## [CN]
+## before[CN]require
 
-1. **[CN]server**：[CN]3[CN]server（[CN]AWS EC2[CN]）
-2. **Python[CN]**：[CN]server[CN]Python 3.8+
-3. **SSH[CN]**：[CN]SSH[CN]server
-4. **[CN]configure**：[CN] 8001-8003
+1. **[CN]server**:[CN]3[CN]server([CN]usageAWS EC2[CN])
+2. **Pythonenvironment**:[CN]serveron[CN]Python 3.8+
+3. **SSHvisit**:[CN]SSHvisit[CN]server
+4. **firewallconfiguration**:[CN]port 8001-8003
 
-## [CN]
+## faststart
 
-### 1. configureserver[CN]
+### 1. configurationserverinformation
 
-[CN] `config.py` file，[CN]serverIP[CN]：
+[CN] `config.py` file,[CN]serverIPaddress:
 
 ```python
 SERVERS = {
@@ -34,9 +34,9 @@ SERVERS = {
 }
 ```
 
-### 2. configuredeploy[CN]
+### 2. configurationdeployment[CN]
 
-[CN] `deploy.sh` file，[CN]serverIP：
+[CN] `deploy.sh` file,updateserverIP:
 
 ```bash
 SERVERS[1]="192.168.1.101"
@@ -44,37 +44,37 @@ SERVERS[2]="YOUR_SERVER_2_IP"
 SERVERS[3]="YOUR_SERVER_3_IP"
 ```
 
-### 3. deployserver
+### 3. deploymentserver
 
-[CN]deploy[CN]deploy：
+usagedeployment[CN]keydeployment:
 
 ```bash
 ./deploy.sh
 ```
 
-[CN] 1 [CN]deploy[CN]start[CN]server。
+selectoptions 1 [CN]deployment[CN]start[CN]server.
 
 ### 4. runclienttest
 
-[CN]runclient：
+[CN]onrunclient:
 
 ```bash
 cd ~/trident/distributed-deploy
 python3 client.py --dataset siftsmall --num-queries 10
 ```
 
-## [CN]deploy[CN]
+## manualdeployment[CN]
 
-[CN]deploy，[CN]：
+[CN]manualdeployment,[CN]under[CN]:
 
-### [CN]server[CN]：
+### [CN]serveron:
 
-1. **[CN]**：
+1. **synchronouscode**:
 ```bash
 rsync -avz -e "ssh -i your-key.pem" --exclude='venv/' ./ ubuntu@SERVER_IP:~/test/
 ```
 
-2. **startserver**（[CN]server[CN]）：
+2. **startserver**([CN]serveron):
 ```bash
 # server1
 python3 server.py --server-id 1 --dataset siftsmall
@@ -86,40 +86,40 @@ python3 server.py --server-id 2 --dataset siftsmall
 python3 server.py --server-id 3 --dataset siftsmall
 ```
 
-### [CN]client[CN]：
+### [CN]client[CN]on:
 
 ```bash
 python3 client.py --dataset siftsmall --num-queries 10
 ```
 
-## [CN]parameters
+## command-line argument
 
 ### serverparameters
 
 - `--server-id`: serverID (1, 2, [CN] 3)
-- `--dataset`: dataset[CN] (siftsmall, laion, tripclick, ms_marco, nfcorpus)
-- `--vdpf-processes`: VDPF[CN] ([CN]: 4)
+- `--dataset`: datasetname (siftsmall, laion, tripclick, ms_marco, nfcorpus)
+- `--vdpf-processes`: VDPFassessprocess[CN] (default: 4)
 
 ### clientparameters
 
-- `--dataset`: dataset[CN] ([CN]: siftsmall)
-- `--num-queries`: testquery[CN] ([CN]: 10)
-- `--no-report`: [CN]test[CN]
-- `--config`: [CN]configurefilepath
-- `--status-only`: [CN]server[CN]
+- `--dataset`: datasetname (default: siftsmall)
+- `--num-queries`: testqueryquantity (default: 10)
+- `--no-report`: [CN]savetestreport
+- `--config`: customprofilepath
+- `--status-only`: [CN]fetchserverstate
 
-## [CN]
+## networkrequire
 
-### AWS EC2 [CN]configure
+### AWS EC2 security[CN]configuration
 
 1. [CN]AWS[CN]
-2. [CN]EC2 -> [CN] -> [CN] -> [CN] -> [CN]
-3. [CN]，[CN]：
-   - [CN]: [CN]TCP
-   - [CN]: 8001-8003
-   - [CN]: 0.0.0.0/0 ([CN]IP)
+2. enterEC2 -> [CN] -> select[CN] -> security -> security[CN]
+3. [CN],add:
+   - type: customTCP
+   - portrange: 8001-8003
+   - [CN]: 0.0.0.0/0 ([CN]limit[CN]IP)
 
-### [CN]configure（[CN]）
+### localfirewallconfiguration([CN])
 
 ```bash
 # Ubuntu/Debian
@@ -132,72 +132,72 @@ sudo firewall-cmd --reload
 
 ## [CN]
 
-### 1. [CN]
+### 1. connecttimeout
 
-- [CN]/[CN]configure
-- [CN]serverIP[CN]
-- [CN]server[CN]run
+- checkfirewall/security[CN]configuration
+- verificationserverIPaddressyesnocorrect
+- [CN]serverpositive[CN]run
 
-### 2. SSH[CN]
+### 2. SSHconnectfailure
 
-- [CN]file[CN]：`chmod 400 your-key.pem`
-- [CN]（ubuntu/ec2-user）
-- [CN]SSH[CN]
+- checkkeyfilepermission:`chmod 400 your-key.pem`
+- verificationusername(ubuntu/ec2-user)
+- checkSSHportyesno[CN]
 
-### 3. [CN]start[CN]
+### 3. servicestartfailure
 
-- [CN]Python[CN]install[CN]
-- [CN]server[CN]：`tail -f server_X.log`
-- [CN]file[CN]
+- checkPythondependentyesnoinstall[CN]
+- [CN]serverlog:`tail -f server_X.log`
+- [CN]datafile[CN]correctposition
 
-### 4. query[CN]
+### 4. queryfailure
 
-- [CN]2[CN]server[CN]run
-- [CN]
-- [CN]dataset[CN]
+- [CN]2[CN]serverpositive[CN]run
+- checknetworkconnectyesnostable
+- verificationdatasetyesnocorrectload
 
-## [CN]
+## performanceoptimizationsuggestion
 
-1. **[CN]**：
-   - [CN]serverdeploy[CN]（AWS Region）
-   - [CN]IP[CN]（[CN]）
-   - [CN]TCP_NODELAY[CN]
+1. **networkoptimization**:
+   - [CN]serverdeployment[CN]locale(AWS Region)
+   - usageinside[CN]IP[CN]row[CN]([CN])
+   - enableTCP_NODELAY[CN]late
 
-2. **[CN]configure**：
-   - [CN]CPU[CN] `--vdpf-processes`
-   - [CN]CPU[CN]
+2. **processconfiguration**:
+   - root[CN]CPU[CN] `--vdpf-processes`
+   - monitorCPU[CN]memoryusage[CN]
 
-3. **[CN]**：
-   - [CN]SSD[CN]file
-   - [CN]start[CN]
+3. **dataoptimization**:
+   - usageSSD[CN]datafile
+   - [CN]processpool[CN]startlate
 
-## [CN]
+## monitor[CN]log
 
-- server[CN]：`~/test/distributed-deploy/server_X.log`
-- clienttest[CN]：`~/test/distributed-deploy/distributed_result.md`
+- serverlogposition:`~/test/distributed-deploy/server_X.log`
+- clienttestreport:`~/test/distributed-deploy/distributed_result.md`
 
-[CN]deploy[CN]：
+usagedeployment[CN]log:
 ```bash
 ./deploy.sh
-# [CN] 7
+# selectoptions 7
 ```
 
-## [CN]
+## securitynote[CN]item
 
-1. **[CN]**：
-   - [CN]TLS[CN]
-   - [CN]IP[CN]
-   - [CN]
+1. **production environmentsuggestion**:
+   - usageTLSencryption[CN]
+   - limitIPvisitrange
+   - [CN]updatesystem[CN]dependent
 
-2. **[CN]**：
-   - [CN]SSH[CN]
-   - [CN]
+2. **key[CN]**:
+   - [CN]SSHkey
+   - [CN]keycommit[CN]version control
 
-## [CN]
+## [CN]support
 
-[CN]，[CN]：
-1. server[CN]file
-2. [CN]
-3. [CN]configure
+[CN]issue,[CN]check:
+1. serverlogfile
+2. networkconnectstate
+3. firewallconfiguration
 
-[CN]。
+detailed[CN]errorinformation[CN]fast[CN]bit[CN]resolveissue.

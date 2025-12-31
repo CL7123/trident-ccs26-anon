@@ -1,23 +1,23 @@
-# [CN]test
+# concurrentperformance test
 
-[CN]test[CN]，[CN]test[CN]。
+[CN]yes[CN]simplification[CN]concurrenttest[CN],[CN]testdistributedsystem[CN]concurrentperformance.
 
 ## [CN]
 
-**[CN]**: `~/trident/distributed-deploy/server.py` [CN]！
-- [CN] `threading.Thread` [CN]client[CN]
-- [CN]server[CN]
-- [CN]client[CN]query[CN]
+**[CN]**: `~/trident/distributed-deploy/server.py` [CN]supportconcurrent!
+- usage `threading.Thread` [CN]clientconnectcreateindependentthread
+- [CN]modifyservercode
+- [CN]clientconcurrentsend[CN]query[CN]
 
-## file[CN]
+## filedescription
 
-- `config.py` - configurefile（serverIP、[CN]）
+- `config.py` - profile(serverIP, concurrent[CN])
 - `concurrent_benchmark.py` - [CN]test[CN]
 - `README.md` - [CN]file
 
-## [CN]
+## usagemethod
 
-### 1. startserver（[CN]3[CN]server[CN]）
+### 1. startserver([CN]3[CN]serveron)
 
 ```bash
 # server1
@@ -31,20 +31,20 @@ python server.py --server-id 2 --dataset siftsmall
 python server.py --server-id 3 --dataset siftsmall
 ```
 
-### 2. run[CN]test（[CN]client[CN]）
+### 2. runconcurrenttest([CN]client[CN]on)
 
 ```bash
 cd ~/trident/concurrent-test
 
-# [CN]test（[CN]: 1,2,4,8,16）
+# basictest(defaultconcurrent[CN]: 1,2,4,8,16)
 python concurrent_benchmark.py --dataset siftsmall --queries-per-level 50
 
-# [CN]
+# customconcurrent[CN]
 python concurrent_benchmark.py --dataset siftsmall \
   --concurrent-levels "1,2,4,8,16,32,64" \
   --queries-per-level 100
 
-# [CN]test
+# fasttest
 python concurrent_benchmark.py --dataset siftsmall \
   --concurrent-levels "1,2,4,8" \
   --queries-per-level 10
@@ -52,21 +52,21 @@ python concurrent_benchmark.py --dataset siftsmall \
 
 ## outputresult
 
-test[CN]output：
-1. **[CN]** - [CN]query[CN]
-2. **[CN]**:
-   - [CN]
-   - [CN] (queries/sec)
-   - [CN]
-   - P50/P95/P99[CN]
+test[CN]output:
+1. **real-time[CN]degree** - [CN]concurrent[CN]query[CN]degree
+2. **performancemetrics**:
+   - success[CN]
+   - throughput (queries/sec)
+   - averagelate
+   - P50/P95/P99late
 3. **resultfile** - `benchmark_results_*.json`
 
-[CN]output：
+exampleoutput:
 ```
 ====================================================================================================
-[CN]
+performance[CN]
 ====================================================================================================
-[CN]     [CN]      [CN](qps)      [CN](s)      P95[CN](s)      P99[CN](s)
+concurrent[CN]     success[CN]      throughput(qps)      averagelate(s)      P95late(s)      P99late(s)
 ----------------------------------------------------------------------------------------------------
 1            100.0       0.85            1.176           1.200           1.250
 2            100.0       1.65            1.212           1.280           1.320
@@ -76,16 +76,16 @@ test[CN]output：
 ====================================================================================================
 ```
 
-## test[CN]
+## testobjective
 
-[CN]：
-1. ✅ **[CN]**: [CN]
-2. ✅ **[CN]**: [CN]（[CN]）
-3. ✅ **[CN]**: [CN]
-4. ✅ **query[CN]**: [CN]query[CN]（[CN]）
+verificationsystem[CN]concurrentattribute:
+1. ✅ **[CN]extension**: throughput[CN]concurrent[CN]
+2. ✅ **stablelate**: late[CN]stable([CN]yespositive[CN])
+3. ✅ **[CN]dot**: [CN]system[CN]maximumthroughput[CN]concurrent[CN]
+4. ✅ **queryisolation**: [CN]query[CN]([CN]stable[CN]lateverification)
 
-## [CN] distributed-deploy [CN]
+## [CN] distributed-deploy [CN]relation
 
-- **[CN]**: [CN] `distributed-deploy/client.py` [CN] `DistributedClient` [CN]
-- **[CN]**: [CN]server[CN]
-- **[CN]**: [CN]test[CN]
+- **[CN]**: [CN]usage `distributed-deploy/client.py` in[CN] `DistributedClient` class
+- **simplification**: [CN]modifyservercode
+- **[CN]**: [CN]implementationconcurrenttest[CN]

@@ -1,36 +1,36 @@
-# [CN]query[CN] (Distributed-NL)
+# distributedneighbor listquerysystem (Distributed-NL)
 
-[CN]MPC[CN]，[CN]queryvector[CN]K[CN]index。
+[CN]yes[CN]MPC[CN]distributedneighbor list[CN]system,[CN]security[CN]queryvector[CN]K[CN]neighborindex.
 
-## [CN]
+## systemarchitecture
 
 ### [CN]distributed-deploy[CN]
 
-| [CN] | distributed-deploy | distributed-nl |
+| attribute | distributed-deploy | distributed-nl |
 |------|-------------------|----------------|
-| **[CN]** | queryvector[CN] | query[CN] |
-| **input** | [CN]index | query[CN]index |
-| **output** | [CN]vector[CN] | K[CN]index |
-| **[CN]** | 8001-8003 | 9001-9003 |
-| **[CN]** | nodes_shares.npy | neighbors_shares.npy |
+| **functionality** | queryvectorcontent | queryneighbor list |
+| **input** | nodeindex | querynodeindex |
+| **output** | [CN]vectorvalue | K[CN]neighborindex |
+| **port** | 8001-8003 | 9001-9003 |
+| **data** | nodes_shares.npy | neighbors_shares.npy |
 
-## [CN]configure
+## networkconfiguration
 
-- **client → server**: [CN]IP[CN]
+- **client → server**: usage[CN]IP[CN]
   - Server1: `192.168.1.101:9001`
   - Server2: `192.168.1.102:9002`
   - Server3: `192.168.1.103:9003`
 
-- **server ↔ server**: [CN]IP[CN]
+- **server ↔ server**: usage[CN]IP[CN]
   - Server1: `10.0.1.101:9001`
   - Server2: `10.0.1.102:9002`
   - Server3: `10.0.1.103:9003`
 
-## [CN]
+## faststart
 
 ### 1. startserver
 
-[CN]server[CN]run：
+[CN]serveronrun:
 
 ```bash
 # server1
@@ -46,37 +46,37 @@ python server.py --server-id 3 --dataset siftsmall --vdpf-processes 4
 ### 2. runclienttest
 
 ```bash
-# [CN]test
+# basictest
 python client.py --dataset siftsmall --num-queries 10
 
 # test[CN]dataset
 python client.py --dataset laion --num-queries 5
 
-# [CN]server[CN]
+# [CN]serverstate
 python client.py --status-only
 ```
 
-## deploy[CN]
+## deployment[CN]
 
-### [CN]server
+### synchronous[CN]server
 
 ```bash
 ./deploy.sh
 ```
 
-### [CN]server[CN]start[CN]
+### [CN]serveronstartservice
 
 ```bash
-# start[CN]server
+# start[CN]neighbor listserver
 ./start-servers.sh
 
 # stop[CN]server
 ./stop-servers.sh
 ```
 
-## [CN]
+## performanceoptimization
 
-### 1. TCPparameters[CN]（[CN]server[CN]）
+### 1. TCPparametersoptimization([CN]serverexecute)
 
 ```bash
 sudo sysctl -w net.core.rmem_max=268435456
@@ -85,58 +85,58 @@ sudo sysctl -w net.ipv4.tcp_rmem="4096 87380 268435456"
 sudo sysctl -w net.ipv4.tcp_wmem="4096 65536 268435456"
 ```
 
-### 2. [CN]
+### 2. process[CN]optimization
 
-[CN]CPU[CN]：
+root[CN]CPU[CN]:
 ```bash
 python server.py --server-id 1 --vdpf-processes 32  # [CN]64[CN]
 ```
 
-## dataset[CN]
+## datasetsupport
 
-| dataset | [CN](K) | [CN] | [CN] |
+| dataset | neighbor[CN](K) | node[CN] | state |
 |--------|-----------|--------|------|
-| siftsmall | 100 | 10,000 | ✅ [CN] |
-| laion | 36 | 100,000 | ✅ [CN] |
-| nfcorpus | 10 | 3,633 | ✅ [CN] |
-| tripclick | 36 | 1.5M | 🟡 [CN] |
+| siftsmall | 100 | 10,000 | ✅ [CN]support |
+| laion | 36 | 100,000 | ✅ [CN]support |
+| nfcorpus | 10 | 3,633 | ✅ [CN]support |
+| tripclick | 36 | 1.5M | 🟡 [CN]data[CN] |
+
+## monitorfunctionality
+
+system[CN]automatic[CN]display:
+- [CN]stage[CN]executetime
+- network[CN]size[CN]velocity
+- neighbor listqueryaccuracy
+- detailed[CN]performancestatistics
+
+## testreport
+
+testresult[CN]automaticsave[CN] `nl_result.md`,package[CN]:
+- detailed[CN]querytimefactorization
+- network[CN]statistics
+- accuracyassess
+- performance analysis
 
 ## [CN]
 
-[CN]：
-- [CN]
-- [CN]
-- [CN]query[CN]
-- [CN]
+### connectfailure
+- checksecurity[CN]yesno[CN]9001-9003port
+- acknowledgmentserverpositive[CN]listencorrect[CN]port
+- verificationnetworkconnected[CN]
 
-## test[CN]
+### data[CN]error
+- system[CN]usageMSG_WAITALLoptimization,[CN]issue
+- [CN]issue,checknetworkstable[CN]
 
-testresult[CN] `nl_result.md`，[CN]：
-- [CN]query[CN]
-- [CN]
-- [CN]
-- [CN]
+### accuracyissue
+- [CN]neighbors_shares.npydatacorrectgenerate
+- verificationgroundtruthdataformatmatch
 
-## [CN]
+## advancedfunctionality
 
-### [CN]
-- [CN]9001-9003[CN]
-- [CN]server[CN]
-- [CN]
+### customserverconfiguration
 
-### [CN]
-- [CN]MSG_WAITALL[CN]，[CN]
-- [CN]，[CN]
-
-### [CN]
-- [CN]neighbors_shares.npy[CN]generated
-- [CN]groundtruth[CN]
-
-## [CN]
-
-### [CN]serverconfigure
-
-[CN] `custom_servers.json`:
+create `custom_servers.json`:
 ```json
 {
   "1": {"host": "192.168.1.101", "port": 9001},
@@ -145,16 +145,16 @@ testresult[CN] `nl_result.md`，[CN]：
 }
 ```
 
-[CN]configure：
+usagecustomconfiguration:
 ```bash
 python client.py --config custom_servers.json
 ```
 
-## [CN]vectorquery[CN]
+## [CN]vectorquerysystem[CN]
 
-[CN]vector[CN]：
-1. [CN] `distributed-nl` queryK[CN]index
-2. [CN] `distributed-deploy` [CN]vector[CN]
-3. [CN]client[CN]
+[CN]vectorsearchstream[CN]:
+1. usage `distributed-nl` queryK[CN]neighborindex
+2. usage `distributed-deploy` [CN]neighbor[CN]vectorcontent
+3. [CN]clientcomputationexactsimilarity[CN]sort
 
-[CN]。
+[CN]minute[CN]flexibility[CN]performanceoptimizationnull[CN].

@@ -1,85 +1,85 @@
-## Basicquery-vector neighbor-neighbor list
+## [CN]basic[CN]query-vector neighbor-neighbor list
 ## /home/anonymous/Test-Trident/src/domain_config.py
-Includes all dataset configurations and function calls
+package[CN]dataset[CN]configuration[CN]function
 
- - Supported datasets: siftsmall, laion, tripclick, ms_marco
- - Configuration includes: vector dimension、number of documents、HNSWparameters(M, efConstruction, efSearch)、domain parameters
- - Usage: config = get_config("siftsmall")
+ - support[CN]dataset: siftsmall, laion, tripclick, ms_marco
+ - configurationcontent: vectordimension, number of documents, HNSWparameters(M, efConstruction, efSearch), [CN]parameters
+ - usage[CN]: config = get_config("siftsmall")
 
 ## /home/anonymous/Test-Trident/src/index-builder.py
-python src/index-builder.py --dataset siftsmall use this format to build index with different dataset configurations
+python src/index-builder.py --dataset siftsmall [CN]formatselect[CN]dataset[CN]configuration[CN]indexparameters[CN]rowbuild
 
- - Default input path:
+ - defaultinputpath:
   /home/anonymous/Test-Trident/dataset/{dataset}/base.fvecs
-  - Default output path: /home/anonymous/Test-Trident/dataset/{dataset}/
+  - defaultoutputpath: /home/anonymous/Test-Trident/dataset/{dataset}/
 
 ## /home/anonymous/Test-Trident/src/searcher.py
 
 python src/searcher.py --dataset siftsmall 
 
-🔍 Input files (lines 325-328)
+🔍 inputfile (lines 325-328)
 
-  1. Query vector file:
+  1. queryvectorfile:
   {base_path}/query.fvecs
-  Example: /home/anonymous/Test-Trident/dataset/siftsmall/query.fvecs
+  [CN]: /home/anonymous/Test-Trident/dataset/siftsmall/query.fvecs
 
   2. Ground Truthfile:
   {base_path}/gt.ivecs  
-  Example: /home/anonymous/Test-Trident/dataset/siftsmall/gt.ivecs
+  [CN]: /home/anonymous/Test-Trident/dataset/siftsmall/gt.ivecs
 
-  3. Index node file (index-builder.py generated):
+  3. indexnodefile (index-builder.py generate):
   {base_path}/nodes.bin
-  Example: /home/anonymous/Test-Trident/dataset/siftsmall/nodes.bin
+  [CN]: /home/anonymous/Test-Trident/dataset/siftsmall/nodes.bin
 
-  4. index[CN]file (index-builder.py generated):
+  4. indexneighborfile (index-builder.py generate):
   {base_path}/neighbors.bin
-  Example: /home/anonymous/Test-Trident/dataset/siftsmall/neighbors.bin
+  [CN]: /home/anonymous/Test-Trident/dataset/siftsmall/neighbors.bin
 
- - outputfile: /home/anonymous/Test-Trident/result.md ([CN]result)
+ - outputfile: /home/anonymous/Test-Trident/result.md (searchresult)
 
 ## /home/anonymous/Test-Trident/src/share_data.py
-[CN]HNSWindex[CN]，generatedMPC[CN]
+[CN]HNSWindexdata[CN]row[CN]share,generateMPC[CN]
 
 python src/share_data.py --dataset siftsmall
 
- - Input files:
-   - {dataset}/nodes.bin ([CN]vector)
-   - {dataset}/neighbors.bin ([CN])
- - output[CN]: /home/anonymous/Test-Trident/dataset/{dataset}/
+ - inputfile:
+   - {dataset}/nodes.bin (nodevector)
+   - {dataset}/neighbors.bin (neighborrelation)
+ - outputdirectory: /home/anonymous/Test-Trident/dataset/{dataset}/
    - server_1/nodes_shares.npy, neighbors_shares.npy, metadata.json
    - server_2/nodes_shares.npy, neighbors_shares.npy, metadata.json
    - server_3/nodes_shares.npy, neighbors_shares.npy, metadata.json
 
 ## /home/anonymous/Test-Trident/src/basic_functionalities.py
-(2,3)-Shamir[CN]MPC[CN]
+(2,3)-Shamir[CN]share[CN]MPC[CN]functionalityimplementation
 
- - [CN]: MPC23SSS
- - [CN]:
-   - share_secret(): generated[CN]
-   - reconstruct(): [CN]
-   - Open(): [CN]
- - [CN]MPC[CN]: F_Rand, F_Zero, F_Mult, F_SoP, F_CheckZero
+ - [CN]class: MPC23SSS
+ - [CN]functionality:
+   - share_secret(): generate[CN]
+   - reconstruct(): refactoring[CN]
+   - Open(): [CN]refactoring[CN]detection
+ - [CN]comment[CN]MPCprotocol: F_Rand, F_Zero, F_Mult, F_SoP, F_CheckZero
 
 ## /home/anonymous/Test-Trident/src/dpf_wrapper.py
-VDPF (vectorDPF) [CN]，[CN]index[CN]
+VDPF (vectorDPF) wrapper[CN],[CN]protection[CN]indexvisit
 
- - [CN]: VDPFVectorWrapper
- - [CN]:
-   - generate_keys(): generatedDPF[CN]
-   - evaluate_vector(): [CN]vector[CN]
-   - [CN]
+ - [CN]class: VDPFVectorWrapper
+ - [CN]functionality:
+   - generate_keys(): generateDPFkey
+   - evaluate_vector(): assessvectorvalue
+   - supportbatch processing[CN]cacheoptimization
 
 ## /home/anonymous/Test-Trident/src/secure_multiplication.py
-[CN]server[CN]，[CN]
+securitymultiplicationserverimplementation,[CN]computationin[CN]multiplication[CN]
 
- - [CN]: NumpyMultiplicationServer
- - [CN]:
-   - [CN]Beaver[CN]
-   - [CN]vector[CN]
-   - [CN]
+ - [CN]class: NumpyMultiplicationServer
+ - [CN]functionality:
+   - usageBeaver[CN]tupleimplementationsecuritymultiplication
+   - support vector[CN]multiplication
+   - handle[CN]minuterefactoring[CN]
 
 ## /home/anonymous/Test-Trident/src/config.md
-HNSWparametersconfigure[CN]，[CN]dataset[CN]parameters
+HNSWparametersconfiguration[CN],column[CN]dataset[CN]detailedparameters
 
 ```
 dataset dim docs queries efsearch efconstruction layer M
