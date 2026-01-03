@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-[CN]
-calculate Server [CN] Client [CN]（[CN]）
+Memory usage analysis script
+Calculates Server and Client memory usage (based on data file sizes)
 """
 
 import os
@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List
 
-# Set up logging
+# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] [MemAnalysis] %(message)s',
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class MemoryAnalyzer:
-    """[CN]"""
+    """Memory usage analyzer"""
 
     def __init__(self, base_dir: str = "~/trident/dataset"):
         self.base_dir = base_dir
@@ -30,19 +30,19 @@ class MemoryAnalyzer:
         self.results = {}
 
     def get_file_size_mb(self, filepath: str) -> float:
-        """[CN]（MB）"""
+        """Get file size (MB)"""
         if os.path.exists(filepath):
             return os.path.getsize(filepath) / (1024 ** 2)
         return 0.0
 
     def get_file_size_gb(self, filepath: str) -> float:
-        """[CN]（GB）"""
+        """Get file size (GB)"""
         if os.path.exists(filepath):
             return os.path.getsize(filepath) / (1024 ** 3)
         return 0.0
 
     def get_directory_size_gb(self, dirpath: str) -> float:
-        """[CN]（GB）"""
+        """Get total size of all files in directory (GB)"""
         total_size = 0
         if os.path.exists(dirpath):
             for root, dirs, files in os.walk(dirpath):
@@ -51,11 +51,11 @@ class MemoryAnalyzer:
                     try:
                         total_size += os.path.getsize(filepath)
                     except OSError as e:
-                        logger.warning(f"[CN] {filepath}: {e}")
+                        logger.warning(f"Cannot access file {filepath}: {e}")
         return total_size / (1024 ** 3)
 
     def analyze_server_memory(self, dataset: str, server_id: int) -> Dict:
-        """[CN] server [CN]"""
+        """Analyze memory usage for a single server"""
         server_data = {
             'nodes_shares_gb': 0.0,
             'neighbor_lists_gb': 0.0,
@@ -74,7 +74,7 @@ class MemoryAnalyzer:
             server_data['details'].append(f"nodes_shares.npy: {size_gb:.3f} GB")
             logger.debug(f"  nodes_shares.npy: {size_gb:.3f} GB")
         else:
-            logger.warning(f"  nodes_shares.npy [CN]: {nodes_file}")
+            logger.warning(f"  nodes_shares.npy does not exist: {nodes_file}")
 
         # 2. neighbors_shares.npy
         neighbors_file = os.path.join(dataset_dir, "neighbors_shares.npy")
@@ -84,7 +84,7 @@ class MemoryAnalyzer:
             server_data['details'].append(f"neighbors_shares.npy: {size_gb:.3f} GB")
             logger.debug(f"  neighbors_shares.npy: {size_gb:.3f} GB")
         else:
-            # [CN] neighbor_list_*.npy
+            # Try old format neighbor_list_*.npy
             neighbor_pattern = os.path.join(dataset_dir, "neighbor_list_*.npy")
             neighbor_files = glob.glob(neighbor_pattern)
             neighbor_total = 0.0
@@ -97,9 +97,9 @@ class MemoryAnalyzer:
             server_data['neighbor_lists_gb'] = neighbor_total
 
             if neighbor_total == 0:
-                logger.warning(f"  neighbors_shares.npy [CN]: {neighbors_file}")
+                logger.warning(f"  neighbors_shares.npy does not exist: {neighbors_file}")
 
-        # 3. triples ([CN] triples [CN])
+        # 3. triples (in separate triples directory)
         triples_dir = os.path.join(self.base_dir, "triples", f"server_{server_id}")
         if os.path.exists(triples_dir):
             triples_pattern = os.path.join(triples_dir, "triples_*.npy")
@@ -114,9 +114,9 @@ class MemoryAnalyzer:
 
             server_data['triples_gb'] = triples_total
         else:
-            logger.warning(f"  triples [CN]: {triples_dir}")
+            logger.warning(f"  triples directory does not exist: {triples_dir}")
 
-        # calculate[CN]
+        # Calculate total
         server_data['total_gb'] = (server_data['nodes_shares_gb'] +
                                    server_data['neighbor_lists_gb'] +
                                    server_data['triples_gb'])
@@ -124,7 +124,7 @@ class MemoryAnalyzer:
         return server_data
 
     def analyze_client_memory(self, dataset: str) -> Dict:
-        """[CN] client [CN]"""
+        """Analyze client memory usage"""
         client_data = {
             'nodes_mb': 0.0,
             'dpf_keys_mb': 0.0,
@@ -134,8 +134,8 @@ class MemoryAnalyzer:
 
         dataset_dir = os.path.join(self.base_dir, dataset)
 
-        # 1. [CN]（[CN]）
-        # [CN] nodes.bin [CN] nodes.npy
+        # 1. Original node vectors (for verification)
+        # Try nodes.bin or nodes.npy
         nodes_file_bin = os.path.join(dataset_dir, "nodes.bin")
         nodes_file_npy = os.path.join(dataset_dir, "nodes.npy")
 
@@ -150,10 +150,10 @@ class MemoryAnalyzer:
             client_data['details'].append(f"nodes.npy: {size_mb:.2f} MB")
             logger.debug(f"  nodes.npy: {size_mb:.2f} MB")
         else:
-            logger.warning(f"  nodes file [CN]: {nodes_file_bin} [CN] {nodes_file_npy}")
+            logger.warning(f"  nodes file does not exist: {nodes_file_bin} or {nodes_file_npy}")
 
-        # 2. DPF keys [CN]（[CN]Test results[CN]）
-        # [CN] client_cost Test results
+        # 2. DPF keys size (from previous test results)
+        # Try to read client_cost test results
         cost_files = glob.glob(f"client_cost_{dataset}_*.json")
         if cost_files:
             latest_file = sorted(cost_files)[-1]
@@ -161,26 +161,26 @@ class MemoryAnalyzer:
                 with open(latest_file, 'r') as f:
                     data = json.load(f)
                     if 'statistics' in data and 'key_size' in data['statistics']:
-                        # key_size [CN]key[CN]，[CN] × 3 ([CN]servers)
+                        # key_size is the size of a single key, needs × 3 (three servers)
                         single_key_kb = data['statistics']['key_size']['mean']
                         dpf_keys_mb = (single_key_kb * 3) / 1024  # KB → MB
                         client_data['dpf_keys_mb'] = dpf_keys_mb
                         client_data['details'].append(f"DPF keys (3×): {dpf_keys_mb:.2f} MB")
                         logger.debug(f"  DPF keys: {dpf_keys_mb:.2f} MB (from {latest_file})")
             except Exception as e:
-                logger.warning(f"  [CN] DPF key [CN]: {e}")
+                logger.warning(f"  Cannot read DPF key size: {e}")
         else:
-            logger.warning(f"  [CN] {dataset} [CN] client_cost Test results，DPF key [CN] 0")
+            logger.warning(f"  client_cost test results for {dataset} not found, DPF key size set to 0")
 
-        # calculate[CN]
+        # Calculate total
         client_data['total_mb'] = client_data['nodes_mb'] + client_data['dpf_keys_mb']
 
         return client_data
 
     def analyze_dataset(self, dataset: str) -> Dict:
-        """[CN]Dataset[CN]"""
+        """Analyze memory usage for a single dataset"""
         logger.info(f"\n{'='*80}")
-        logger.info(f"[CN]Dataset: {dataset.upper()}")
+        logger.info(f"Analyzing dataset: {dataset.upper()}")
         logger.info(f"{'='*80}")
 
         result = {
@@ -193,13 +193,13 @@ class MemoryAnalyzer:
 
         dataset_dir = os.path.join(self.base_dir, dataset)
         if not os.path.exists(dataset_dir):
-            logger.warning(f"Dataset[CN]: {dataset_dir}")
+            logger.warning(f"Dataset directory does not exist: {dataset_dir}")
             return result
 
         result['exists'] = True
 
-        # [CN]3[CN]servers
-        logger.info("\nServer [CN]:")
+        # Analyze 3 servers
+        logger.info("\nServer-side memory usage:")
         server_totals = []
         for server_id in [1, 2, 3]:
             logger.info(f"\n  Server {server_id}:")
@@ -207,31 +207,31 @@ class MemoryAnalyzer:
             result['servers'][server_id] = server_data
             server_totals.append(server_data['total_gb'])
 
-            logger.info(f"    [CN]: {server_data['nodes_shares_gb']:.3f} GB")
-            logger.info(f"    [CN]: {server_data['neighbor_lists_gb']:.3f} GB")
-            logger.info(f"    [CN]: {server_data['triples_gb']:.3f} GB")
-            logger.info(f"    [CN]: {server_data['total_gb']:.3f} GB")
+            logger.info(f"    Node shares: {server_data['nodes_shares_gb']:.3f} GB")
+            logger.info(f"    Neighbor lists: {server_data['neighbor_lists_gb']:.3f} GB")
+            logger.info(f"    Triples: {server_data['triples_gb']:.3f} GB")
+            logger.info(f"    Total: {server_data['total_gb']:.3f} GB")
 
-        # calculate[CN]
+        # Calculate average
         if server_totals:
             result['server_avg_gb'] = sum(server_totals) / len(server_totals)
-            logger.info(f"\n  Server [CN]: {result['server_avg_gb']:.3f} GB")
+            logger.info(f"\n  Server average memory: {result['server_avg_gb']:.3f} GB")
 
-        # [CN] Client
-        logger.info(f"\nClient [CN]:")
+        # Analyze Client
+        logger.info(f"\nClient-side memory usage:")
         client_data = self.analyze_client_memory(dataset)
         result['client'] = client_data
 
-        logger.info(f"  [CN]: {client_data['nodes_mb']:.2f} MB")
+        logger.info(f"  Node vectors: {client_data['nodes_mb']:.2f} MB")
         logger.info(f"  DPF keys: {client_data['dpf_keys_mb']:.2f} MB")
-        logger.info(f"  [CN]: {client_data['total_mb']:.2f} MB")
+        logger.info(f"  Total: {client_data['total_mb']:.2f} MB")
 
         return result
 
     def run_analysis(self):
-        """[CN]"""
+        """Run complete memory analysis"""
         logger.info("="*80)
-        logger.info("[CN]")
+        logger.info("Starting memory usage analysis")
         logger.info("="*80)
 
         for dataset in self.datasets:
@@ -243,16 +243,16 @@ class MemoryAnalyzer:
         self.save_results()
 
     def print_summary(self):
-        """print[CN]"""
+        """Print summary table"""
         logger.info(f"\n\n{'='*100}")
-        logger.info("[CN]")
+        logger.info("Memory Usage Summary")
         logger.info(f"{'='*100}\n")
 
-        # [CN]
+        # Table header
         logger.info(f"{'Dataset':<15} {'Server (GB)':<15} {'Client (MB)':<15} {'Compass Server (GB)':<20} {'Compass Client (MB)':<20}")
         logger.info(f"{'-'*100}")
 
-        # Compass [CN]（[CN]）
+        # Compass data (for comparison)
         compass_data = {
             'laion': {'server': 0.95, 'client': 5.49},
             'siftsmall': {'server': 6.19, 'client': 35.84},
@@ -264,7 +264,7 @@ class MemoryAnalyzer:
             server_gb = result['server_avg_gb']
             client_mb = result['client']['total_mb']
 
-            # [CN] Compass [CN]
+            # Get Compass data
             compass = compass_data.get(dataset, {'server': '-', 'client': '-'})
             compass_server = compass['server'] if isinstance(compass['server'], str) else f"{compass['server']:.2f}"
             compass_client = compass['client'] if isinstance(compass['client'], str) else f"{compass['client']:.2f}"
@@ -273,8 +273,8 @@ class MemoryAnalyzer:
 
         logger.info(f"{'='*100}\n")
 
-        # Markdown [CN]
-        logger.info("\nMarkdown [CN]:")
+        # Markdown format
+        logger.info("\nMarkdown table format:")
         logger.info("```")
         logger.info("| Dataset   | Trident Server (GB) | Trident Client (MB) | Compass Server (GB) | Compass Client (MB) |")
         logger.info("|-----------|---------------------|---------------------|---------------------|---------------------|")
@@ -291,7 +291,7 @@ class MemoryAnalyzer:
         logger.info("```\n")
 
     def save_results(self):
-        """[CN] JSON [CN]"""
+        """Save results to JSON file"""
         import time
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         filename = f"memory_analysis_{timestamp}.json"
@@ -299,16 +299,16 @@ class MemoryAnalyzer:
         with open(filename, 'w') as f:
             json.dump(self.results, f, indent=2)
 
-        logger.info(f"[CN]: {filename}")
+        logger.info(f"Detailed results saved to: {filename}")
 
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description='[CN]')
+    parser = argparse.ArgumentParser(description='Memory usage analysis')
     parser.add_argument('--base-dir', type=str, default='~/trident/dataset',
-                       help='Dataset[CN]')
+                       help='Dataset base directory')
     parser.add_argument('--verbose', action='store_true',
-                       help='[CN]')
+                       help='Show detailed logs')
 
     args = parser.parse_args()
 

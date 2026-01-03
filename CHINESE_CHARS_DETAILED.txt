@@ -1,0 +1,231 @@
+================================================================================
+DETAILED CHINESE CHARACTER BREAKDOWN BY FILE
+================================================================================
+Total: 2,461 Chinese characters across 10 files
+Date: 2026-01-02
+
+================================================================================
+
+FILE: query_debug/vector-server.py
+Chinese Characters: 565 (23.0% of total)
+Risk: CRITICAL
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/query_debug/vector-server.py
+
+Sample Chinese Content:
+- Line 61: """阶段2的批handlecalculate函数"""
+- Line 103: """阶段4的批handleReconstruct函数"""
+- Line 173: self.phase2_processes = 28  # 阶段2使用28processes
+- Line 174: self.phase4_processes = 28  # 阶段4使用28processes
+- Line 224: logger.info(f"三元组已自动从本地目录Load")
+- Line 260: logger.info(f"Phase 1: 多processesVDPF evaluation...")
+- Line 395-399: Multiple lines with "阶段1-4" (Phase 1-4) timing logs
+
+================================================================================
+
+FILE: distributed-deploy-optimized/server.py
+Chinese Characters: 511 (20.8% of total)
+Risk: CRITICAL
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/distributed-deploy-optimized/server.py
+
+Sample Chinese Content:
+- Line 133: # Global function forprocesses池调用
+- Line 152-163: Multiple Chinese comments about process configuration
+- Line 217-225: Chinese comments about loading data
+- Line 353-398: Phase descriptions with mixed Chinese/English
+- Line 845-862: Query completion logs with Chinese phase names
+- Line 892: """清理查询相关文件和交换数据"""
+
+================================================================================
+
+FILE: distributed-deploy-optimized/server_optimized.py
+Chinese Characters: 457 (18.6% of total)
+Risk: CRITICAL
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/distributed-deploy-optimized/server_optimized.py
+
+Sample Chinese Content:
+- Line 3: 优化版分布式服务器 - 阶段2和阶段4使用多processes并行
+- Line 58-61: # 阶段2并行calculate函数
+- Line 100-103: # 阶段4并行calculate函数
+- Line 173-177: Process configuration comments in Chinese
+- Line 260-398: Phase execution logs with Chinese descriptions
+- Line 727-728: Phase process count logs in Chinese
+
+================================================================================
+
+FILE: distributed-deploy-optimized/client.py
+Chinese Characters: 224 (9.1% of total)
+Risk: HIGH
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/distributed-deploy-optimized/client.py
+
+Sample Chinese Content:
+- Line 77: logger.info(f"Attempting to connect to server {server_id}， {attempt + 1} 次...")
+- Line 98: time.sleep(2)  # 重试前等待
+- Line 104: return successful_connections >= 2  # 至少需要2个Server
+- Line 107: """Send to specified serverversend请求，支持errorhandle"""
+- Line 590: | Query No. | Node ID | 阶段1 (VDPF) | 阶段2 (e/f) | 阶段3 (交换) | 阶段4 (重构) | 总时间 | 余弦相似degree |
+- Line 606-611: Phase timing summary in Chinese
+
+================================================================================
+
+FILE: distributed-nl/server.py
+Chinese Characters: 221 (9.0% of total)
+Risk: HIGH
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/distributed-nl/server.py
+
+Sample Chinese Content:
+- Line 776: # 批量重构
+- Line 782: # 提取批次数据
+- Line 786: # 构建份额矩阵
+- Line 793: # 填入其他服务器数据
+- Line 800: # 重构
+- Line 845-850: Query completion logs with Chinese phase names
+- Line 855-859: Network transfer statistics in Chinese
+- Line 892: """清理查询相关文件和交换数据"""
+
+================================================================================
+
+FILE: distributed-deploy-optimized/distributed_result.md
+Chinese Characters: 114 (4.6% of total)
+Risk: MEDIUM
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/distributed-deploy-optimized/distributed_result.md
+
+Chinese Content Type: Markdown document with Chinese "秒" (seconds) throughout
+- Multiple instances of timing measurements ending with "秒"
+- Example: "0.11秒", "0.07秒", "0.24秒", etc.
+
+Action: Replace all "秒" with "s" or "seconds"
+
+================================================================================
+
+FILE: query_debug/vector-client.py
+Chinese Characters: 108 (4.4% of total)
+Risk: MEDIUM
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/query_debug/vector-client.py
+
+Sample Chinese Content:
+- Line 31: # 预load原始data用于validation
+- Line 122: print(f"\nDEBUG: Reconstructionfront的份额information:")
+- Line 133-137: Phase timing prints with "秒" (seconds)
+- Line 159: print("Error：至少需要2个server的response才能Reconstruction")
+- Line 164: # usefront两个可用的server进行Reconstruction
+- Line 196: # DEBUG: 打印Reconstructionback的vectorinformation
+
+================================================================================
+
+FILE: query_debug/memory_analysis.py
+Chinese Characters: 103 (4.2% of total)
+Risk: MEDIUM
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/query_debug/memory_analysis.py
+
+Sample Chinese Content:
+- Line 4: 测量TridentSearcher的静态storage和动态memoryuse
+- Line 13: """测量静态filestoragesize"""
+- Line 24: # 基础file
+- Line 75: # total计
+- Line 91: """生成与论文table格对比的result"""
+- Line 109: print("TridentSearcher memoryconsumption对比analysis")
+- Line 141-150: Markdown output with Chinese labels
+
+================================================================================
+
+FILE: query/vector-client.py
+Chinese Characters: 98 (4.0% of total)
+Risk: MEDIUM
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/query/vector-client.py
+
+Sample Chinese Content:
+- Line 31: # 预load原始data用于validation
+- Line 122: print(f"\nDEBUG: Reconstructionfront的份额information:")
+- Line 126: print(f"  Server {sid} 份额First 5 values: {shares[:5]}")
+- Line 133-137: Phase timing prints with "秒"
+- Line 159: print("Error：至少需要2个server的response才能Reconstruction")
+- Line 246-271: Markdown table with Chinese headers
+
+================================================================================
+
+FILE: distributed-nl/nl_result.md
+Chinese Characters: 60 (2.4% of total)
+Risk: LOW
+Path: /home/cuilei/sp-trident/trident-ccs26-anon/distributed-nl/nl_result.md
+
+Chinese Content Type: Markdown document with "秒" (seconds) in timing results
+- Lines 70-74, 116-120, 162-166, 208-212, etc.
+- All instances are timing measurements
+
+Action: Replace all "秒" with "s"
+
+================================================================================
+
+RECOMMENDED ACTIONS BY FILE:
+================================================================================
+
+CRITICAL Priority (Top 3 files):
+1. query_debug/vector-server.py
+   - 565 characters to remove
+   - Focus: Comments, function docstrings, logging messages
+   - Estimated time: 2 hours
+
+2. distributed-deploy-optimized/server.py
+   - 511 characters to remove
+   - Focus: Comments, phase descriptions, logging
+   - Estimated time: 2 hours
+
+3. distributed-deploy-optimized/server_optimized.py
+   - 457 characters to remove
+   - Focus: Comments, optimization notes, logging
+   - Estimated time: 1.5 hours
+
+HIGH Priority:
+4. distributed-deploy-optimized/client.py (224 chars) - 1 hour
+5. distributed-nl/server.py (221 chars) - 1 hour
+
+MEDIUM Priority:
+6-10. Remaining files (583 chars total) - 1.5 hours
+
+Total estimated time: 9-10 hours
+
+================================================================================
+
+SYSTEMATIC REPLACEMENT STRATEGY:
+================================================================================
+
+1. Comments (# Chinese text):
+   Find pattern: # .*[\u4e00-\u9fff]
+   Action: Translate to English or remove
+
+2. Print/Log messages:
+   Find pattern: (print|logger\.\w+)\(.*[\u4e00-\u9fff]
+   Action: Replace Chinese with English equivalents
+
+3. "秒" (seconds):
+   Find: 秒
+   Replace: s
+
+4. Mixed Chinese-English strings:
+   Examples:
+   - "Reconstructionfront的份额" -> "Reconstruction shares"
+   - "data集" -> "dataset"
+   - "服务器" -> "server"
+   - "交换" -> "exchange"
+
+5. Function docstrings:
+   Find: """.*[\u4e00-\u9fff].*"""
+   Action: Rewrite in English
+
+================================================================================
+
+AUTOMATION SCRIPT SUGGESTION:
+================================================================================
+
+You can use sed or Python to automate some replacements:
+
+# Simple replacements:
+sed -i 's/秒/s/g' [file]
+sed -i 's/data集/dataset/g' [file]
+sed -i 's/服务器/server/g' [file]
+sed -i 's/交换/exchange/g' [file]
+
+For complex cases, manual review is recommended to ensure
+accuracy and proper English translation.
+
+================================================================================

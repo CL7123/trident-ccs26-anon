@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-[CN]
-[CN] DPF key [CN]、[CN]、[CN]calculate[CN]
-"""
+
 
 import sys
 import os
@@ -16,14 +13,13 @@ import psutil
 from typing import Dict, List
 from collections import defaultdict
 
-# [CN]
 sys.path.append('~/trident/distributed-deploy')
 sys.path.append('~/trident/src')
 
 from client import DistributedClient
-from config import SERVERS  # [CN]（[CN]IP）
+from config import SERVERS 
 
-# Set up logging
+
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] [ClientCost] %(message)s',
@@ -33,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class ClientCostBenchmark:
-    """[CN]"""
+
 
     def __init__(self, dataset: str = "siftsmall"):
         self.dataset = dataset
@@ -41,14 +37,13 @@ class ClientCostBenchmark:
         self.process = psutil.Process()
         self.results = []
 
-        # connect[CN]
         if not self.client.connect_to_servers():
-            raise RuntimeError("[CN]connect[CN]")
+            raise RuntimeError("Unable to connect to servers")
 
-        logger.info(f"[CN]initialize[CN] - Dataset: {dataset}")
+        logger.info(f"Client cost test initialized - Dataset: {dataset}")
 
     def measure_single_query(self, node_id: int) -> Dict:
-        """[CN]"""
+        """Measure cost metrics for a single query"""
         metrics = {
             'node_id': node_id,
             'key_gen_time_ms': 0,
@@ -61,31 +56,31 @@ class ClientCostBenchmark:
             'success': False
         }
 
-        # [CN]
+
         mem_before = self.process.memory_info().rss / 1024 / 1024  # MB
 
-        # [CN]
+
         total_start = time.perf_counter()
 
         try:
-            # 1. [CN] DPF Key Generation
+            # 1. Measure DPF Key Generation
             keygen_start = time.perf_counter()
             keys = self.client.dpf_wrapper.generate_keys('node', node_id)
             keygen_time = (time.perf_counter() - keygen_start) * 1000  # ms
 
-            # [CN] Key Size ([CN]key[CN])
+            # Measure Key Size (average size per key)
             key_sizes = [len(k) for k in keys]
             avg_key_size = sum(key_sizes) / len(key_sizes) / 1024  # KB
 
             metrics['key_gen_time_ms'] = keygen_time
             metrics['key_size_kb'] = avg_key_size
 
-            # 2. send[CN] ([CN])
+            # 2. Send query to servers (network time)
             query_id = f'cost_benchmark_{time.time()}_{node_id}'
 
             network_start = time.perf_counter()
 
-            # [CN]
+            # Query all servers in parallel
             import concurrent.futures
             def query_server(server_id):
                 request = {
@@ -105,26 +100,26 @@ class ClientCostBenchmark:
                         server_id, response = future.result()
                         results[server_id] = response
                     except Exception as e:
-                        logger.error(f"[CN]: {e}")
+                        logger.error(f"Error querying server: {e}")
 
             network_time = (time.perf_counter() - network_start) * 1000  # ms
             metrics['network_time_ms'] = network_time
 
-            # [CN]
+            # Check results
             successful_responses = {sid: r for sid, r in results.items()
                                   if r and r.get('status') == 'success'}
 
             if len(successful_responses) < 2:
-                logger.warning(f"[CN] {node_id} [CN]：[CN]2[CN]")
+                logger.warning(f"Query {node_id} failed: fewer than 2 servers responded successfully")
                 return metrics
 
-            # 3. [CN] Secret Share Reconstruction
+            # 3. Measure Secret Share Reconstruction
             recon_start = time.perf_counter()
             final_result = self.client._reconstruct_final_result(successful_responses)
             recon_time = (time.perf_counter() - recon_start) * 1000  # ms
             metrics['recon_time_ms'] = recon_time
 
-            # 4. [CN] Distance Computation ([CN])
+            # 4. Measure Distance Computation (cosine similarity)
             distance_start = time.perf_counter()
             similarity = self.client._verify_result(node_id, final_result)
             distance_time = (time.perf_counter() - distance_start) * 1000  # ms
@@ -133,43 +128,43 @@ class ClientCostBenchmark:
             metrics['success'] = True
 
         except Exception as e:
-            logger.error(f"[CN] {node_id} [CN]: {e}")
+            logger.error(f"Error measuring query {node_id}: {e}")
             metrics['success'] = False
 
-        # [CN]
+        # Total time
         total_time = (time.perf_counter() - total_start) * 1000  # ms
         metrics['total_client_time_ms'] = total_time
 
-        # [CN] ([CN])
+        # Record memory usage (memory increase after query)
         mem_after = self.process.memory_info().rss / 1024 / 1024  # MB
         metrics['memory_mb'] = mem_after - mem_before
 
         return metrics
 
     def run_benchmark(self, num_queries: int = 50):
-        """[CN]"""
+        """Run benchmark test"""
         logger.info(f"\n{'='*80}")
-        logger.info(f"[CN]")
+        logger.info(f"Starting client cost test")
         logger.info(f"Dataset: {self.dataset}")
-        logger.info(f"Number of queries[CN]: {num_queries}")
+        logger.info(f"Number of queries: {num_queries}")
         logger.info(f"{'='*80}\n")
 
-        # [CN]
-        logger.info("[CN]...")
+        # Warmup
+        logger.info("Warmup queries...")
         for i in range(5):
             node_id = random.randint(0, 9999)
             try:
                 self.measure_single_query(node_id)
             except Exception as e:
-                logger.warning(f"[CN] {i+1} [CN]: {e}")
+                logger.warning(f"Warmup query {i+1} failed: {e}")
 
-        logger.info("[CN]，[CN]\n")
+        logger.info("Warmup completed, starting formal test\n")
 
-        # [CN]
+        # Formal test
         for i in range(num_queries):
             node_id = random.randint(0, 9999)
 
-            logger.info(f"[CN] {i+1}/{num_queries} (node_id={node_id})...")
+            logger.info(f"Test query {i+1}/{num_queries} (node_id={node_id})...")
             metrics = self.measure_single_query(node_id)
 
             if metrics['success']:
@@ -179,35 +174,35 @@ class ClientCostBenchmark:
                           f"Distance: {metrics['distance_time_ms']:.2f}ms, "
                           f"Total: {metrics['total_client_time_ms']:.2f}ms")
             else:
-                logger.warning(f"  ✗ [CN]")
+                logger.warning(f"  ✗ Query failed")
 
-            # [CN]10[CN]
+            # Wait after every 10 queries
             if (i + 1) % 10 == 0:
-                logger.info(f"[CN] {i+1}/{num_queries} [CN]，[CN]2[CN]...\n")
+                logger.info(f"Completed {i+1}/{num_queries} queries, waiting 2 seconds...\n")
                 time.sleep(2)
 
-        # [CN]
+        # Aggregate results
         self.print_summary()
         self.save_results()
 
     def print_summary(self):
-        """print[CN]"""
+        """Print statistical summary"""
         if not self.results:
-            logger.error("[CN]")
+            logger.error("No successful query results")
             return
 
         logger.info(f"\n{'='*80}")
-        logger.info("[CN] - [CN]")
+        logger.info("Client Cost Analysis - Statistical Summary")
         logger.info(f"{'='*80}")
         logger.info(f"Dataset: {self.dataset}")
-        logger.info(f"[CN]Number of queries: {len(self.results)}")
+        logger.info(f"Successful queries: {len(self.results)}")
         logger.info(f"{'='*80}\n")
 
-        # calculate[CN]
+        # Calculate statistics
         def calc_stats(values):
-            """calculate[CN]，[CN]"""
+            """Calculate mean and standard deviation, remove outliers"""
             arr = np.array(values)
-            # [CN]3[CN]
+            # Remove outliers exceeding 3 standard deviations
             mean = np.mean(arr)
             std = np.std(arr)
             filtered = arr[np.abs(arr - mean) <= 3 * std]
@@ -223,7 +218,7 @@ class ClientCostBenchmark:
                 'count': len(filtered)
             }
 
-        # [CN]
+        # Extract metrics
         key_gen_times = [r['key_gen_time_ms'] for r in self.results]
         key_sizes = [r['key_size_kb'] for r in self.results]
         recon_times = [r['recon_time_ms'] for r in self.results]
@@ -232,7 +227,7 @@ class ClientCostBenchmark:
         total_times = [r['total_client_time_ms'] for r in self.results]
         memories = [r['memory_mb'] for r in self.results]
 
-        # calculate[CN]
+        # Compute statistics
         key_gen_stats = calc_stats(key_gen_times)
         key_size_stats = calc_stats(key_sizes)
         recon_stats = calc_stats(recon_times)
@@ -241,8 +236,8 @@ class ClientCostBenchmark:
         total_stats = calc_stats(total_times)
         memory_stats = calc_stats(memories)
 
-        # print[CN]
-        logger.info(f"{'[CN]':<25} {'[CN]':<15} {'[CN]':<15} {'[CN]':<15} {'[CN]':<15}")
+        # Print results
+        logger.info(f"{'Metric':<25} {'Mean':<15} {'Std Dev':<15} {'Min':<15} {'Max':<15}")
         logger.info(f"{'-'*85}")
         logger.info(f"{'DPF Key Gen (ms)':<25} {key_gen_stats['mean']:<15.3f} {key_gen_stats['std']:<15.3f} {key_gen_stats['min']:<15.3f} {key_gen_stats['max']:<15.3f}")
         logger.info(f"{'DPF Key Size (KB)':<25} {key_size_stats['mean']:<15.3f} {key_size_stats['std']:<15.3f} {key_size_stats['min']:<15.3f} {key_size_stats['max']:<15.3f}")
@@ -253,14 +248,14 @@ class ClientCostBenchmark:
         logger.info(f"{'Memory Usage (MB)':<25} {memory_stats['mean']:<15.3f} {memory_stats['std']:<15.3f} {memory_stats['min']:<15.3f} {memory_stats['max']:<15.3f}")
         logger.info(f"{'='*85}\n")
 
-        # print[CN]（[CN]）
-        logger.info("[CN]:")
+        # Print table format (for paper)
+        logger.info("Paper table format:")
         logger.info(f"| {self.dataset:<10} | {key_gen_stats['mean']:>6.2f} ± {key_gen_stats['std']:>5.2f} | "
                    f"{key_size_stats['mean']:>8.2f} | {recon_stats['mean']:>6.2f} ± {recon_stats['std']:>5.2f} | "
                    f"{distance_stats['mean']:>6.2f} ± {distance_stats['std']:>5.2f} | "
                    f"{memory_stats['mean']:>7.2f} | {total_stats['mean']:>7.2f} ± {total_stats['std']:>6.2f} |")
 
-        # [CN]
+        # Store statistics
         self.stats = {
             'key_gen': key_gen_stats,
             'key_size': key_size_stats,
@@ -272,10 +267,10 @@ class ClientCostBenchmark:
         }
 
     def save_results(self):
-        """[CN]Test results"""
+        """Save test results"""
         timestamp = time.strftime("%Y%m%d_%H%M%S")
 
-        # [CN]
+        # Save detailed results
         detail_filename = f"client_cost_{self.dataset}_{timestamp}.json"
         with open(detail_filename, 'w') as f:
             json.dump({
@@ -286,19 +281,19 @@ class ClientCostBenchmark:
                 'raw_results': self.results
             }, f, indent=2)
 
-        logger.info(f"[CN]: {detail_filename}")
+        logger.info(f"Detailed results saved to: {detail_filename}")
 
     def cleanup(self):
-        """[CN]"""
+        """Clean up resources"""
         self.client.disconnect_from_servers()
 
 
 def main():
-    parser = argparse.ArgumentParser(description='[CN]')
+    parser = argparse.ArgumentParser(description='Client cost analysis test')
     parser.add_argument('--dataset', type=str, default='siftsmall',
-                       help='Dataset[CN] (siftsmall, nfcorpus, laion, tripclick)')
+                       help='Dataset name (siftsmall, nfcorpus, laion, tripclick)')
     parser.add_argument('--num-queries', type=int, default=50,
-                       help='[CN]Number of queries[CN]')
+                       help='Number of test queries')
 
     args = parser.parse_args()
 
@@ -307,7 +302,7 @@ def main():
         benchmark.run_benchmark(num_queries=args.num_queries)
         benchmark.cleanup()
     except Exception as e:
-        logger.error(f"[CN]: {e}")
+        logger.error(f"Test failed: {e}")
         import traceback
         traceback.print_exc()
 

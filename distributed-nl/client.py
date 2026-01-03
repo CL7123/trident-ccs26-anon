@@ -13,7 +13,7 @@ import datetime
 import logging
 from typing import Dict, List, Optional
 
-# Add project path
+# Add project paths
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('~/trident/src')
 sys.path.append('~/trident/standardDPF')
@@ -29,7 +29,7 @@ from share_data import DatasetLoader
 try:
     from config import CLIENT_SERVERS as SERVERS
 except ImportError:
-    # Default configuration - Client uses public IP
+    # Default configuration - client uses public IP
     SERVERS = {
         1: {"host": "192.168.1.101", "port": 9001},
         2: {"host": "192.168.1.102", "port": 9002},
@@ -49,46 +49,46 @@ class DistributedNeighborClient:
         self.config = get_config(dataset)
         self.dpf_wrapper = OptimizedVDPFVectorWrapper(dataset_name=dataset)
         self.mpc = MPC23SSS(self.config)
-        
-        # [CN]
+
+        # Preload original neighbor data for verification
         data_dir = f"~/trident/dataset/{dataset}"
-        
-        # [CN]
+
+        # Try to load neighbor list data
         neighbors_path = os.path.join(data_dir, "neighbors.bin")
         if os.path.exists(neighbors_path):
-            # [CN]HNSW[CN]
+            # Load HNSW format neighbor list
             self.original_neighbors = self._load_hnsw_neighbors(neighbors_path)
             if self.original_neighbors is not None:
-                # calculate[CN]number of nodes（[CN] / [CN]）
+                # Calculate actual node count (linear index count / number of layers)
                 num_layers = 3
                 num_nodes = len(self.original_neighbors) // num_layers
-                logger.info(f"[CN]HNSW[CN]: [CN]={len(self.original_neighbors)}, [CN]={num_nodes}")
+                logger.info(f"Preloaded HNSW neighbor data: linear_index_count={len(self.original_neighbors)}, node_count={num_nodes}")
             else:
-                logger.warning("[CN]neighbors.bin[CN]")
+                logger.warning("Failed to load neighbors.bin")
         else:
-            # [CN]ivecs[CN]groundtruth[CN]
+            # Try ivecs format groundtruth as fallback
             gt_path = os.path.join(data_dir, "gt.ivecs")
             if os.path.exists(gt_path):
                 self.original_neighbors = self._load_ivecs(gt_path)
-                logger.info(f"[CN]groundtruth[CN]: {self.original_neighbors.shape}")
+                logger.info(f"Preloaded groundtruth neighbor data: {self.original_neighbors.shape}")
             else:
                 self.original_neighbors = None
-                logger.warning("[CN]，[CN]")
-        
-        # [CN] - [CN]9001-9003
+                logger.warning("Neighbor list data not found, cannot verify results")
+
+        # Server configuration - update port to 9001-9003
         self.servers_config = servers_config or {
             server_id: {
                 "host": info["host"],
-                "port": 9000 + server_id  # [CN]9001-9003[CN]
+                "port": 9000 + server_id  # Neighbor list service uses ports 9001-9003
             }
             for server_id, info in SERVERS.items()
         }
         self.connections = {}
         self.connection_retry_count = 3
         self.connection_timeout = 10
-        
+
     def _load_ivecs(self, filename):
-        """[CN]ivecs[CN]"""
+        """Load ivecs format file"""
         with open(filename, 'rb') as f:
             vectors = []
             while True:
@@ -101,55 +101,55 @@ class DistributedNeighborClient:
             return np.array(vectors)
     
     def _load_hnsw_neighbors(self, filename):
-        """[CN]HNSW[CN]neighbors.bin[CN]"""
+        """Load HNSW format neighbors.bin file"""
         try:
             import struct
             with open(filename, 'rb') as f:
-                # [CN]header
+                # Read header
                 num_nodes = struct.unpack('<I', f.read(4))[0]
                 num_layers = struct.unpack('<I', f.read(4))[0]
                 max_neighbors = struct.unpack('<I', f.read(4))[0]
-                _ = struct.unpack('<I', f.read(4))[0]  # [CN]0
-                
-                logger.info(f"HNSW[CN]: [CN]={num_nodes}, [CN]={num_layers}, [CN]={max_neighbors}")
-                
-                # [CN]：2[CN] + [CN]
+                _ = struct.unpack('<I', f.read(4))[0]  # Skip extra 0
+
+                logger.info(f"HNSW data: node_count={num_nodes}, layer_count={num_layers}, max_neighbors={max_neighbors}")
+
+                # Data size per node: 2 metadata + neighbor data for each layer
                 ints_per_node = 2 + num_layers * max_neighbors
-                
-                # create[CN]，[CN]
-                # [CN] = node_id * num_layers + layer
+
+                # Create linearized neighbor data array consistent with server-side storage format
+                # Linear index = node_id * num_layers + layer
                 linear_neighbors = {}
-                
+
                 for node_id in range(num_nodes):
-                    # [CN]
+                    # Read all data for this node
                     node_data = struct.unpack(f'<{ints_per_node}I', f.read(ints_per_node * 4))
-                    
-                    # [CN]2[CN]
-                    # [CN]：[metadata1, metadata2, layer0_neighbors, layer1_neighbors, layer2_neighbors]
-                    
-                    # [CN]
+
+                    # Skip first 2 metadata values
+                    # Data layout: [metadata1, metadata2, layer0_neighbors, layer1_neighbors, layer2_neighbors]
+
+                    # Store neighbor data for each layer
                     for layer in range(num_layers):
-                        # [CN]2[CN]
+                        # Correct format should skip first 2 metadata values
                         start_idx = 2 + layer * max_neighbors
                         end_idx = start_idx + max_neighbors
                         layer_neighbors = list(node_data[start_idx:end_idx])
-                        
-                        # calculate[CN]
+
+                        # Calculate linear index
                         linear_idx = node_id * num_layers + layer
-                        
-                        # [CN]128[CN]（[CN]4294967295[CN]）
+
+                        # Store all 128 neighbors (including 4294967295 padding values)
                         linear_neighbors[linear_idx] = layer_neighbors
-                
+
                 return linear_neighbors
-                
+
         except Exception as e:
-            logger.error(f"[CN]HNSW[CN]: {e}")
+            logger.error(f"Error loading HNSW neighbor data: {e}")
             import traceback
             traceback.print_exc()
             return None
-        
+
     def connect_to_servers(self):
-        """connect[CN]"""
+        """Connect to all neighbor list servers"""
         successful_connections = 0
         
         for server_id, server_info in self.servers_config.items():
@@ -159,102 +159,102 @@ class DistributedNeighborClient:
             connected = False
             for attempt in range(self.connection_retry_count):
                 try:
-                    logger.info(f"[CN]connect[CN] {server_id} ({host}:{port})，[CN] {attempt + 1} [CN]...")
-                    
+                    logger.info(f"Attempting to connect to neighbor list server {server_id} ({host}:{port}), attempt {attempt + 1}...")
+
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.settimeout(self.connection_timeout)
                     sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-                    
+
                     sock.connect((host, port))
                     self.connections[server_id] = sock
-                    logger.info(f"[CN]connect[CN] {server_id}")
+                    logger.info(f"Successfully connected to neighbor list server {server_id}")
                     successful_connections += 1
                     connected = True
                     break
-                    
+
                 except socket.timeout:
-                    logger.warning(f"connect[CN] {server_id} [CN]")
+                    logger.warning(f"Connection to neighbor list server {server_id} timed out")
                 except ConnectionRefusedError:
-                    logger.warning(f"[CN] {server_id} [CN]connect")
+                    logger.warning(f"Neighbor list server {server_id} refused connection")
                 except Exception as e:
-                    logger.warning(f"connect[CN] {server_id} [CN]: {e}")
-                
+                    logger.warning(f"Failed to connect to neighbor list server {server_id}: {e}")
+
                 if attempt < self.connection_retry_count - 1:
-                    time.sleep(2)  # [CN]
-            
+                    time.sleep(2)  # Wait before retry
+
             if not connected:
-                logger.error(f"[CN]connect[CN] {server_id}")
-        
-        logger.info(f"[CN]connect[CN] {successful_connections}/{len(self.servers_config)} [CN]")
-        return successful_connections >= 2  # [CN]2servers
-    
+                logger.error(f"Unable to connect to neighbor list server {server_id}")
+
+        logger.info(f"Successfully connected to {successful_connections}/{len(self.servers_config)} neighbor list servers")
+        return successful_connections >= 2  # At least 2 servers needed
+
     def _send_request(self, server_id: int, request: dict) -> Optional[dict]:
-        """[CN]send[CN]，[CN]process"""
+        """Send request to specified server with error handling"""
         if server_id not in self.connections:
-            logger.error(f"[CN]connect[CN] {server_id}")
+            logger.error(f"Not connected to server {server_id}")
             return None
-        
+
         sock = self.connections[server_id]
-        
+
         try:
-            # [CN]send[CN]
+            # Use binary protocol to send requests containing keys
             if 'dpf_key' in request:
-                # [CN]，[CN]
+                # Increase timeout for query requests
                 old_timeout = sock.gettimeout()
-                sock.settimeout(60)  # 60[CN]
-                
-                # [CN]send[CN]
+                sock.settimeout(60)  # 60 second timeout
+
+                # Send request using binary protocol
                 BinaryProtocol.send_binary_request(
-                    sock, 
+                    sock,
                     request['command'],
                     request['dpf_key'],
                     request.get('query_id')
                 )
-                
-                # receive[CN]
+
+                # Receive response
                 response = BinaryProtocol.receive_response(sock)
-                
-                # [CN]
+
+                # Restore original timeout
                 sock.settimeout(old_timeout)
                 return response
             else:
-                # [CN]JSON
+                # Other requests use JSON
                 request_data = json.dumps(request).encode()
                 sock.sendall(len(request_data).to_bytes(4, 'big'))
                 sock.sendall(request_data)
-                
-                # receive[CN]
+
+                # Receive response
                 length_bytes = sock.recv(4)
                 if not length_bytes:
-                    raise ConnectionError("connect[CN]")
-                
+                    raise ConnectionError("Connection closed")
+
                 length = int.from_bytes(length_bytes, 'big')
                 data = b''
                 while len(data) < length:
                     chunk = sock.recv(min(length - len(data), 4096))
                     if not chunk:
-                        raise ConnectionError("receive[CN]connect[CN]")
+                        raise ConnectionError("Connection interrupted while receiving data")
                     data += chunk
-                
+
                 return json.loads(data.decode())
-                
+
         except Exception as e:
-            logger.error(f"[CN] {server_id} [CN]: {e}")
+            logger.error(f"Error communicating with server {server_id}: {e}")
             return None
     
     def test_distributed_neighbor_query(self, query_node_id: int = 0):
-        """[CN]"""
-        # [CN]VDPF[CN] - [CN]
+        """Test distributed neighbor list query"""
+        # Generate VDPF keys for neighbor query
         keys = self.dpf_wrapper.generate_keys('neighbor', query_node_id)
-        
-        # [CN]ID
+
+        # Generate query ID
         query_id = f'nl_distributed_test_{time.time()}_{query_node_id}'
-        
-        logger.info(f"[CN]，[CN]ID: {query_node_id}, [CN]ID: {query_id}")
-        
-        # [CN]
+
+        logger.info(f"Starting distributed neighbor list query, query_node_id: {query_node_id}, query_id: {query_id}")
+
+        # Query all servers in parallel
         start_time = time.time()
-        
+
         def query_server(server_id):
             request = {
                 'command': 'query_neighbor_list',
@@ -263,31 +263,31 @@ class DistributedNeighborClient:
             }
             response = self._send_request(server_id, request)
             return server_id, response
-        
-        # [CN]
+
+        # Execute queries in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.connections)) as executor:
             futures = [executor.submit(query_server, sid) for sid in self.connections]
             results = {}
-            
+
             for future in concurrent.futures.as_completed(futures):
                 try:
                     server_id, response = future.result()
                     results[server_id] = response
                 except Exception as e:
-                    logger.error(f"[CN]: {e}")
-        
-        # [CN]
-        successful_responses = {sid: r for sid, r in results.items() 
+                    logger.error(f"Error querying server: {e}")
+
+        # Check results
+        successful_responses = {sid: r for sid, r in results.items()
                               if r and r.get('status') == 'success'}
-        
+
         if len(successful_responses) < 2:
-            logger.error("[CN]：[CN]2[CN]")
+            logger.error("Query failed: fewer than 2 servers returned successful responses")
             for server_id, result in results.items():
                 if not result or result.get('status') != 'success':
-                    logger.error(f"[CN] {server_id}: {result}")
+                    logger.error(f"Server {server_id}: {result}")
             return None, None
         
-        # [CN]
+        # Extract timing information
         timings = {}
         for server_id, result in successful_responses.items():
             timing = result.get('timing', {})
@@ -298,183 +298,183 @@ class DistributedNeighborClient:
                 'phase4': timing.get('phase4_time', 0) / 1000,
                 'total': timing.get('total', 0) / 1000
             }
-        
-        # calculate[CN]
+
+        # Calculate average times
         avg_timings = {}
         for phase in ['phase1', 'phase2', 'phase3', 'phase4', 'total']:
             phase_times = [t[phase] for t in timings.values()]
             avg_timings[phase] = np.mean(phase_times) if phase_times else 0
-        
-        # [CN]
+
+        # Reconstruct neighbor list
         final_result = self._reconstruct_neighbor_list(successful_responses)
-        
-        # [CN]
+
+        # Verify result
         accuracy = self._verify_neighbor_result(query_node_id, final_result)
-        
-        # print[CN]
+
+        # Print results
         total_time = time.time() - start_time
-        logger.info(f"\n[CN]:")
-        logger.info(f"  [CN]: {total_time:.2f}[CN]")
-        logger.info(f"  [CN]1 (VDPF[CN]): {avg_timings['phase1']:.2f}[CN]")
-        logger.info(f"  [CN]2 (e/fcalculate): {avg_timings['phase2']:.2f}[CN]")
-        logger.info(f"  [CN]3 ([CN]): {avg_timings['phase3']:.2f}[CN]")
-        logger.info(f"  [CN]4 ([CN]): {avg_timings['phase4']:.2f}[CN]")
-        logger.info(f"  [CN]: {avg_timings['total']:.2f}[CN]")
+        logger.info(f"\nNeighbor list query results:")
+        logger.info(f"  Client total time: {total_time:.2f}s")
+        logger.info(f"  Phase 1 (VDPF evaluation): {avg_timings['phase1']:.2f}s")
+        logger.info(f"  Phase 2 (e/f computation): {avg_timings['phase2']:.2f}s")
+        logger.info(f"  Phase 3 (data exchange): {avg_timings['phase3']:.2f}s")
+        logger.info(f"  Phase 4 (reconstruction): {avg_timings['phase4']:.2f}s")
+        logger.info(f"  Server average total: {avg_timings['total']:.2f}s")
         if accuracy is not None:
-            logger.info(f"  [CN]: {accuracy:.2%}")
-        logger.info(f"  return[CN]: {len(final_result) if final_result is not None else 0}")
-        
+            logger.info(f"  Neighbor list accuracy: {accuracy:.2%}")
+        logger.info(f"  Neighbors returned: {len(final_result) if final_result is not None else 0}")
+
         return avg_timings, final_result
     
     def _reconstruct_neighbor_list(self, results):
-        """[CN]"""
-        # [CN]servers[CN]
-        server_ids = sorted([sid for sid, r in results.items() 
+        """Reconstruct neighbor list"""
+        # Get at least two server responses
+        server_ids = sorted([sid for sid, r in results.items()
                            if r and r.get('status') == 'success'])[:2]
-        
+
         if len(server_ids) < 2:
-            logger.error("[CN]：[CN]2[CN]")
+            logger.error("Reconstruction failed: fewer than 2 servers available")
             return None
-        
-        # [CN]
+
+        # Get neighbor list length
         first_result = results[server_ids[0]]['result_share']
         k_neighbors = len(first_result)
-        
-        # [CN]
+
+        # Reconstruct each neighbor index
         reconstructed_neighbors = []
-        
+
         for i in range(k_neighbors):
             shares = [
                 Share(results[server_ids[0]]['result_share'][i], server_ids[0]),
                 Share(results[server_ids[1]]['result_share'][i], server_ids[1])
             ]
-            
+
             reconstructed = self.mpc.reconstruct(shares)
-            
-            # process[CN]
-            # [CN] field_size-1 ([CN] prime-1) [CN] -1
-            # [CN]HNSW[CN] 4294967295 [CN]
+
+            # Handle reconstructed values
+            # Secret sharing uses field_size-1 (i.e., prime-1) to represent -1
+            # Original HNSW uses 4294967295 for invalid neighbors
             if reconstructed == self.config.prime - 1:
-                # [CN] -1，[CN]HNSW[CN] 4294967295
+                # This is padding value -1, represented as 4294967295 in HNSW
                 neighbor_idx = 4294967295
             elif reconstructed >= self.config.num_docs:
-                # [CN]
+                # Indices beyond document range are also invalid
                 neighbor_idx = 4294967295
             else:
-                # [CN]
+                # Normal neighbor index
                 neighbor_idx = reconstructed
-            
+
             reconstructed_neighbors.append(int(neighbor_idx))
-        
+
         return reconstructed_neighbors
     
     def _verify_neighbor_result(self, query_node_id: int, reconstructed_neighbors: List[int]):
-        """[CN]"""
+        """Verify correctness of neighbor list results"""
         try:
             if self.original_neighbors is None or reconstructed_neighbors is None:
                 return None
-            
-            # [CN]original_neighbors[CN]
+
+            # Use linear index directly to get data from original_neighbors dict
             if query_node_id not in self.original_neighbors:
-                logger.warning(f"[CN] {query_node_id} [CN]")
+                logger.warning(f"Linear index {query_node_id} not in original data")
                 return None
-            
-            # [CN]（[CN]）
+
+            # Get original neighbor list (already data for specific node and layer)
             original_layer_neighbors = self.original_neighbors[query_node_id]
-            
-            # calculate[CN]ID[CN]（[CN]）
-            num_layers = 3  # HNSW[CN]
+
+            # Calculate actual node ID and layer (for logging)
+            num_layers = 3  # Number of layers in HNSW
             actual_node_id = query_node_id // num_layers
             layer = query_node_id % num_layers
-            
-            # [CN]share_data.py[CN]bug，[CN]
-            # [CN]2[CN]
-            # [CN]2[CN]
-            
-            # [CN]，[CN]
-            # [CN]：[CN]，[CN]
-            
-            # [CN]（[CN]4294967295[CN]）
+
+            # Due to bug in share_data.py, data has circular shift
+            # First 2 values of reconstructed come from end of previous node
+            # Last 2 values of original appear at beginning of next node
+
+            # For correct comparison, we need to align data
+            # Method: compare sets rather than positions, as data is circularly shifted
+
+            # Filter valid neighbors (not 4294967295)
             valid_original = [n for n in original_layer_neighbors if n != 4294967295]
             valid_reconstructed = [n for n in reconstructed_neighbors if n != 4294967295 and n < self.config.num_docs]
-            
-            # calculate[CN] - [CN]
+
+            # Calculate accuracy - based on matching valid neighbors
             if len(valid_original) == 0:
-                # [CN]，[CN]
+                # If original has no valid neighbors, check if reconstructed also has none
                 accuracy = 1.0 if len(valid_reconstructed) == 0 else 0.0
             else:
-                # calculate[CN]
-                # [CN]，[CN]
+                # Calculate intersection of valid neighbors
+                # Since data is circularly shifted, compare sets rather than positions
                 matches = len(set(valid_original) & set(valid_reconstructed))
-                # [CN]，[CN]
+                # If number of reconstructed neighbors differs from original, there's an issue
                 if len(valid_reconstructed) != len(valid_original):
-                    # [CN]（[CN]）
+                    # May have extra neighbors (from shift of other nodes)
                     accuracy = matches / max(len(valid_original), len(valid_reconstructed))
                 else:
                     accuracy = matches / len(valid_original)
-            
-            logger.info(f"[CN] ([CN]={query_node_id}, [CN]={actual_node_id}, [CN]={layer}):")
-            logger.info(f"  [CN]10[CN]: {original_layer_neighbors[:10]}")
-            logger.info(f"  [CN]10[CN]: {original_layer_neighbors[-10:]}")
-            logger.info(f"  [CN]10[CN]: {reconstructed_neighbors[:10]}")
-            logger.info(f"  [CN]10[CN]: {reconstructed_neighbors[-10:]}")
-            logger.info(f"  [CN]: {len(valid_original)} [CN]")
-            logger.info(f"  [CN]: {len(valid_reconstructed)} [CN]")
+
+            logger.info(f"Neighbor list comparison (linear_index={query_node_id}, node={actual_node_id}, layer={layer}):")
+            logger.info(f"  Original first 10: {original_layer_neighbors[:10]}")
+            logger.info(f"  Original last 10: {original_layer_neighbors[-10:]}")
+            logger.info(f"  Reconstructed first 10: {reconstructed_neighbors[:10]}")
+            logger.info(f"  Reconstructed last 10: {reconstructed_neighbors[-10:]}")
+            logger.info(f"  Original valid neighbors: {len(valid_original)}")
+            logger.info(f"  Reconstructed valid neighbors: {len(valid_reconstructed)}")
             if len(valid_original) > 0:
-                logger.info(f"  [CN]: {matches}/{len(valid_original)}")
-            
+                logger.info(f"  Matches: {matches}/{len(valid_original)}")
+
             return accuracy
-                
+
         except Exception as e:
-            logger.error(f"[CN]: {e}")
+            logger.error(f"Error verifying neighbor list: {e}")
             return None
     
     def get_server_status(self):
-        """[CN]"""
-        logger.info("[CN]...")
-        
+        """Get status of all neighbor list servers"""
+        logger.info("Getting neighbor list server status...")
+
         for server_id in self.connections:
             request = {'command': 'get_status'}
             response = self._send_request(server_id, request)
-            
+
             if response and response.get('status') == 'success':
-                logger.info(f"\n[CN] {server_id} [CN]:")
-                logger.info(f"  [CN]: {response.get('mode')}")
-                logger.info(f"  [CN]: {response.get('host')}:{response.get('port')}")
+                logger.info(f"\nNeighbor list server {server_id} status:")
+                logger.info(f"  Mode: {response.get('mode')}")
+                logger.info(f"  Address: {response.get('host')}:{response.get('port')}")
                 logger.info(f"  Dataset: {response.get('dataset')}")
-                logger.info(f"  VDPF[CN]: {response.get('vdpf_processes')}")
-                logger.info(f"  [CN]: {response.get('data_loaded')}")
-                logger.info(f"  [CN]: {response.get('triples_available')}")
+                logger.info(f"  VDPF processes: {response.get('vdpf_processes')}")
+                logger.info(f"  Data loaded: {response.get('data_loaded')}")
+                logger.info(f"  Available triples: {response.get('triples_available')}")
             else:
-                logger.error(f"[CN] {server_id} [CN]")
-    
+                logger.error(f"Unable to get status of neighbor list server {server_id}")
+
     def disconnect_from_servers(self):
-        """[CN]connect"""
+        """Disconnect from all servers"""
         for server_id, sock in self.connections.items():
             try:
                 sock.close()
-                logger.info(f"[CN] {server_id} [CN]connect")
+                logger.info(f"Disconnected from neighbor list server {server_id}")
             except:
                 pass
         self.connections.clear()
 
 
 def generate_markdown_report(dataset, query_details, avg_phases, avg_accuracy):
-    """[CN]Markdown[CN]"""
+    """Generate markdown format test report"""
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    markdown = f"""# [CN] - {dataset}
 
-**[CN]**: {timestamp}  
-**Dataset**: {dataset}  
-**[CN]**: {len(query_details)}
+    markdown = f"""# Distributed Neighbor List Test Report - {dataset}
 
-## [CN]
+**Generated**: {timestamp}
+**Dataset**: {dataset}
+**Number of Queries**: {len(query_details)}
 
-| [CN] | [CN]ID | [CN]1 (VDPF) | [CN]2 (e/f) | [CN]3 ([CN]) | [CN]4 ([CN]) | [CN] | [CN] |
+## Detailed Query Results
+
+| Query# | Node ID | Phase 1 (VDPF) | Phase 2 (e/f) | Phase 3 (Exchange) | Phase 4 (Reconstruct) | Total | Accuracy |
 |---------|--------|--------------|-------------|--------------|--------------|--------|--------|
 """
-    
+
     for q in query_details:
         markdown += f"| {q['query_num']} | {q['node_id']} | "
         markdown += f"{q['timings']['phase1']:.2f}s | "
@@ -486,159 +486,159 @@ def generate_markdown_report(dataset, query_details, avg_phases, avg_accuracy):
             markdown += f"{q['accuracy']:.2%} |\n"
         else:
             markdown += "N/A |\n"
-    
+
     markdown += f"""
-## [CN]
+## Average Performance Statistics
 
-- **[CN]1 (VDPF[CN])**: {avg_phases['phase1']:.2f}[CN]
-- **[CN]2 (e/fcalculate)**: {avg_phases['phase2']:.2f}[CN]
-- **[CN]3 ([CN])**: {avg_phases['phase3']:.2f}[CN]
-- **[CN]4 ([CN])**: {avg_phases['phase4']:.2f}[CN]
-- **[CN]**: {avg_phases['total']:.2f}[CN]
-- **[CN]**: {avg_accuracy:.2%}
+- **Phase 1 (VDPF evaluation)**: {avg_phases['phase1']:.2f}s
+- **Phase 2 (e/f computation)**: {avg_phases['phase2']:.2f}s
+- **Phase 3 (data exchange)**: {avg_phases['phase3']:.2f}s
+- **Phase 4 (reconstruction)**: {avg_phases['phase4']:.2f}s
+- **Server average total**: {avg_phases['total']:.2f}s
+- **Average accuracy**: {avg_accuracy:.2%}
 
-## [CN]
+## Performance Analysis
 
-### [CN]
+### Time Distribution
 """
-    
-    # calculate[CN]
+
+    # Calculate percentage of each phase
     total_avg = avg_phases['total']
     if total_avg > 0:
         phase1_pct = (avg_phases['phase1'] / total_avg) * 100
         phase2_pct = (avg_phases['phase2'] / total_avg) * 100
         phase3_pct = (avg_phases['phase3'] / total_avg) * 100
         phase4_pct = (avg_phases['phase4'] / total_avg) * 100
-        
-        markdown += f"""
-- [CN]1 (VDPF[CN]): {phase1_pct:.1f}%
-- [CN]2 (e/fcalculate): {phase2_pct:.1f}%
-- [CN]3 ([CN]): {phase3_pct:.1f}%
-- [CN]4 ([CN]): {phase4_pct:.1f}%
 
-### [CN]
-- [CN]: {total_avg:.2f}[CN]
-- [CN]: {1/total_avg:.2f} [CN]/[CN]
+        markdown += f"""
+- Phase 1 (VDPF evaluation): {phase1_pct:.1f}%
+- Phase 2 (e/f computation): {phase2_pct:.1f}%
+- Phase 3 (data exchange): {phase3_pct:.1f}%
+- Phase 4 (reconstruction): {phase4_pct:.1f}%
+
+### Throughput
+- Average query time: {total_avg:.2f}s
+- Theoretical throughput: {1/total_avg:.2f} queries/s
 """
-    
+
     return markdown
 
 
 def main():
-    """[CN]"""
+    """Main function"""
     parser = argparse.ArgumentParser(description='Distributed neighbor list query client')
-    parser.add_argument('--dataset', type=str, default='siftsmall', 
+    parser.add_argument('--dataset', type=str, default='siftsmall',
                         choices=['siftsmall', 'laion', 'tripclick', 'ms_marco', 'nfcorpus'],
-                        help='Dataset[CN] ([CN]: siftsmall)')
+                        help='Dataset name (default: siftsmall)')
     parser.add_argument('--num-queries', type=int, default=10,
-                        help='[CN]Number of queries[CN] ([CN]: 10)')
+                        help='Number of test queries (default: 10)')
     parser.add_argument('--no-report', action='store_true',
-                        help='[CN]')
+                        help='Do not save test report')
     parser.add_argument('--config', type=str,
-                        help='[CN]')
+                        help='Path to server configuration file')
     parser.add_argument('--status-only', action='store_true',
-                        help='[CN]')
-    
+                        help='Only get server status')
+
     args = parser.parse_args()
-    
-    # [CN]
+
+    # Load custom configuration
     servers_config = None
     if args.config:
         try:
             with open(args.config, 'r') as f:
                 servers_config = json.load(f)
         except Exception as e:
-            logger.error(f"Load configuration[CN]: {e}")
+            logger.error(f"Failed to load configuration file: {e}")
             return
-    
-    logger.info(f"=== [CN] - Dataset: {args.dataset} ===")
-    
+
+    logger.info(f"=== Distributed Neighbor List Test Client - Dataset: {args.dataset} ===")
+
     client = DistributedNeighborClient(args.dataset, servers_config)
-    
+
     try:
-        # connect[CN]
+        # Connect to servers
         if not client.connect_to_servers():
-            logger.error("connect[CN]")
+            logger.error("Failed to connect to neighbor list servers")
             return
-        
-        # [CN]
+
+        # If only getting status
         if args.status_only:
             client.get_server_status()
             return
-        
+
         all_timings = []
         all_accuracies = []
         query_details = []
-        
-        # [CN]（[CN]）
+
+        # Get total number of nodes (query nodes)
         total_nodes = len(client.original_neighbors) if client.original_neighbors is not None else 1000
-        
-        # [CN]
+
+        # Randomly select query nodes
         random_nodes = random.sample(range(total_nodes), min(args.num_queries, total_nodes))
-        
-        logger.info(f"[CN] {len(random_nodes)} [CN]...\n")
-        
+
+        logger.info(f"Performing neighbor list query tests on {len(random_nodes)} random nodes...\n")
+
         for i, node_id in enumerate(random_nodes):
-            logger.info(f"[CN] {i+1}/{len(random_nodes)}: [CN] {node_id} [CN]")
+            logger.info(f"Query {i+1}/{len(random_nodes)}: neighbor list for node {node_id}")
             timings, neighbors = client.test_distributed_neighbor_query(query_node_id=node_id)
-            
+
             if timings:
                 all_timings.append(timings)
                 accuracy = client._verify_neighbor_result(node_id, neighbors)
                 if accuracy is not None:
                     all_accuracies.append(accuracy)
-                
+
                 query_details.append({
                     'query_num': i + 1,
                     'node_id': node_id,
                     'timings': timings,
                     'accuracy': accuracy,
-                    'neighbors': neighbors[:10] if neighbors else []  # [CN]10[CN]
+                    'neighbors': neighbors[:10] if neighbors else []  # Save only first 10 neighbors
                 })
-        
-        # calculate[CN]
+
+        # Calculate averages
         if all_timings:
-            logger.info(f"\n=== [CN] ({len(all_timings)} [CN]) ===")
+            logger.info(f"\n=== Average Performance Statistics ({len(all_timings)} successful queries) ===")
             avg_phases = {}
             for phase in ['phase1', 'phase2', 'phase3', 'phase4', 'total']:
                 avg_phases[phase] = np.mean([t[phase] for t in all_timings])
-            
-            logger.info(f"  [CN]1 (VDPF[CN]): {avg_phases['phase1']:.2f}[CN]")
-            logger.info(f"  [CN]2 (e/fcalculate): {avg_phases['phase2']:.2f}[CN]")
-            logger.info(f"  [CN]3 ([CN]): {avg_phases['phase3']:.2f}[CN]")
-            logger.info(f"  [CN]4 ([CN]): {avg_phases['phase4']:.2f}[CN]")
-            logger.info(f"  [CN]: {avg_phases['total']:.2f}[CN]")
-            
+
+            logger.info(f"  Phase 1 (VDPF evaluation): {avg_phases['phase1']:.2f}s")
+            logger.info(f"  Phase 2 (e/f computation): {avg_phases['phase2']:.2f}s")
+            logger.info(f"  Phase 3 (data exchange): {avg_phases['phase3']:.2f}s")
+            logger.info(f"  Phase 4 (reconstruction): {avg_phases['phase4']:.2f}s")
+            logger.info(f"  Server average total: {avg_phases['total']:.2f}s")
+
             if all_accuracies:
                 avg_accuracy = np.mean(all_accuracies)
-                logger.info(f"  [CN]: {avg_accuracy:.2%}")
+                logger.info(f"  Average accuracy: {avg_accuracy:.2%}")
             else:
                 avg_accuracy = 0.0
-            
-            # [CN]
+
+            # Save report
             if not args.no_report and query_details:
                 report_file = "~/trident/distributed-nl/nl_result.md"
                 markdown_report = generate_markdown_report(
-                    args.dataset, 
-                    query_details, 
+                    args.dataset,
+                    query_details,
                     avg_phases,
                     avg_accuracy
                 )
-                
-                # [CN]，[CN]
+
+                # Append mode, add separator
                 with open(report_file, 'a', encoding='utf-8') as f:
-                    # [CN]，[CN]
-                    f.seek(0, 2)  # [CN]
+                    # If file exists and not empty, add separator
+                    f.seek(0, 2)  # Move to end of file
                     if f.tell() > 0:
                         f.write("\n\n---\n\n")
                     f.write(markdown_report)
-                
-                logger.info(f"\n[CN]: {report_file}")
-            
+
+                logger.info(f"\nTest report saved to: {report_file}")
+
     except KeyboardInterrupt:
-        logger.info("\n[CN]")
+        logger.info("\nUser interrupted")
     except Exception as e:
-        logger.error(f"[CN]: {e}")
+        logger.error(f"Error: {e}")
         import traceback
         traceback.print_exc()
     finally:

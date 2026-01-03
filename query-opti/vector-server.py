@@ -10,95 +10,95 @@ import threading
 from typing import Dict, List, Tuple
 import hashlib
 import concurrent.futures
-from multiprocessing import Pool, cpu_count, Lock
-import multiprocessing
+from multiprocessesing import Pool, cpu_count, Lock
+import multiprocessesing
 import argparse
-from multiprocessing import shared_memory
+from multiprocessesing import shared_memory
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('~/trident/standardDPF')
 sys.path.append('~/trident/src')
 sys.path.append('~/trident/query-opti')
-sys.path.append('~/trident/query-opti')  # Add optimization directory
+sys.path.append('~/trident/query-opti')  # add optimization directory
 
 from dpf_wrapper import VDPFVectorWrapper
-from binary_serializer import BinaryKeySerializer  # Import binary serializer
-from dpf_wrapper_optimized import OptimizedVDPFVectorWrapper  # Import optimized wrapper
-from binary_protocol import BinaryProtocol  # Import binary protocol
+from binary_serializer import BinaryKeySerializer  # import binary serializer
+from dpf_wrapper_optimized import OptimizedVDPFVectorWrapper  # import optimized wrapper
+from binary_protocol import BinaryProtocol  # import binary protocol
 from secure_multiplication import NumpyMultiplicationServer
 from basic_functionalities import get_config, Share, MPC23SSS
 
 
-# Global function for process pool (must be defined at module top level)
-def warmup_process(process_id):
-    """Warm up process, load necessary modules"""
+# Global function for use in processes pool calls (must be defined at module top level)
+def warmup_processes(processes_id):
+    """Warm up processes and load required modules"""
     import time
     import sys
     sys.path.append('~/trident/query-opti')
-    # Import necessary modules
+    # import required modules
     from dpf_wrapper_optimized import OptimizedVDPFVectorWrapper
     from binary_serializer import BinaryKeySerializer
-    return process_id
+    return processes_id
 
-def evaluate_batch_range_process(args):
-    """Process pool worker: Evaluate specified batch range of VDPF"""
-    process_id, start_batch, end_batch, cache_batch_size, num_nodes, serialized_key, server_id, shm_name, shape, dtype, dataset_name = args
-    
+def evaluate_batch_range_processes(args):
+    """Process pool worker function: evaluate VDPF for specified batch range"""
+    processes_id, start_batch, end_batch, cache_batch_size, num_nodes, serialized_key, server_id, shm_name, shape, dtype, dataset_name = args
+
     # CPU affinity binding
     try:
         import sys
         sys.path.append('~/trident/query-opti')
-        from cpu_affinity_optimizer import set_process_affinity
-        # Dynamically calculate cores per server
-        total_cores = 16  # AMD EPYC 7R32[CN]physical cores
-        num_servers = 3   # total3servers
-        cores_per_server = total_cores // num_servers  # cores allocated per server
-        
-        # If process count exceeds allocated cores, use round-robin allocation
-        if process_id < cores_per_server:
-            set_process_affinity(server_id, process_id, cores_per_server)
+        from cpu_affinity_optimizer import set_processes_affinity
+        # Dynamically calculate cores each server should use
+        total_cores = 16  # AMD EPYC 7R32 physical cores
+        num_servers = 3   # Total of 3 servers
+        cores_per_server = total_cores // num_servers  # Cores allocated per server
+
+        # If processes count exceeds allocated cores, use round-robin allocation
+        if processes_id < cores_per_server:
+            set_processes_affinity(server_id, processes_id, cores_per_server)
         else:
-            # round-robin allocation：process_id % cores_per_server
-            effective_process_id = process_id % cores_per_server
-            print(f"[Process {process_id}] Warning: process count({process_id+1})exceeds core count({cores_per_server})，cyclically bind to core")
-            set_process_affinity(server_id, effective_process_id, cores_per_server)
+            # Round-robin allocation: processes_id % cores_per_server
+            effective_processes_id = processes_id % cores_per_server
+            print(f"[Process {processes_id}] Warning: processes count ({processes_id+1}) exceeds core count ({cores_per_server}), binding to cores in round-robin")
+            set_processes_affinity(server_id, effective_processes_id, cores_per_server)
     except Exception as e:
-        print(f"[Process {process_id}] CPU binding failed: {e}")
+        print(f"[Process {processes_id}] CPU binding failed: {e}")
         import traceback
         traceback.print_exc()
     
-    process_total_start = time.time()
-    
-    # printCurrent CPU affinity
+    processes_total_start = time.time()
+
+    # Print current CPU affinity
     import os
     current_cpus = os.sched_getaffinity(0)
-    print(f"[Process {process_id}] Current CPU affinity: {sorted(current_cpus)}")
-    
-    # Calculate actualprocessnumber of nodes
+    print(f"[Process {processes_id}] Current CPU affinity: {sorted(current_cpus)}")
+
+    # Calculate actual number of nodes to processes
     actual_nodes = 0
     for batch_idx in range(start_batch, end_batch):
         batch_start = batch_idx * cache_batch_size
         batch_end = min(batch_start + cache_batch_size, num_nodes)
         actual_nodes += (batch_end - batch_start)
-    
-    print(f"[Process {process_id}] Start evaluating batch {start_batch}-{end_batch-1} ([CN]: {actual_nodes}) at {time.strftime('%H:%M:%S.%f')[:-3]}")
-    
-    # [CN]1：VDPFinstancecreate
+
+    print(f"[Process {processes_id}] Start evaluating batches {start_batch}-{end_batch-1} (actual nodes: {actual_nodes}) at {time.strftime('%H:%M:%S.%f')[:-3]}")
+
+    # Timing 1: VDPF instance creation
     t1 = time.time()
     from dpf_wrapper_optimized import OptimizedVDPFVectorWrapper
     dpf_wrapper = OptimizedVDPFVectorWrapper(dataset_name=dataset_name)
     vdpf_init_time = time.time() - t1
-    
-    # [CN]2：[CN]
+
+    # Timing 2: Key deserialization
     t2 = time.time()
     if isinstance(serialized_key, bytes):
         key = BinaryKeySerializer.deserialize_vdpf23_key(serialized_key)
     else:
-        # [CN]pickle[CN]
+        # Compatible with old pickle format
         key = dpf_wrapper._deserialize_key(serialized_key)
     deserialize_time = time.time() - t2
-    
-    # [CN]3：connect[CN]
+
+    # Timing 3: Connect to shared memory
     t3 = time.time()
     existing_shm = shared_memory.SharedMemory(name=shm_name)
     node_shares = np.ndarray(shape, dtype=dtype, buffer=existing_shm.buf)
@@ -107,12 +107,12 @@ def evaluate_batch_range_process(args):
     local_selector_shares = {}
     local_vector_shares = {}
     
-    # [CN]4：VDPF[CN]
+    # Timing 4: VDPF evaluation detailed timing
     vdpf_eval_time = 0
     data_copy_time = 0
     batch_load_time = 0
     
-    # VDPF[CN]
+    # VDPF internal time breakdown
     vdpf_internal_time = {
         'eval_batch_calls': 0,
         'vdpf23_eval': 0,
@@ -127,20 +127,20 @@ def evaluate_batch_range_process(args):
         batch_end = min(batch_start + cache_batch_size, num_nodes)
         batch_size = batch_end - batch_start
         
-        # [CN]4a：[CN]
+        # Timing 4a: batch data load
         t4a = time.time()
         batch_data = node_shares[batch_start:batch_end].copy()
         batch_load_time += time.time() - t4a
         
-        # [CN]4b：[CN]VDPF[CN]（[CN]）
+        # Timing 4b: batch VDPF evaluation (with detailed measurement)
         t4b = time.time()
         
-        # [CN]eval_batch[CN]
+        # Temporarily modify eval_batch to collect internal timing
         batch_results = dpf_wrapper.eval_batch(key, batch_start, batch_end, server_id)
         
         vdpf_eval_time += time.time() - t4b
         
-        # [CN]4c：[CN]process[CN]
+        # Timing 4c: result handling and data copying
         t4c = time.time()
         for local_idx in range(batch_size):
             global_idx = batch_start + local_idx
@@ -148,30 +148,30 @@ def evaluate_batch_range_process(args):
             local_vector_shares[global_idx] = batch_data[local_idx]
         data_copy_time += time.time() - t4c
     
-    process_total_time = time.time() - process_total_start
-    # [CN]calculate[CN]actual_nodes，[CN]
+    processes_total_time = time.time() - processes_total_start
+    # Use previously calculated actual_nodes for accuracy
     evaluated_nodes = actual_nodes
     
-    # [CN]
-    print(f"\n[Process {process_id}] [CN] ([CN] {time.strftime('%H:%M:%S.%f')[:-3]}):")
-    print(f"  - VDPFinstancecreate: {vdpf_init_time*1000:.1f}ms")
-    print(f"  - [CN]: {deserialize_time*1000:.1f}ms")
-    print(f"  - [CN]connect: {shm_connect_time*1000:.1f}ms")
-    print(f"  - [CN]: {batch_load_time*1000:.1f}ms ({batch_load_time/process_total_time*100:.1f}%)")
-    print(f"  - VDPF[CN]calculate: {vdpf_eval_time*1000:.1f}ms ({vdpf_eval_time/process_total_time*100:.1f}%)")
-    print(f"  - [CN]: {data_copy_time*1000:.1f}ms ({data_copy_time/process_total_time*100:.1f}%)")
-    print(f"  - [CN]: {process_total_time*1000:.1f}ms")
-    print(f"  - [CN]: {evaluated_nodes}, [CN]: {evaluated_nodes/process_total_time:.0f} ops/sec")
+    # Detailed timing analysis
+    print(f"\n[Process {processes_id}] Detailed timing analysis (completed at {time.strftime('%H:%M:%S.%f')[:-3]}):")
+    print(f"  - VDPF instance creation: {vdpf_init_time*1000:.1f}ms")
+    print(f"  - key deserialization: {deserialize_time*1000:.1f}ms")
+    print(f"  - shared memory connection: {shm_connect_time*1000:.1f}ms")
+    print(f"  - batch data load: {batch_load_time*1000:.1f}ms ({batch_load_time/processes_total_time*100:.1f}%)")
+    print(f"  - VDPF evaluation calculation: {vdpf_eval_time*1000:.1f}ms ({vdpf_eval_time/processes_total_time*100:.1f}%)")
+    print(f"  - data copy operations: {data_copy_time*1000:.1f}ms ({data_copy_time/processes_total_time*100:.1f}%)")
+    print(f"  - total time: {processes_total_time*1000:.1f}ms")
+    print(f"  - nodes: {evaluated_nodes}, speed: {evaluated_nodes/processes_total_time:.0f} ops/sec")
     
-    # print[CN]（[CN]）
+    # Print cache statistics（ifcan/possibleuse）
     try:
         if hasattr(dpf_wrapper.vdpf, 'get_cache_stats'):
             cache_stats = dpf_wrapper.vdpf.get_cache_stats()
-            print(f"  - PRG[CN]: {cache_stats['hit_rate']:.1f}% ([CN]:{cache_stats['total_hits']}, [CN]:{cache_stats['total_misses']})")
+            print(f"  - PRG cache hit rate: {cache_stats['hit_rate']:.1f}% (hits:{cache_stats['total_hits']}, misses:{cache_stats['total_misses']})")
     except:
         pass
     
-    # [CN]connect
+    # Close shared memory connection
     existing_shm.close()
     
     return {
@@ -184,37 +184,37 @@ def evaluate_batch_range_process(args):
             'batch_load': batch_load_time,
             'vdpf_eval': vdpf_eval_time,
             'data_copy': data_copy_time,
-            'total': process_total_time
+            'total': processes_total_time
         }
     }
 
 
 class MemoryMappedOptimizedServer:
-    """[CN]（[CN]）"""
+    """Multiprocesses data locality optimization server（supports configurable processes count）"""
     
-    def __init__(self, server_id: int, dataset: str = "laion", vdpf_processes: int = 4):
+    def __init__(self, server_id: int, dataset: str = "laion", vdpf_processeses: int = 4):
         self.server_id = server_id
         self.dataset = dataset
         self.config = get_config(dataset)
         self.field_size = self.config.prime
         self.mpc = MPC23SSS(self.config)
         
-        # [CN]
+        # Network configuration
         self.host = f"192.168.50.2{server_id}"
         self.port = 8000 + server_id
         
-        # initialize[CN]
+        # Initialize components
         self.dpf_wrapper = OptimizedVDPFVectorWrapper(dataset_name=dataset)
         self.mult_server = NumpyMultiplicationServer(server_id, self.config)
         
-        # [CN]
+        # Load data
         self._load_data()
         
-        # [CN]（[CN]）
+        # Exchange directory for simulation（Fall back to standard file system）
         self.exchange_dir = "/tmp/mpc_exchange"
         os.makedirs(self.exchange_dir, exist_ok=True)
         
-        # [CN]
+        # Clean up old synchronization files
         try:
             for filename in os.listdir(self.exchange_dir):
                 if f"server_{self.server_id}_" in filename:
@@ -222,75 +222,75 @@ class MemoryMappedOptimizedServer:
                         os.remove(os.path.join(self.exchange_dir, filename))
                     except:
                         pass
-            print(f"[Server {self.server_id}] [CN]")
+            print(f"[Server {self.server_id}] Cleaned up old synchronization files")
         except:
             pass
         
-        # ===== [CN] =====
-        self.cache_batch_size = 1000  # [CN]
-        self.vdpf_processes = vdpf_processes  # [CN]VDPF[CN]
-        self.worker_threads = 4  # [CN]
+        # ===== Multiprocesses optimization parameters =====
+        self.cache_batch_size = 1000  # Smaller batches for better load balancing
+        self.vdpf_processeses = vdpf_processeses  # Configurable VDPF evaluation processes count
+        self.worker_threads = 4  # Thread count for other operations
         
-        # [CN]create[CN]
+        # Create thread pool for other operations
         self.executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=self.worker_threads,
             thread_name_prefix=f"Server{server_id}-General"
         )
         
-        # create[CN]，[CN]create[CN]
-        self.process_pool = Pool(processes=self.vdpf_processes)
+        # Create persistent processes pool to avoid creation overhead for each query
+        self.processes_pool = Pool(processeses=self.vdpf_processeses)
         
-        print(f"[Server {self.server_id}] [CN]")
-        print(f"[Server {self.server_id}] [CN]: {self.cache_batch_size}")
-        print(f"[Server {self.server_id}] VDPF[CN]: {self.vdpf_processes}")
-        print(f"[Server {self.server_id}] [CN]: {self.exchange_dir}")
-        print(f"[Server {self.server_id}] [CN]create（{self.vdpf_processes}[CN]）")
+        print(f"[Server {self.server_id}] multiprocessesData locality optimizationpattern")
+        print(f"[Server {self.server_id}] Cache batch size: {self.cache_batch_size}")
+        print(f"[Server {self.server_id}] VDPF evaluation processes count: {self.vdpf_processeses}")
+        print(f"[Server {self.server_id}] Exchange directory: {self.exchange_dir}")
+        print(f"[Server {self.server_id}] Process pool created（{self.vdpf_processeses}processes）")
         
-        # Warm up process[CN]
-        self._warmup_process_pool()
+        # Warm up processes pool
+        self._warmup_processes_pool()
         
-    def _warmup_process_pool(self):
-        """Warm up process[CN]，[CN]start[CN]load necessary modules"""
-        print(f"[Server {self.server_id}] Warm up process[CN]...")
+    def _warmup_processes_pool(self):
+        """Warm up processes pool，Ensure all processeses have started and loaded required modules"""
+        print(f"[Server {self.server_id}] Warm up processes pool...")
         
-        # [CN]
+        # Execute warmup taskss
         warmup_start = time.time()
-        results = self.process_pool.map(warmup_process, range(self.vdpf_processes))
+        results = self.processes_pool.map(warmup_processes, range(self.vdpf_processeses))
         warmup_time = time.time() - warmup_start
         
-        print(f"[Server {self.server_id}] [CN]，[CN] {warmup_time:.2f}[CN]")
+        print(f"[Server {self.server_id}] Process pool warmup completed, time taken {warmup_time:.2f}s")
     
     def _load_data(self):
-        """[CN]"""
-        print(f"[Server {self.server_id}] [CN]{self.dataset}[CN]...")
+        """Load vector-level secret shared data"""
+        print(f"[Server {self.server_id}] load{self.dataset}data...")
         
-        # [CN]Test-Trident[CN]
+        # Use unified Test-Trident path
         self.data_dir = f"~/trident/dataset/{self.dataset}/server_{self.server_id}"
         
-        # [CN]
+        # Load node vector shares
         self.nodes_path = os.path.join(self.data_dir, "nodes_shares.npy")
         self.node_shares = np.load(self.nodes_path)
-        print(f"  [CN]: {self.node_shares.shape}")
-        print(f"  [CN]: {self.node_shares.nbytes / 1024 / 1024:.1f}MB")
+        print(f"  Node data: {self.node_shares.shape}")
+        print(f"  Data size: {self.node_shares.nbytes / 1024 / 1024:.1f}MB")
         
-        print(f"  [CN]: {self.mult_server.triple_array.shape[0] - self.mult_server.used_count if self.mult_server.triple_array is not None else 0}")
+        print(f"  Triples available: {self.mult_server.triple_array.shape[0] - self.mult_server.used_count if self.mult_server.triple_array is not None else 0}")
         
     def start(self):
-        """start[CN]"""
+        """Start server"""
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind((self.host, self.port))
         server_socket.listen(5)
         
-        print(f"[Server {self.server_id}] [CN] {self.host}:{self.port}")
+        print(f"[Server {self.server_id}] Listening on {self.host}:{self.port}")
         
-        # [CN]
+        # Clean up old exchange files
         self._cleanup_exchange_files()
         
         try:
             while True:
                 client_socket, address = server_socket.accept()
-                print(f"[Server {self.server_id}] [CN]connect[CN] {address}")
+                print(f"[Server {self.server_id}] Accepted connection from {address}")
                 
                 client_thread = threading.Thread(
                     target=self._handle_client,
@@ -299,50 +299,50 @@ class MemoryMappedOptimizedServer:
                 client_thread.start()
                 
         except KeyboardInterrupt:
-            print(f"\n[Server {self.server_id}] [CN]...")
+            print(f"\n[Server {self.server_id}] Shutting down server...")
         finally:
             server_socket.close()
             self._cleanup_exchange_files()
             self.executor.shutdown(wait=True)
-            # [CN]
-            if hasattr(self, 'process_pool'):
-                print(f"[Server {self.server_id}] [CN]...")
-                self.process_pool.close()
-                self.process_pool.join()
+            # Shutting down processes pool
+            if hasattr(self, 'processes_pool'):
+                print(f"[Server {self.server_id}] Shutting down processes pool...")
+                self.processes_pool.close()
+                self.processes_pool.join()
             
-            print(f"[Server {self.server_id}] [CN]")
+            print(f"[Server {self.server_id}] Server has shut down")
     
     def _cleanup_exchange_files(self):
-        """[CN]"""
+        """Clean up exchange files"""
         pattern = f"server_{self.server_id}_"
         current_time = time.time()
         for filename in os.listdir(self.exchange_dir):
             if filename.startswith(pattern):
                 filepath = os.path.join(self.exchange_dir, filename)
                 try:
-                    # [CN]5[CN]
+                    # Clean up old files older than 5 minutes
                     if os.path.getmtime(filepath) < current_time - 300:
                         os.remove(filepath)
                 except:
                     pass
     
     def _handle_client(self, client_socket: socket.socket):
-        """process[CN]"""
+        """Handle client request"""
         try:
             while True:
-                # [CN]4[CN]
+                # First try to read 4 bytes to determine if it is binary protocol
                 length_bytes = client_socket.recv(4)
                 if not length_bytes:
                     break
                 
                 length = int.from_bytes(length_bytes, 'big')
                 
-                # [CN]（[CN]）
-                if length < 1000000:  # [CN]
-                    # [CN]
+                # Check if it can be binary protocol（by checking length）
+                if length < 1000000:  # reasonable request size
+                    # Read first byte to check if it is command byte
                     first_byte = client_socket.recv(1)
                     if first_byte and first_byte[0] in [BinaryProtocol.CMD_QUERY_NODE_VECTOR, BinaryProtocol.CMD_GET_STATUS]:
-                        # [CN]
+                        # Is binary protocol
                         remaining = length - 1
                         data = first_byte
                         while len(data) < length:
@@ -353,9 +353,9 @@ class MemoryMappedOptimizedServer:
                             remaining -= len(chunk)
                         
                         request = BinaryProtocol.decode_request(data)
-                        print(f"[Server {self.server_id}] [CN]: {request.get('command', 'unknown')}")
+                        print(f"[Server {self.server_id}] receivetobinaryrequest: {request.get('command', 'unknown')}")
                     else:
-                        # JSON[CN]
+                        # JSON protocol
                         data = first_byte
                         while len(data) < length:
                             chunk = client_socket.recv(min(length - len(data), 4096))
@@ -364,27 +364,27 @@ class MemoryMappedOptimizedServer:
                             data += chunk
                         
                         request = json.loads(data.decode())
-                        print(f"[Server {self.server_id}] [CN]JSON[CN]: {request.get('command', 'unknown')}")
+                        print(f"[Server {self.server_id}] receivedJSONrequest: {request.get('command', 'unknown')}")
                 else:
-                    # [CN]，[CN]
+                    # Length exception, skip
                     continue
                 
-                response = self._process_request(request)
-                print(f"[Server {self.server_id}] [CN]process[CN]，[CN]: {response.get('status', 'unknown')}")
+                response = self._processes_request(request)
+                print(f"[Server {self.server_id}] Request handling completed, response status: {response.get('status', 'unknown')}")
                 
-                # [CN]（[CN]）
+                # Encode response using binary protocol（Maintain original structure）
                 response_data = BinaryProtocol.encode_response(response)
                 client_socket.sendall(response_data)
                 
         except Exception as e:
-            print(f"[Server {self.server_id}] process[CN]: {e}")
+            print(f"[Server {self.server_id}] Error handling client: {e}")
             import traceback
             traceback.print_exc()
         finally:
             client_socket.close()
     
-    def _process_request(self, request: Dict) -> Dict:
-        """process[CN]"""
+    def _processes_request(self, request: Dict) -> Dict:
+        """Process request"""
         command = request.get('command')
         
         if command == 'query_node_vector':
@@ -392,146 +392,146 @@ class MemoryMappedOptimizedServer:
         elif command == 'get_status':
             return self._get_status()
         else:
-            return {'status': 'error', 'message': f'[CN]: {command}'}
+            return {'status': 'error', 'message': f'Unknown command: {command}'}
     
-    def _multiprocess_vdpf_evaluation(self, serialized_key, num_nodes, num_batches):
-        """[CN]VDPF[CN] - [CN]"""
+    def _multiprocesses_vdpf_evaluation(self, serialized_key, num_nodes, num_batches):
+        """Multiprocesses VDPF evaluation - use shared memory optimization"""
         
-        # create[CN]I/O
+        # Create shared memory to avoid redundant I/O
         shm_start = time.time()
-        print(f"[Server {self.server_id}] create[CN]...")
+        print(f"[Server {self.server_id}] createsharememory...")
         shm = shared_memory.SharedMemory(create=True, size=self.node_shares.nbytes)
         shared_array = np.ndarray(self.node_shares.shape, dtype=self.node_shares.dtype, buffer=shm.buf)
         shared_array[:] = self.node_shares[:]
         shm_time = time.time() - shm_start
-        print(f"[Server {self.server_id}] [CN]create[CN]: {shm_time:.3f}[CN]")
+        print(f"[Server {self.server_id}] Shared memory creation time: {shm_time:.3f}s")
         
-        # [CN]allocate[CN]
-        # calculate[CN]processnumber of nodes，[CN]
-        nodes_per_process = num_nodes // self.vdpf_processes
-        remaining_nodes = num_nodes % self.vdpf_processes
+        # Improved load balancing allocation algorithm
+        # Calculate number of nodes each processes should handle, not batch count
+        nodes_per_processes = num_nodes // self.vdpf_processeses
+        remaining_nodes = num_nodes % self.vdpf_processeses
         
-        # [CN]
-        process_args = []
+        # Prepare processes parameters
+        processes_args = []
         current_node_start = 0
         
-        for process_id in range(self.vdpf_processes):
-            # calculate[CN]processnumber of nodes
-            process_nodes = nodes_per_process + (1 if process_id < remaining_nodes else 0)
+        for processes_id in range(self.vdpf_processeses):
+            # Calculate number of nodes this processes should handle
+            processes_nodes = nodes_per_processes + (1 if processes_id < remaining_nodes else 0)
             
-            if process_nodes == 0:
+            if processes_nodes == 0:
                 continue
                 
-            # calculate[CN]
+            # Calculate start and end nodes for this processes
             node_start = current_node_start
-            node_end = node_start + process_nodes
+            node_end = node_start + processes_nodes
             
-            # [CN]
+            # Convert to batch index
             start_batch = node_start // self.cache_batch_size
             end_batch = (node_end + self.cache_batch_size - 1) // self.cache_batch_size
             
             args = (
-                process_id,
+                processes_id,
                 start_batch,
                 min(end_batch, num_batches),
                 self.cache_batch_size,
                 num_nodes,
                 serialized_key,
                 self.server_id,
-                shm.name,  # [CN]
-                self.node_shares.shape,  # [CN]
-                self.node_shares.dtype,  # [CN]
-                self.dataset  # [CN]Dataset[CN]
+                shm.name,  # Pass shared memory name
+                self.node_shares.shape,  # Pass array shape
+                self.node_shares.dtype,  # Pass data type
+                self.dataset  # Pass dataset name
             )
-            process_args.append(args)
+            processes_args.append(args)
             current_node_start = node_end
             
-        # print[CN]allocate[CN]
-        print(f"[Server {self.server_id}] [CN]allocate:")
+        # Print load distribution information
+        print(f"[Server {self.server_id}] Load balancing allocation:")
         actual_node_counts = []
-        for i, args in enumerate(process_args):
-            process_id, start_batch, end_batch = args[0:3]
+        for i, args in enumerate(processes_args):
+            processes_id, start_batch, end_batch = args[0:3]
             batches = end_batch - start_batch
-            # calculate[CN]
+            # Calculate actual node count
             actual_nodes = 0
             for batch_idx in range(start_batch, end_batch):
                 batch_start = batch_idx * self.cache_batch_size
                 batch_end = min(batch_start + self.cache_batch_size, num_nodes)
                 actual_nodes += (batch_end - batch_start)
             actual_node_counts.append(actual_nodes)
-            print(f"  - Process {process_id}: [CN] {start_batch}-{end_batch-1} ({batches} [CN], {actual_nodes} [CN])")
+            print(f"  - Process {processes_id}: batches {start_batch}-{end_batch-1} ({batches} batches, {actual_nodes} node)")
         
-        # calculate[CN]
+        # Calculate load balancing statistics
         if actual_node_counts:
             avg_nodes = np.mean(actual_node_counts)
             std_nodes = np.std(actual_node_counts)
             max_nodes = max(actual_node_counts)
             min_nodes = min(actual_node_counts)
-            print(f"[Server {self.server_id}] [CN]: [CN]={avg_nodes:.0f}, [CN]={std_nodes:.1f}, [CN]={max_nodes}, [CN]={min_nodes}")
+            print(f"[Server {self.server_id}] Load statistics: average={avg_nodes:.0f}, standarddeviation={std_nodes:.1f}, max={max_nodes}, min={min_nodes}")
         
-        # [CN]
-        print(f"[Server {self.server_id}] [CN]VDPF[CN]（{len(process_args)}[CN]）")
+        # Use persistent processes pool to execute in parallel
+        print(f"[Server {self.server_id}] usepersistentprocessespoolexecuteVDPFevaluation（{len(processes_args)}tasks）")
         
-        # [CN]create[CN]
-        results = self.process_pool.map(evaluate_batch_range_process, process_args)
+        # Use already created processes pool
+        results = self.processes_pool.map(evaluate_batch_range_processes, processes_args)
         
-        # [CN]
+        # Merge results from all processeses
         all_selector_shares = {}
         all_vector_shares = {}
-        process_timings = []
+        processes_timings = []
         
-        for process_result in results:
-            all_selector_shares.update(process_result['selector_shares'])
-            all_vector_shares.update(process_result['vector_shares'])
-            if 'timing' in process_result:
-                process_timings.append(process_result['timing'])
+        for processes_result in results:
+            all_selector_shares.update(processes_result['selector_shares'])
+            all_vector_shares.update(processes_result['vector_shares'])
+            if 'timing' in processes_result:
+                processes_timings.append(processes_result['timing'])
         
-        # [CN]
-        if process_timings:
-            print(f"\n[Server {self.server_id}] [CN]1[CN]:")
-            avg_vdpf_init = np.mean([t['vdpf_init'] for t in process_timings]) * 1000
-            avg_deserialize = np.mean([t['deserialize'] for t in process_timings]) * 1000
-            avg_shm_connect = np.mean([t['shm_connect'] for t in process_timings]) * 1000
+        # Aggregate timing analysis
+        if processes_timings:
+            print(f"\n[Server {self.server_id}] Phase 1 timing analysis aggregate:")
+            avg_vdpf_init = np.mean([t['vdpf_init'] for t in processes_timings]) * 1000
+            avg_deserialize = np.mean([t['deserialize'] for t in processes_timings]) * 1000
+            avg_shm_connect = np.mean([t['shm_connect'] for t in processes_timings]) * 1000
             
-            # [CN]
-            max_vdpf_eval = max([t['vdpf_eval'] for t in process_timings]) * 1000
-            max_total_time = max([t['total'] for t in process_timings]) * 1000
+            # Actual parallel execution time is the slowest processes time
+            max_vdpf_eval = max([t['vdpf_eval'] for t in processes_timings]) * 1000
+            max_total_time = max([t['total'] for t in processes_timings]) * 1000
             
-            # CPU[CN]（[CN]）
-            total_cpu_time = sum([t['total'] for t in process_timings]) * 1000
-            total_vdpf_cpu = sum([t['vdpf_eval'] for t in process_timings]) * 1000
+            # Total CPU time（used to understand total workload）
+            total_cpu_time = sum([t['total'] for t in processes_timings]) * 1000
+            total_vdpf_cpu = sum([t['vdpf_eval'] for t in processes_timings]) * 1000
             
-            print(f"  === [CN] ===")
-            print(f"  - [CN]: {max_total_time:.1f}ms ([CN])")
-            print(f"  - [CN]VDPF[CN]: {max_vdpf_eval:.1f}ms")
-            print(f"  - [CN]: {total_cpu_time/max_total_time/self.vdpf_processes*100:.1f}%")
+            print(f"  === Parallel execution analysis ===")
+            print(f"  - Slowest processes total time: {max_total_time:.1f}ms (This is the actual parallel execution time)")
+            print(f"  - Slowest processes VDPF time: {max_vdpf_eval:.1f}ms")
+            print(f"  - Parallel efficiency: {total_cpu_time/max_total_time/self.vdpf_processeses*100:.1f}%")
             print(f"  ")
-            print(f"  === [CN] ===")
-            print(f"  - [CN]VDPFinstancecreate: {avg_vdpf_init:.1f}ms")
-            print(f"  - [CN]: {avg_deserialize:.1f}ms")
-            print(f"  - [CN]connect: {avg_shm_connect:.1f}ms")
-            print(f"  - [CN]create: {shm_time*1000:.1f}ms")
+            print(f"  === Overhead analysis ===")
+            print(f"  - Average VDPF instance creation: {avg_vdpf_init:.1f}ms")
+            print(f"  - Average key deserialization: {avg_deserialize:.1f}ms")
+            print(f"  - Average shared memory connection: {avg_shm_connect:.1f}ms")
+            print(f"  - Shared memory creation: {shm_time*1000:.1f}ms")
             print(f"  ")
-            print(f"  === CPU[CN] ===")
-            print(f"  - [CN]CPU[CN]: {total_cpu_time:.1f}ms")
-            print(f"  - [CN]VDPFcalculate[CN]: {total_vdpf_cpu:.1f}ms")
+            print(f"  === CPU time statistics ===")
+            print(f"  - Total CPU time for all processeses: {total_cpu_time:.1f}ms")
+            print(f"  - Total VDPF calculation time for all processeses: {total_vdpf_cpu:.1f}ms")
         
-        print(f"[Server {self.server_id}] [CN]VDPF[CN]，[CN] {len(all_selector_shares)} [CN]")
+        print(f"[Server {self.server_id}] Multiprocesses VDPF evaluation completed, total evaluated {len(all_selector_shares)} node")
         
-        # [CN]
+        # Clean up shared memory
         shm.close()
         shm.unlink()
         
         return all_selector_shares, all_vector_shares
     
     def _save_exchange_data(self, query_id: str, e_shares: np.ndarray, f_shares: np.ndarray):
-        """[CN]（[CN]）"""
+        """Save exchange data to file（No compression optimization）"""
         
-        # [CN].npz[CN]，[CN]I/O[CN]
+        # Use .npz format without compression to speed up I/O
         filename = f"server_{self.server_id}_query_{query_id}_data.npz"
         filepath = os.path.join(self.exchange_dir, filename)
         
-        # [CN]calculate（[CN]）
+        # Keep checksum calculation（for data integrity verification）
         data_hash = hashlib.md5((e_shares.tobytes() + f_shares.tobytes())).hexdigest()
         
         np.savez(filepath, 
@@ -539,10 +539,10 @@ class MemoryMappedOptimizedServer:
                  f_shares=f_shares,
                  hash=data_hash)
         
-        # print(f"[Server {self.server_id}] [CN] {filename}（[CN]）")
+        # print(f"[Server {self.server_id}] Saved exchange data to {filename}（No compression optimization）")
     
     def _load_other_servers_data(self, query_id: str, num_nodes: int) -> Tuple[Dict, Dict]:
-        """[CN]"""
+        """Load data from other servers"""
         
         all_e_from_others = {}
         all_f_from_others = {}
@@ -554,7 +554,7 @@ class MemoryMappedOptimizedServer:
             filename = f"server_{other_id}_query_{query_id}_data.npz"
             filepath = os.path.join(self.exchange_dir, filename)
             
-            # [CN]（[CN]）
+            # Wait for file to appear（Maintain original wait mechanism）
             max_wait = 30
             for i in range(max_wait):
                 if os.path.exists(filepath):
@@ -562,92 +562,92 @@ class MemoryMappedOptimizedServer:
                 time.sleep(1)
             
             if os.path.exists(filepath):
-                # [CN].npz[CN]（[CN]，[CN]）
+                # Load uncompressed .npz file（Same format, just without compression）
                 data = np.load(filepath)
                 all_e_from_others[other_id] = data['e_shares']
                 all_f_from_others[other_id] = data['f_shares']
-                # print(f"[Server {self.server_id}] [CN] Server {other_id} [CN]（[CN]）")
+                # print(f"[Server {self.server_id}] alreadyload Server {other_id} data（No compression optimization）")
                 
-                # [CN]：[CN]
+                # Optional: validate data integrity
                 if 'hash' in data:
                     loaded_hash = str(data['hash'])
                     expected_hash = hashlib.md5((data['e_shares'].tobytes() + data['f_shares'].tobytes())).hexdigest()
                     if loaded_hash != expected_hash:
-                        pass  # print(f"[Server {self.server_id}] [CN]: Server {other_id} [CN]")
+                        pass  # print(f"[Server {self.server_id}] warning: Server {other_id} datachecksumandnotmatch")
             else:
-                pass  # print(f"[Server {self.server_id}] [CN]: [CN] Server {other_id} [CN]")
+                pass  # print(f"[Server {self.server_id}] warning: cannot findto Server {other_id} data")
         
         return all_e_from_others, all_f_from_others
     
     def _handle_vector_node_query(self, request: Dict) -> Dict:
-        """[CN] - [CN]"""
+        """Vector-level node query - multiprocesses data locality optimization version"""
         try:
             serialized_key = request['dpf_key']
             query_id = request.get('query_id', 'unknown')
             
-            print(f"[Server {self.server_id}] process[CN]（[CN]）")
+            print(f"[Server {self.server_id}] Handle vector-level node query（multiprocessesData locality optimization）")
             
-            # 1. Deserialize keys（[CN]，[CN]）
+            # 1. Deserialize key（Performed in main processes to verify key format）
             key = self.dpf_wrapper._deserialize_key(serialized_key)
             
-            # 2. initialize
+            # 2. Initialize
             start_time = time.time()
             num_nodes = len(self.node_shares)
-            vector_dim = self.node_shares.shape[1]  # [CN]Vector dimension
+            vector_dim = self.node_shares.shape[1]  # Dynamically get vector dimension
             result_accumulator = np.zeros(vector_dim, dtype=np.int64)
             
-            print(f"[Server {self.server_id}] [CN]: {num_nodes}, [CN]: {self.cache_batch_size}")
-            # print(f"[Server {self.server_id}] DEBUG: Vector dimension: {vector_dim}, [CN]ID: {query_id}")
+            print(f"[Server {self.server_id}] Total number of nodes: {num_nodes}, Cache batch size: {self.cache_batch_size}")
+            # print(f"[Server {self.server_id}] DEBUG: vector dimension: {vector_dim}, query ID: {query_id}")
             
-            # 3. [CN]1：[CN]VDPF[CN]（[CN])
-            print(f"[Server {self.server_id}] [CN]1: [CN]VDPF[CN] ({self.vdpf_processes} [CN])...")
+            # 3. Phase1：Multiprocesses VDPF evaluation（Maintain original implementation)
+            print(f"[Server {self.server_id}] Phase1: Multiprocesses VDPF evaluation ({self.vdpf_processeses} processes)...")
             phase1_start = time.time()
             
             num_batches = (num_nodes + self.cache_batch_size - 1) // self.cache_batch_size
-            print(f"[Server {self.server_id}] [CN]process {num_batches} [CN]，[CN] {self.vdpf_processes} [CN]")
+            print(f"[Server {self.server_id}] willprocesses/handle {num_batches} batches，use {self.vdpf_processeses} processes")
             
-            # [CN]VDPF
-            all_selector_shares, all_vector_shares = self._multiprocess_vdpf_evaluation(
+            # Use multiprocesses VDPF evaluation
+            all_selector_shares, all_vector_shares = self._multiprocesses_vdpf_evaluation(
                 serialized_key, num_nodes, num_batches)
             
             phase1_time = time.time() - phase1_start
             total_ops_per_sec = num_nodes / phase1_time if phase1_time > 0 else 0
-            print(f"[Server {self.server_id}] [CN]1[CN]（[CN]），[CN] {phase1_time:.2f}[CN], [CN] {total_ops_per_sec:.0f} ops/sec")
+            print(f"[Server {self.server_id}] Phase1completed（multiprocesses），time taken {phase1_time:.2f}s, average {total_ops_per_sec:.0f} ops/sec")
             
-            # # DEBUG: [CN]VDPF[CN]
+            # # DEBUG: check VDPF selector values
             # non_zero_count = sum(1 for v in all_selector_shares.values() if v != 0)
-            # print(f"[Server {self.server_id}] DEBUG: VDPF[CN]: {non_zero_count}")
+            # print(f"[Server {self.server_id}] DEBUG: VDPF non-zero positions: {non_zero_count}")
             # if non_zero_count > 0:
-            #     for idx, val in list(all_selector_shares.items())[:5]:  # print[CN]5[CN]
+            #     for idx, val in list(all_selector_shares.items())[:5]:  # Print first 5 non-zero values
             #         if val != 0:
-            #             print(f"[Server {self.server_id}] DEBUG: [CN] {idx} [CN]VDPF[CN]: {val}")
+            #             print(f"[Server {self.server_id}] DEBUG: bitposition {idx} VDPFvalue: {val}")
             
-            # 3.5. [CN]
-            # print(f"[Server {self.server_id}] [CN]...")
+            # 3.5. File synchronization barrier
+            # print(f"[Server {self.server_id}] Using file system synchronization...")
             self._file_sync_barrier(query_id, "phase1")
             
-            # 4. [CN]2：[CN]e/fcalculate（[CN]）
-            # print(f"[Server {self.server_id}] [CN]2: [CN]e/fcalculate...")
+            # 4. Phase2：Data locality optimized e/f calculation（Maintain original implementation）
+            # print(f"[Server {self.server_id}] Phase2: Cache-friendly e/f calculation...")
             phase2_start = time.time()
             
             all_e_shares = np.zeros(num_nodes, dtype=np.uint64)
             all_f_shares = np.zeros((num_nodes, vector_dim), dtype=np.uint64)
             all_computation_states = {}
             
-            # [CN]process，[CN]
+            # Also use batch processesing to avoid random memory access
             for batch_idx in range(num_batches):
                 batch_start = batch_idx * self.cache_batch_size
                 batch_end = min(batch_start + self.cache_batch_size, num_nodes)
                 batch_size = batch_end - batch_start
                 
-                # print(f"[Server {self.server_id}] e/fcalculate[CN] {batch_idx+1}/{num_batches}")
+                # print(f"[Server {self.server_id}] e/f calculation batch {batch_idx+1}/{num_batches}")
                 
-                # [CN]（[CN]）
+                # Batch get triples（reduce lock contention）
                 batch_triples = []
                 for _ in range(batch_size):
                     batch_triples.append(self.mult_server.get_next_triple())
                 
-                # [CN]process[CN]
+                # Process this batch sequentially
                 for local_idx in range(batch_size):
                     global_idx = batch_start + local_idx
                     computation_id = f"query_{query_id}_pos{global_idx}"
@@ -657,7 +657,7 @@ class MemoryMappedOptimizedServer:
                     e_share = (all_selector_shares[global_idx] - a) % self.field_size
                     all_e_shares[global_idx] = e_share
                     
-                    # [CN]calculate[CN]f[CN]
+                    # Vectorized computation of f values for all dimensions
                     vector_data = all_vector_shares[global_idx]
                     f_values = (vector_data.astype(np.int64) - b) % self.field_size
                     all_f_shares[global_idx] = f_values
@@ -676,45 +676,45 @@ class MemoryMappedOptimizedServer:
                     }
             
             phase2_time = time.time() - phase2_start
-            # print(f"[Server {self.server_id}] [CN]2[CN]，[CN] {phase2_time:.2f}[CN]")
+            # print(f"[Server {self.server_id}] Phase2completed，time taken {phase2_time:.2f}s")
             
-            # 5. [CN]3：[CN]（[CN]）
-            # print(f"[Server {self.server_id}] [CN]3: [CN]...")
+            # 5. Phase3：Simulate batch exchange（Maintain no-compression optimization）
+            # print(f"[Server {self.server_id}] Phase3: Simulate batch exchange...")
             phase3_start = time.time()
             
-            # [CN]
+            # Save this server's data
             self._save_exchange_data(query_id, all_e_shares, all_f_shares)
             
-            # [CN]
+            # Wait for other servers to complete saving
             self._file_sync_barrier(query_id, "phase3_save")
             
-            # [CN]
+            # Read other servers' data
             all_e_from_others, all_f_from_others = self._load_other_servers_data(query_id, num_nodes)
             
             phase3_time = time.time() - phase3_start
-            # print(f"[Server {self.server_id}] [CN]3[CN]（[CN]），[CN] {phase3_time:.2f}[CN]")
+            # print(f"[Server {self.server_id}] Phase3completed（simulated），time taken {phase3_time:.2f}s")
             
-            # 6. [CN]4：[CN]calculate（[CN]NumPy[CN]）
-            # print(f"[Server {self.server_id}] [CN]4: [CN]calculate...")
+            # 6. Phase4：Data locality optimized reconstruction calculation（maintainNumPyparallelizedoptimization）
+            # print(f"[Server {self.server_id}] Phase4: Cache-friendly reconstruction calculation...")
             phase4_start = time.time()
             
-            # [CN]calculate[CN]，[CN]
+            # Pre-calculate Lagrange coefficients for all batches
             lagrange_1 = 2
             lagrange_2 = self.field_size - 1
             
-            # [CN]process[CN]calculate
+            # Use batch processesing for parallelized reconstruction calculation
             for batch_idx in range(num_batches):
                 batch_start = batch_idx * self.cache_batch_size
                 batch_end = min(batch_start + self.cache_batch_size, num_nodes)
                 batch_size = batch_end - batch_start
                 
-                # print(f"[Server {self.server_id}] NumPy[CN] {batch_idx+1}/{num_batches} ({batch_size} [CN])")
+                # print(f"[Server {self.server_id}] NumPy parallelized reconstruction batch {batch_idx+1}/{num_batches} ({batch_size} node)")
                 
-                # 1. [CN] - [CN]
+                # 1. Batch extract data - avoid per-node access
                 batch_e_shares_local = all_e_shares[batch_start:batch_end]  # shape: (batch_size,)
                 batch_f_shares_local = all_f_shares[batch_start:batch_end, :]  # shape: (batch_size, vector_dim)
                 
-                # 2. [CN]servers[CN]
+                # 2. Build three-server share matrix
                 # e_shares_matrix: shape (batch_size, 3)
                 e_shares_matrix = np.zeros((batch_size, 3), dtype=np.uint64)
                 e_shares_matrix[:, self.server_id - 1] = batch_e_shares_local
@@ -723,25 +723,25 @@ class MemoryMappedOptimizedServer:
                 f_shares_matrix = np.zeros((batch_size, vector_dim, 3), dtype=np.uint64)
                 f_shares_matrix[:, :, self.server_id - 1] = batch_f_shares_local
                 
-                # 3. [CN]
+                # 3. Fill in data from other servers
                 for other_id, other_e_shares in all_e_from_others.items():
                     e_shares_matrix[:, other_id - 1] = other_e_shares[batch_start:batch_end]
                 
                 for other_id, other_f_shares in all_f_from_others.items():
                     f_shares_matrix[:, :, other_id - 1] = other_f_shares[batch_start:batch_end, :]
                 
-                # 4. [CN]e[CN] - [CN]process[CN]
-                # [CN]: e = e1 * 2 + e2 * (-1)
+                # 4. Vectorized e value reconstruction - batch processes entire batch
+                # Using Lagrange interpolation: e = e1 * 2 + e2 * (-1)
                 batch_e_reconstructed = (e_shares_matrix[:, 0] * lagrange_1 + 
                                        e_shares_matrix[:, 1] * lagrange_2) % self.field_size
                 # shape: (batch_size,)
                 
-                # 5. [CN]f[CN] - [CN]process[CN]
+                # 5. Vectorized f value reconstruction - batch processes all dimensions
                 # f_reconstructed: shape (batch_size, vector_dim)
                 batch_f_reconstructed = (f_shares_matrix[:, :, 0] * lagrange_1 + 
                                        f_shares_matrix[:, :, 1] * lagrange_2) % self.field_size
                 
-                # 6. [CN]
+                # 6. Batch get triple data
                 batch_triples = []
                 for local_idx in range(batch_size):
                     global_idx = batch_start + local_idx
@@ -749,36 +749,36 @@ class MemoryMappedOptimizedServer:
                     a, b, c = state['triple']
                     batch_triples.append((a, b, c))
                 
-                # [CN]NumPy[CN]
+                # Convert to NumPy array for vectorization
                 batch_a = np.array([t[0] for t in batch_triples], dtype=np.uint64)  # shape: (batch_size,)
                 batch_b = np.array([t[1] for t in batch_triples], dtype=np.uint64)  # shape: (batch_size,)
                 batch_c = np.array([t[2] for t in batch_triples], dtype=np.uint64)  # shape: (batch_size,)
                 
-                # 7. [CN]calculate[CN] - [CN]process[CN]
-                # [CN]calculate batch_size × vector_dim [CN]
+                # 7. Vectorized computation of final result - batch processes all nodes and dimensions
+                # Use broadcasting to calculate batch_size × vector_dim result matrix
                 
-                # [CN]: (batch_size, 1) [CN] (batch_size, vector_dim)
+                # Expand dimensions to support broadcasting: (batch_size, 1) broadcast to (batch_size, vector_dim)
                 batch_e_expanded = batch_e_reconstructed[:, np.newaxis]  # shape: (batch_size, 1)
                 batch_a_expanded = batch_a[:, np.newaxis]  # shape: (batch_size, 1)
                 batch_b_expanded = batch_b[:, np.newaxis]  # shape: (batch_size, 1)
                 batch_c_expanded = batch_c[:, np.newaxis]  # shape: (batch_size, 1)
                 
-                # calculate[CN]: result = c + e*b + f*a + e*f (mod field_size)
+                # Calculate result: result = c + e*b + f*a + e*f (mod field_size)
                 batch_result = batch_c_expanded  # shape: (batch_size, vector_dim)
                 batch_result = (batch_result + batch_e_expanded * batch_b_expanded) % self.field_size
                 batch_result = (batch_result + batch_f_reconstructed * batch_a_expanded) % self.field_size
                 batch_result = (batch_result + batch_e_expanded * batch_f_reconstructed) % self.field_size
                 
-                # 8. [CN] - [CN]Vector dimension[CN]
+                # 8. Accumulate to total result - sum vector dimension results for all nodes
                 batch_contribution = np.sum(batch_result, axis=0) % self.field_size  # shape: (vector_dim,)
                 result_accumulator = (result_accumulator + batch_contribution) % self.field_size
                 
-                # # DEBUG: [CN]
+                # # DEBUG: Debug information for first batch
                 # if batch_idx == 0:
-                #     print(f"[Server {self.server_id}] DEBUG: [CN]1[CN]5[CN]: {batch_contribution[:5]}")
-                #     print(f"[Server {self.server_id}] DEBUG: [CN]5[CN]: {result_accumulator[:5]}")
+                #     print(f"[Server {self.server_id}] DEBUG: First 5 values contributed by batch 1: {batch_contribution[:5]}")
+                #     print(f"[Server {self.server_id}] DEBUG: First 5 values in accumulator: {result_accumulator[:5]}")
                 
-                # 9. [CN]calculate[CN]
+                # 9. Clean up calculation cache
                 for local_idx in range(batch_size):
                     global_idx = batch_start + local_idx
                     state = all_computation_states[global_idx]
@@ -786,37 +786,37 @@ class MemoryMappedOptimizedServer:
                     if computation_id in self.mult_server.computation_cache:
                         del self.mult_server.computation_cache[computation_id]
                 
-                # print(f"[Server {self.server_id}] [CN] {batch_idx+1} [CN]")
+                # print(f"[Server {self.server_id}] batches {batch_idx+1} parallelized reconstructioncompleted")
             
             phase4_time = time.time() - phase4_start
             total_time = time.time() - start_time
             
-            print(f"[Server {self.server_id}] [CN]（[CN]）:")
-            print(f"  [CN]1 ([CN]VDPF): {phase1_time:.2f}[CN]")
-            print(f"  [CN]2 ([CN]e/fcalculate): {phase2_time:.2f}[CN]")
-            print(f"  [CN]3 ([CN]): {phase3_time:.2f}[CN]") 
-            print(f"  [CN]4 ([CN]): {phase4_time:.2f}[CN]")
-            print(f"  [CN]: {total_time:.2f}[CN]")
+            print(f"[Server {self.server_id}] Query completed（multiprocessesData locality optimization）:")
+            print(f"  Phase1 (multiprocessesVDPF): {phase1_time:.2f}s")
+            print(f"  Phase2 (cache-friendly e/f calculation): {phase2_time:.2f}s")
+            print(f"  Phase3 (simulated exchange): {phase3_time:.2f}s") 
+            print(f"  Phase4 (cache-friendly reconstruction): {phase4_time:.2f}s")
+            print(f"  total: {total_time:.2f}s")
             
-            # [CN]，[CN]
+            # Add completion synchronization to ensure all servers have read data
             self._file_sync_barrier(query_id, "phase4_complete")
             
-            # [CN]，[CN]
-            # [CN]，[CN]
+            # Delayed cleanup to give other servers time to complete synchronization
+            # Only clean up data files, synchronization files will be cleaned up at next query start
             self._cleanup_data_files_only(query_id)
             
-            # return[CN]
-            # print(f"[Server {self.server_id}] [CN]...")
+            # Return result
+            # print(f"[Server {self.server_id}] Prepare to construct response...")
             
-            # [CN]
+            # Safe type conversion
             try:
                 result_list = [int(x) % (2**32) for x in result_accumulator]
-                # print(f"[Server {self.server_id}] [CN]，[CN]: {len(result_list)}")
-                # print(f"[Server {self.server_id}] DEBUG: [CN]5[CN]: {result_list[:5]}")
-                # print(f"[Server {self.server_id}] DEBUG: [CN]: [{min(result_list)}, {max(result_list)}]")
+                # print(f"[Server {self.server_id}] Result conversion successful, length: {len(result_list)}")
+                # print(f"[Server {self.server_id}] DEBUG: Final result first 5 values: {result_list[:5]}")
+                # print(f"[Server {self.server_id}] DEBUG: Final result range: [{min(result_list)}, {max(result_list)}]")
             except Exception as e:
-                print(f"[Server {self.server_id}] [CN]: {e}")
-                result_list = [0] * vector_dim  # [CN]
+                print(f"[Server {self.server_id}] Result conversion failed: {e}")
+                result_list = [0] * vector_dim  # Fallback result
             
             response = {
                 'status': 'success',
@@ -833,12 +833,12 @@ class MemoryMappedOptimizedServer:
                 'optimization_info': {
                     'cache_batch_size': self.cache_batch_size,
                     'total_batches': num_batches,
-                    'vdpf_processes': self.vdpf_processes,
+                    'vdpf_processeses': self.vdpf_processeses,
                     'avg_ops_per_sec_phase1': total_ops_per_sec
                 }
             }
             
-            # print(f"[Server {self.server_id}] [CN]")
+            # print(f"[Server {self.server_id}] Response data construction completed")
             return response
             
         except Exception as e:
@@ -847,15 +847,15 @@ class MemoryMappedOptimizedServer:
             return {'status': 'error', 'message': str(e)}
     
     def _file_sync_barrier(self, query_id: str, phase: str):
-        """[CN]"""
-        # create[CN]
+        """Use file system to implement synchronization barrier"""
+        # Create marker file for this server
         marker_file = f"server_{self.server_id}_query_{query_id}_{phase}_ready"
         marker_path = os.path.join(self.exchange_dir, marker_file)
         
         with open(marker_path, 'w') as f:
             f.write(str(time.time()))
         
-        # [CN]
+        # Wait for marker files from other servers
         for other_id in [1, 2, 3]:
             if other_id == self.server_id:
                 continue
@@ -867,39 +867,39 @@ class MemoryMappedOptimizedServer:
             for i in range(max_wait):
                 if os.path.exists(other_path):
                     break
-                time.sleep(0.1)  # [CN]
+                time.sleep(0.1)  # Reduce polling interval
             
             if not os.path.exists(other_path):
-                print(f"[Server {self.server_id}] [CN]: Server {other_id} [CN] {phase}")
+                print(f"[Server {self.server_id}] warning: Server {other_id} notcompleted {phase}")
     
     def _cleanup_query_files(self, query_id: str):
-        """[CN]"""
+        """Clean up files for specific query"""
         for filename in os.listdir(self.exchange_dir):
             if query_id in filename:
-                # [CN]
+                # Clean up data files and synchronization marker files
                 try:
                     os.remove(os.path.join(self.exchange_dir, filename))
                 except:
                     pass
     
     def _cleanup_data_files_only(self, query_id: str):
-        """[CN]，[CN]"""
+        """Only clean up data files, keep synchronization files"""
         for filename in os.listdir(self.exchange_dir):
             if query_id in filename and filename.endswith('_data.npz'):
-                # [CN]
+                # Only clean up data files
                 try:
                     os.remove(os.path.join(self.exchange_dir, filename))
                 except:
                     pass
     
     def _get_status(self) -> Dict:
-        """[CN]"""
+        """Get server status"""
         return {
             'status': 'success',
             'server_id': self.server_id,
-            'mode': 'multiprocess_locality_optimized',
+            'mode': 'multiprocesses_locality_optimized',
             'cache_batch_size': self.cache_batch_size,
-            'vdpf_processes': self.vdpf_processes,
+            'vdpf_processeses': self.vdpf_processeses,
             'worker_threads': self.worker_threads,
             'data_loaded': {
                 'nodes': self.node_shares.shape
@@ -911,27 +911,27 @@ class MemoryMappedOptimizedServer:
 
 
 def main():
-    """[CN]"""
-    # [CN]start[CN]'spawn'，[CN]initialize
-    multiprocessing.set_start_method('spawn', force=True)
+    """mainfunction"""
+    # setmultiprocessesstartmethodas'spawn'，ensure childprocessescorrectInitialize
+    multiprocessesing.set_start_method('spawn', force=True)
     
-    # [CN]
-    parser = argparse.ArgumentParser(description='[CN]')
+    # setcommand lineparameter
+    parser = argparse.ArgumentParser(description='vector-level multiprocessesoptimizationserver')
     parser.add_argument('--server-id', type=int, required=True, choices=[1, 2, 3],
-                        help='[CN]ID (1, 2, [CN] 3)')
+                        help='serverID (1, 2, or 3)')
     parser.add_argument('--dataset', type=str, default='laion', choices=['laion', 'siftsmall', 'tripclick', 'ms_marco', 'nfcorpus'],
-                        help='Dataset[CN] ([CN]: laion)')
-    parser.add_argument('--vdpf-processes', type=int, default=4,
-                        help='VDPF[CN] ([CN]: 4, [CN]: 1-16)')
+                        help='datadataset name (default: laion)')
+    parser.add_argument('--vdpf-processeses', type=int, default=4,
+                        help='VDPF evaluation processes count (default: 4, range: 1-16)')
     
     args = parser.parse_args()
     
-    if args.vdpf_processes < 1 or args.vdpf_processes > 16:
-        print("[CN]: vdpf_processes [CN] 1-16 [CN]")
+    if args.vdpf_processeses < 1 or args.vdpf_processeses > 16:
+        print("error: vdpf_processeses mustmustin 1-16 between")
         sys.exit(1)
     
-    print(f"start[CN] {args.server_id}，Dataset: {args.dataset}，[CN] {args.vdpf_processes} [CN]VDPF[CN]")
-    server = MemoryMappedOptimizedServer(args.server_id, args.dataset, args.vdpf_processes)
+    print(f"Start server {args.server_id}，dataset: {args.dataset}，use {args.vdpf_processeses} VDPFevaluationprocesses")
+    server = MemoryMappedOptimizedServer(args.server_id, args.dataset, args.vdpf_processeses)
     server.start()
 
 

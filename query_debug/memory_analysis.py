@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-[CN]
-[CN]TridentSearcher[CN]
+Memory consumption analysis script
+Measures static storage and dynamic memory usage of TridentSearcher
 """
 
 import os
@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 def measure_static_storage(dataset_name: str = "laion", base_path: str = "~/trident/dataset"):
-    """[CN]"""
+    """Measure static file storage size"""
     dataset_path = os.path.join(base_path, dataset_name)
     
     results = {
@@ -21,7 +21,7 @@ def measure_static_storage(dataset_name: str = "laion", base_path: str = "~/trid
         'total_storage': {}
     }
     
-    # [CN]
+    # Base files
     base_files = ['base.fvecs', 'query.fvecs', 'neighbors.bin', 'nodes.bin', 'gt.ivecs']
     total_base_size = 0
     
@@ -41,7 +41,7 @@ def measure_static_storage(dataset_name: str = "laion", base_path: str = "~/trid
             
             print(f"{filename}: {size_mb:.2f} MB")
     
-    # [CN]shares[CN]
+    # Server shares files
     total_shares_size = 0
     for server_id in [1, 2, 3]:
         server_dir = os.path.join(dataset_path, f'server_{server_id}')
@@ -72,7 +72,7 @@ def measure_static_storage(dataset_name: str = "laion", base_path: str = "~/trid
             
             print(f"Server {server_id} total: {server_total / (1024 * 1024):.2f} MB")
     
-    # [CN]
+    # Total summary
     results['total_storage'] = {
         'base_data_bytes': total_base_size,
         'base_data_mb': total_base_size / (1024 * 1024),
@@ -88,9 +88,9 @@ def measure_static_storage(dataset_name: str = "laion", base_path: str = "~/trid
     return results
 
 def generate_comparison_table(static_results: dict, output_file: str = None):
-    """[CN]"""
-    
-    # [CN]
+    """Generate results for comparison with paper tables"""
+
+    # Extract key data
     embed_size_gb = static_results['file_sizes'].get('base.fvecs', {}).get('size_gb', 0)
     
     # Graph size = neighbors.bin + nodes.bin
@@ -98,65 +98,65 @@ def generate_comparison_table(static_results: dict, output_file: str = None):
     nodes_gb = static_results['file_sizes'].get('nodes.bin', {}).get('size_gb', 0)
     graph_size_gb = neighbors_gb + nodes_gb
     
-    # [CN]shares[CN]
+    # Server shares size
     server_sizes = []
     for i in [1, 2, 3]:
         server_gb = static_results['server_sizes'].get(f'server_{i}', {}).get('total_gb', 0)
         server_sizes.append(server_gb)
     
-    # [CN]
+    # Output comparison table
     print("\n" + "="*80)
-    print("TridentSearcher [CN]")
+    print("TridentSearcher Memory Consumption Comparison Analysis")
     print("="*80)
     print(f"Dataset: {static_results['dataset'].upper()}")
     print()
-    
-    print("| [CN] | [CN] (GB) | Server 1 | Server 2 | Server 3 | [CN] |")
-    print("|------|-----------|----------|----------|----------|------|")
+
+    print("| Component | Size (GB) | Server 1 | Server 2 | Server 3 | Total |")
+    print("|-----------|-----------|----------|----------|----------|-------|")
     print(f"| Embed. Size | {embed_size_gb:.3f} | - | - | - | {embed_size_gb:.3f} |")
     print(f"| Graph Size | {graph_size_gb:.3f} | - | - | - | {graph_size_gb:.3f} |")
     print(f"| VDPF Shares | - | {server_sizes[0]:.3f} | {server_sizes[1]:.3f} | {server_sizes[2]:.3f} | {sum(server_sizes):.3f} |")
-    
+
     total_static = embed_size_gb + graph_size_gb + sum(server_sizes)
-    print(f"| **[CN]** | **{total_static:.3f}** | **{server_sizes[0]:.3f}** | **{server_sizes[1]:.3f}** | **{server_sizes[2]:.3f}** | **{total_static:.3f}** |")
-    
+    print(f"| **Static Total** | **{total_static:.3f}** | **{server_sizes[0]:.3f}** | **{server_sizes[1]:.3f}** | **{server_sizes[2]:.3f}** | **{total_static:.3f}** |")
+
     print()
-    print("[CN]:")
+    print("Comparison with existing methods:")
     print("- Compass Server: ~2 GB (SH + Mal)")
     print("- HE-Cluster Server: ~8.75 GB")
-    print(f"- TridentSearcher ([CN]): ~{(embed_size_gb + graph_size_gb + server_sizes[0]):.3f} GB")
-    print(f"- TridentSearcher ([CN]): ~{total_static:.3f} GB")
-    
-    # [CN]
+    print(f"- TridentSearcher (single server): ~{(embed_size_gb + graph_size_gb + server_sizes[0]):.3f} GB")
+    print(f"- TridentSearcher (three servers total): ~{total_static:.3f} GB")
+
+    # Analysis results
     single_server_gb = embed_size_gb + graph_size_gb + server_sizes[0]
-    print(f"\n[CN]:")
-    print(f"- [CN] Compass: [CN] {max(0, 2 - single_server_gb):.3f} GB")
-    print(f"- [CN] HE-Cluster: [CN] {max(0, 8.75 - single_server_gb):.3f} GB") 
-    print(f"- [CN]: [CN]servers[CN] {single_server_gb:.3f} GB")
+    print(f"\nPerformance advantages:")
+    print(f"- Compared to Compass: single server saves {max(0, 2 - single_server_gb):.3f} GB")
+    print(f"- Compared to HE-Cluster: single server saves {max(0, 8.75 - single_server_gb):.3f} GB")
+    print(f"- Distributed allocation: each server only needs {single_server_gb:.3f} GB")
     
-    # [CN]
+    # Save to file
     if output_file:
         with open(output_file, 'w') as f:
-            f.write(f"# TridentSearcher [CN]\\n\\n")
+            f.write(f"# TridentSearcher Memory Consumption Analysis Report\\n\\n")
             f.write(f"**Dataset**: {static_results['dataset']}\\n")
-            f.write(f"**[CN]**: {static_results['timestamp']}\\n\\n")
-            
-            f.write("## [CN]\\n\\n")
-            f.write("| [CN] | [CN] (GB) |\\n")
-            f.write("|------|-----------|\\n")
-            f.write(f"| [CN] | {embed_size_gb:.3f} |\\n")
-            f.write(f"| [CN] | {graph_size_gb:.3f} |\\n")
-            f.write(f"| VDPF[CN] (3[CN]) | {sum(server_sizes):.3f} |\\n")
-            f.write(f"| **[CN]** | **{total_static:.3f}** |\\n\\n")
-            
-            f.write("## [CN]\\n\\n")
-            f.write("| [CN] | [CN] (GB) | [CN] (GB) |\\n")
-            f.write("|------|-------------------|-------------|\\n")
+            f.write(f"**Generation Time**: {static_results['timestamp']}\\n\\n")
+
+            f.write("## Static Storage Requirements\\n\\n")
+            f.write("| Component | Size (GB) |\\n")
+            f.write("|-----------|-----------|\\n")
+            f.write(f"| Vector Embeddings | {embed_size_gb:.3f} |\\n")
+            f.write(f"| Graph Structure | {graph_size_gb:.3f} |\\n")
+            f.write(f"| VDPF Shares (3 servers) | {sum(server_sizes):.3f} |\\n")
+            f.write(f"| **Total** | **{total_static:.3f}** |\\n\\n")
+
+            f.write("## Comparison with Existing Methods\\n\\n")
+            f.write("| Method | Single Server Memory (GB) | Total Memory (GB) |\\n")
+            f.write("|--------|---------------------------|-------------------|\\n")
             f.write("| Compass | ~2.0 | ~2.0 |\\n")
             f.write("| HE-Cluster | ~8.75 | ~8.75 |\\n")
             f.write(f"| TridentSearcher | ~{single_server_gb:.3f} | ~{total_static:.3f} |\\n")
-            
-        print(f"\\n[CN]: {output_file}")
+
+        print(f"\\nReport saved to: {output_file}")
 
 def main():
     if len(sys.argv) > 1:
@@ -164,22 +164,22 @@ def main():
     else:
         dataset = "laion"
     
-    print(f"[CN]Dataset: {dataset}")
+    print(f"Analyzing dataset: {dataset}")
     print("="*50)
-    
-    # [CN]
+
+    # Measure static storage
     static_results = measure_static_storage(dataset)
-    
-    # [CN]
+
+    # Generate comparison report
     output_file = f"~/trident/experiment/{dataset}_memory_analysis.md"
     generate_comparison_table(static_results, output_file)
-    
-    # [CN]
+
+    # Save raw data
     json_file = f"~/trident/experiment/{dataset}_memory_data.json"
     with open(json_file, 'w') as f:
         json.dump(static_results, f, indent=2)
-    
-    print(f"[CN]: {json_file}")
+
+    print(f"Raw data saved to: {json_file}")
 
 if __name__ == "__main__":
     main()

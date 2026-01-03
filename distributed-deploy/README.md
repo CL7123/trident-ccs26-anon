@@ -1,30 +1,30 @@
-# distributeddeployment[CN]
+# Distributed Deployment Guide
 
-[CN]directorypackage[CN]true[CN]networkenvironmentindeployment Trident system[CN]file.
+This directory contains all necessary files for deploying the Trident system in a real network environment.
 
-## directory[CN]
+## Directory Structure
 
 ```
 distributed-deploy/
-├── server.py          # distributedservercode
-├── client.py          # distributedclientcode
-├── config.py          # networkprofile
-├── deploy.sh          # automatic[CN]deployment[CN]
-└── README.md          # [CN]documentation
+├── server.py          # Distributed server code
+├── client.py          # Distributed client code
+├── config.py          # Network configuration file
+├── deploy.sh          # Automated deployment script
+└── README.md          # This document
 ```
 
-## before[CN]require
+## Prerequisites
 
-1. **[CN]server**:[CN]3[CN]server([CN]usageAWS EC2[CN])
-2. **Pythonenvironment**:[CN]serveron[CN]Python 3.8+
-3. **SSHvisit**:[CN]SSHvisit[CN]server
-4. **firewallconfiguration**:[CN]port 8001-8003
+1. **Three Servers**: Requires 3 servers that can communicate with each other (AWS EC2 instances recommended)
+2. **Python Environment**: Python 3.8+ required on each server
+3. **SSH Access**: Ability to access all servers via SSH
+4. **Firewall Configuration**: Open ports 8001-8003
 
-## faststart
+## Quick Start
 
-### 1. configurationserverinformation
+### 1. Configure Server Information
 
-[CN] `config.py` file,[CN]serverIPaddress:
+Edit the `config.py` file and fill in the actual server IP addresses:
 
 ```python
 SERVERS = {
@@ -34,9 +34,9 @@ SERVERS = {
 }
 ```
 
-### 2. configurationdeployment[CN]
+### 2. Configure Deployment Script
 
-[CN] `deploy.sh` file,updateserverIP:
+Edit the `deploy.sh` file and update server IPs:
 
 ```bash
 SERVERS[1]="192.168.1.101"
@@ -44,82 +44,82 @@ SERVERS[2]="YOUR_SERVER_2_IP"
 SERVERS[3]="YOUR_SERVER_3_IP"
 ```
 
-### 3. deploymentserver
+### 3. Deploy Servers
 
-usagedeployment[CN]keydeployment:
+Use the deployment script for one-click deployment:
 
 ```bash
 ./deploy.sh
 ```
 
-selectoptions 1 [CN]deployment[CN]start[CN]server.
+Select option 1 to deploy and start all servers.
 
-### 4. runclienttest
+### 4. Run Client Tests
 
-[CN]onrunclient:
+Run the client on any machine:
 
 ```bash
 cd ~/trident/distributed-deploy
 python3 client.py --dataset siftsmall --num-queries 10
 ```
 
-## manualdeployment[CN]
+## Manual Deployment Steps
 
-[CN]manualdeployment,[CN]under[CN]:
+If manual deployment is needed, follow these steps:
 
-### [CN]serveron:
+### On Each Server:
 
-1. **synchronouscode**:
+1. **Sync Code**:
 ```bash
 rsync -avz -e "ssh -i your-key.pem" --exclude='venv/' ./ ubuntu@SERVER_IP:~/test/
 ```
 
-2. **startserver**([CN]serveron):
+2. **Start Server** (on each respective server):
 ```bash
-# server1
+# Server 1
 python3 server.py --server-id 1 --dataset siftsmall
 
-# server2
+# Server 2
 python3 server.py --server-id 2 --dataset siftsmall
 
-# server3
+# Server 3
 python3 server.py --server-id 3 --dataset siftsmall
 ```
 
-### [CN]client[CN]on:
+### On Client Machine:
 
 ```bash
 python3 client.py --dataset siftsmall --num-queries 10
 ```
 
-## command-line argument
+## Command Line Arguments
 
-### serverparameters
+### Server Arguments
 
-- `--server-id`: serverID (1, 2, [CN] 3)
-- `--dataset`: datasetname (siftsmall, laion, tripclick, ms_marco, nfcorpus)
-- `--vdpf-processes`: VDPFassessprocess[CN] (default: 4)
+- `--server-id`: Server ID (1, 2, or 3)
+- `--dataset`: Dataset name (siftsmall, laion, tripclick, ms_marco, nfcorpus)
+- `--vdpf-processes`: Number of VDPF evaluation processes (default: 4)
 
-### clientparameters
+### Client Arguments
 
-- `--dataset`: datasetname (default: siftsmall)
-- `--num-queries`: testqueryquantity (default: 10)
-- `--no-report`: [CN]savetestreport
-- `--config`: customprofilepath
-- `--status-only`: [CN]fetchserverstate
+- `--dataset`: Dataset name (default: siftsmall)
+- `--num-queries`: Number of test queries (default: 10)
+- `--no-report`: Do not save test report
+- `--config`: Custom configuration file path
+- `--status-only`: Only get server status
 
-## networkrequire
+## Network Requirements
 
-### AWS EC2 security[CN]configuration
+### AWS EC2 Security Group Configuration
 
-1. [CN]AWS[CN]
-2. enterEC2 -> [CN] -> select[CN] -> security -> security[CN]
-3. [CN],add:
-   - type: customTCP
-   - portrange: 8001-8003
-   - [CN]: 0.0.0.0/0 ([CN]limit[CN]IP)
+1. Log in to AWS Console
+2. Navigate to EC2 -> Instances -> Select instance -> Security -> Security Groups
+3. Edit inbound rules and add:
+   - Type: Custom TCP
+   - Port Range: 8001-8003
+   - Source: 0.0.0.0/0 (or restrict to specific IPs)
 
-### localfirewallconfiguration([CN])
+### Local Firewall Configuration (if needed)
 
 ```bash
 # Ubuntu/Debian
@@ -130,74 +130,74 @@ sudo firewall-cmd --permanent --add-port=8001-8003/tcp
 sudo firewall-cmd --reload
 ```
 
-## [CN]
+## Troubleshooting
 
-### 1. connecttimeout
+### 1. Connection Timeout
 
-- checkfirewall/security[CN]configuration
-- verificationserverIPaddressyesnocorrect
-- [CN]serverpositive[CN]run
+- Check firewall/security group configuration
+- Verify server IP addresses are correct
+- Ensure servers are running
 
-### 2. SSHconnectfailure
+### 2. SSH Connection Failed
 
-- checkkeyfilepermission:`chmod 400 your-key.pem`
-- verificationusername(ubuntu/ec2-user)
-- checkSSHportyesno[CN]
+- Check key file permissions: `chmod 400 your-key.pem`
+- Verify username (ubuntu/ec2-user)
+- Check if SSH port is open
 
-### 3. servicestartfailure
+### 3. Service Startup Failed
 
-- checkPythondependentyesnoinstall[CN]
-- [CN]serverlog:`tail -f server_X.log`
-- [CN]datafile[CN]correctposition
+- Check if Python dependencies are fully installed
+- View server logs: `tail -f server_X.log`
+- Ensure data files exist in the correct location
 
-### 4. queryfailure
+### 4. Query Failed
 
-- [CN]2[CN]serverpositive[CN]run
-- checknetworkconnectyesnostable
-- verificationdatasetyesnocorrectload
+- Ensure at least 2 servers are running normally
+- Check network connection stability
+- Verify dataset is loaded correctly
 
-## performanceoptimizationsuggestion
+## Performance Optimization Tips
 
-1. **networkoptimization**:
-   - [CN]serverdeployment[CN]locale(AWS Region)
-   - usageinside[CN]IP[CN]row[CN]([CN])
-   - enableTCP_NODELAY[CN]late
+1. **Network Optimization**:
+   - Deploy servers in the same region (AWS Region)
+   - Use internal IPs for communication (if possible)
+   - Enable TCP_NODELAY to reduce latency
 
-2. **processconfiguration**:
-   - root[CN]CPU[CN] `--vdpf-processes`
-   - monitorCPU[CN]memoryusage[CN]
+2. **Process Configuration**:
+   - Adjust `--vdpf-processes` based on CPU core count
+   - Monitor CPU and memory usage
 
-3. **dataoptimization**:
-   - usageSSD[CN]datafile
-   - [CN]processpool[CN]startlate
+3. **Data Optimization**:
+   - Use SSD for storing data files
+   - Warm up process pool to reduce startup latency
 
-## monitor[CN]log
+## Monitoring and Logs
 
-- serverlogposition:`~/test/distributed-deploy/server_X.log`
-- clienttestreport:`~/test/distributed-deploy/distributed_result.md`
+- Server log location: `~/test/distributed-deploy/server_X.log`
+- Client test report: `~/test/distributed-deploy/distributed_result.md`
 
-usagedeployment[CN]log:
+View logs using deployment script:
 ```bash
 ./deploy.sh
-# selectoptions 7
+# Select option 7
 ```
 
-## securitynote[CN]item
+## Security Considerations
 
-1. **production environmentsuggestion**:
-   - usageTLSencryption[CN]
-   - limitIPvisitrange
-   - [CN]updatesystem[CN]dependent
+1. **Production Environment Recommendations**:
+   - Use TLS to encrypt communications
+   - Restrict IP access range
+   - Regularly update system and dependencies
 
-2. **key[CN]**:
-   - [CN]SSHkey
-   - [CN]keycommit[CN]version control
+2. **Key Management**:
+   - Properly secure SSH keys
+   - Do not commit keys to version control
 
-## [CN]support
+## Support
 
-[CN]issue,[CN]check:
-1. serverlogfile
-2. networkconnectstate
-3. firewallconfiguration
+If you encounter issues, please check:
+1. Server log files
+2. Network connection status
+3. Firewall configuration
 
-detailed[CN]errorinformation[CN]fast[CN]bit[CN]resolveissue.
+Detailed error messages will help quickly locate and resolve problems.

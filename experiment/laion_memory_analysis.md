@@ -1,1 +1,21 @@
-# TridentSearcher memory[CN]analysisreport\n\n**dataset**: laion\n**generatetime**: 2025-07-27T17:59:24.462361\n\n## static[CN]requirement\n\n| component | size (GB) |\n|------|-----------|\n| vectorembedding | 0.191 |\n| graph[CN] | 0.336 |\n| VDPF[CN] (3server) | 1.001 |\n| **[CN]** | **1.529** |\n\n## [CN]method[CN]\n\n| method | [CN]servermemory (GB) | [CN]memory (GB) |\n|------|-------------------|-------------|\n| Compass | ~2.0 | ~2.0 |\n| HE-Cluster | ~8.75 | ~8.75 |\n| TridentSearcher | ~0.861 | ~1.529 |\n
+# TridentSearcher Memory Consumption Analysis Report
+
+**Dataset**: laion
+**Generation Time**: 2025-07-27T17:59:24.462361
+
+## Static Storage Requirements
+
+| Component | Size (GB) |
+|-----------|-----------|
+| Vector Embeddings | 0.191 |
+| Graph Structure | 0.336 |
+| VDPF Shares (3 Servers) | 1.001 |
+| **Total** | **1.529** |
+
+## Comparison with Existing Methods
+
+| Method | Single Server Memory (GB) | Total Memory (GB) |
+|--------|-------------------------|------------------|
+| Compass | ~2.0 | ~2.0 |
+| HE-Cluster | ~8.75 | ~8.75 |
+| TridentSearcher | ~0.861 | ~1.529 |\n

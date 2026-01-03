@@ -1,21 +1,21 @@
-[CN] - 2025-07-31
+Stable Version - 2025-07-31
 ====================
 
-[CN]run siftsmall dataset[CN]。
+This is a stable version that can successfully run the siftsmall dataset.
 
-[CN]：
-- [CN]
-- 32[CN]VDPF[CN]
-- [CN]（30[CN]）
-- [CN]socket[CN]（16MB）
+Key Features:
+- Persistent connection optimization
+- VDPF parallel computation with 32 processes
+- Increased network timeout (30 seconds)
+- Increased socket buffer (16MB)
 
-[CN]：
-- laion dataset[CN]（uint32 vs uint64）
-- [CN]dataset
+Known Limitations:
+- Data type mismatch issue with laion dataset (uint32 vs uint64)
+- Further optimization needed to support large datasets
 
-[CN]（siftsmall）：
-- [CN]1 (VDPF[CN]): ~0.10[CN]
-- [CN]2 (e/f[CN]): ~0.01[CN]
-- [CN]3 ([CN]): ~0.17[CN]
-- [CN]4 ([CN]): ~0.001[CN]
-- [CN]: ~0.28[CN]
+Performance Metrics (siftsmall):
+- Phase 1 (VDPF evaluation): ~0.10 seconds
+- Phase 2 (e/f calculation): ~0.01 seconds
+- Phase 3 (data exchange): ~0.17 seconds
+- Phase 4 (reconstruction): ~0.001 seconds
+- Total: ~0.28 seconds

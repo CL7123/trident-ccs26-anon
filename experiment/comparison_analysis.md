@@ -1,74 +1,74 @@
-# FAISS HNSW vs TridentSearcher performance[CN]analysis
+# FAISS HNSW vs TridentSearcher Performance Comparison Analysis
 
-## 1. recall[CN] (usage[CN] ef_search parameters)
+## 1. Recall Comparison (Using Same ef_search Parameters)
 
-### SIFTSMALL dataset
-| method | ef_search | Recall@10 | MRR@10 | querytime(ms) | QPS |
-|------|-----------|-----------|---------|--------------|-----|
+### SIFTSMALL Dataset
+| Method | ef_search | Recall@10 | MRR@10 | Query Time (ms) | QPS |
+|--------|-----------|-----------|---------|-----------------|-----|
 | FAISS HNSW | 32 | 1.0000 | - | 0.009 | 114,661 |
 | TridentSearcher | 32 | - | 0.9500 | 4.60 | 217 |
 
-### LAION dataset
-| method | ef_search | Recall@10 | MRR@10 | querytime(ms) | QPS |
-|------|-----------|-----------|---------|--------------|-----|
+### LAION Dataset
+| Method | ef_search | Recall@10 | MRR@10 | Query Time (ms) | QPS |
+|--------|-----------|-----------|---------|-----------------|-----|
 | FAISS HNSW | 32 | 0.9876 | - | 0.121 | 8,269 |
 | TridentSearcher | 32 | - | 0.9900 | 7.15 | 140 |
 
-### TRIPCLICK dataset
-| method | ef_search | Recall@10 | MRR@10 | querytime(ms) | QPS |
-|------|-----------|-----------|---------|--------------|-----|
+### TRIPCLICK Dataset
+| Method | ef_search | Recall@10 | MRR@10 | Query Time (ms) | QPS |
+|--------|-----------|-----------|---------|-----------------|-----|
 | FAISS HNSW | 36 | 0.4921 | - | 0.545 | 2,156 |
 | TridentSearcher | 36 | - | 0.9333 | 20.26 | 49 |
 
-### NFCORPUS dataset
-| method | ef_search | Recall@10 | MRR@10 | querytime(ms) | QPS |
-|------|-----------|-----------|---------|--------------|-----|
+### NFCORPUS Dataset
+| Method | ef_search | Recall@10 | MRR@10 | Query Time (ms) | QPS |
+|--------|-----------|-----------|---------|-----------------|-----|
 | FAISS HNSW | 32 | 0.1071 | - | 0.017 | 59,629 |
 | TridentSearcher | 32 | - | 0.2687 | 4.22 | 237 |
 
-## 2. [CN]key[CN]
+## 2. Key Findings
 
-### 2.1 recalldiff
-- **TRIPCLICK**: TridentSearcher [CN] MRR@10 (0.9333) [CN] FAISS [CN] Recall@10 (0.4921)
-- **NFCORPUS**: TridentSearcher [CN] MRR@10 (0.2687) [CN] FAISS [CN] Recall@10 (0.1071)
-- **LAION**: [CN] (TridentSearcher: 0.99 vs FAISS: 0.9876)
-- **SIFTSMALL**: FAISS [CN] (1.0 vs 0.95)
+### 2.1 Recall Rate Differences
+- **TRIPCLICK**: TridentSearcher MRR@10 (0.9333) significantly outperforms FAISS Recall@10 (0.4921)
+- **NFCORPUS**: TridentSearcher MRR@10 (0.2687) higher than FAISS Recall@10 (0.1071)
+- **LAION**: Similar performance between both (TridentSearcher: 0.99 vs FAISS: 0.9876)
+- **SIFTSMALL**: FAISS slightly better (1.0 vs 0.95)
 
-### 2.2 queryperformancediff
-- FAISS HNSW [CN]queryvelocity[CN] **10-500[CN]**
-- TridentSearcher [CN]querytime[CN] 2.65-59.58ms [CN]
-- FAISS HNSW [CN]querytime[CN] 0.009-1.8ms [CN]
+### 2.2 Query Performance Differences
+- FAISS HNSW query speed is **10-500x faster**
+- TridentSearcher query time ranges from 2.65-59.58ms
+- FAISS HNSW query time ranges from 0.009-1.8ms
 
-### 2.3 datasetattribute[CN]
-- [CN]semanticssearchdataset(TRIPCLICK, NFCORPUS)on,TridentSearcher [CN]
-- [CN]vectordataset(SIFTSMALL, LAION)on,[CN]
+### 2.3 Dataset Characteristics Impact
+- On semantic search datasets (TRIPCLICK, NFCORPUS), TridentSearcher performs better
+- On traditional vector datasets (SIFTSMALL, LAION), both show similar performance
 
-## 3. [CN]analysis
+## 3. Root Cause Analysis
 
-### 3.1 [CN]diff[CN]
-1. **greedysearchstrategy**: TridentSearcher [CN]layerusage[CN]greedysearch,[CN]path
-2. **MRR vs Recall**: MRR [CN]correctresult[CN]ranking,[CN] Recall [CN]correctresulttotal
-3. **indexbuilddiff**: [CN]usage[CN]indexbuildstrategy[CN]parameters
+### 3.1 Algorithm Differences Impact
+1. **Greedy Search Strategy**: TridentSearcher uses pure greedy search at higher levels, reducing exploration but potentially finding more direct paths
+2. **MRR vs Recall**: MRR focuses on the rank of the first correct result, while Recall counts total correct results found
+3. **Index Construction Differences**: Possibly uses different index construction strategies or parameters
 
-### 3.2 performancetrade-off
-- TridentSearcher [CN]queryvelocity[CN]:
-  - [CN]distributedenvironment[CN]
-  - [CN]dataseton[CN]searchquality
-  - [CN]network[CN]overhead([CN]distributedscenein)
+### 3.2 Performance Trade-offs
+- TridentSearcher sacrifices query speed to gain:
+  - Design more suitable for distributed environments
+  - Better search quality on certain datasets
+  - Reduced network communication overhead (in distributed scenarios)
 
-## 4. [CN]
+## 4. Conclusions
 
-1. **TridentSearcher [CN]**:
-   - [CN]semanticssearchtaskon[CN]
-   - distributed[CN]
-   - [CN]dataseton[CN] MRR
+1. **TridentSearcher Advantages**:
+   - Better performance on semantic search tasks
+   - Distributed-friendly design
+   - Higher MRR on certain datasets
 
-2. **FAISS HNSW [CN]**:
-   - [CN]querythroughput
-   - [CN]vector[CN]taskon[CN]stable
-   - [CN]late
+2. **FAISS HNSW Advantages**:
+   - Extremely high query throughput
+   - Stable performance on traditional vector retrieval tasks
+   - Lower latency
 
-3. **usagesuggestion**:
-   - [CN]late[CN]scene,usage FAISS HNSW
-   - [CN]distributedenvironment[CN]searchquality[CN]scene,[CN] TridentSearcher
-   - [CN]semanticssearchtask,TridentSearcher [CN]yes[CN]select
+3. **Usage Recommendations**:
+   - For scenarios requiring ultra-low latency, use FAISS HNSW
+   - For distributed environments or when prioritizing search quality, consider TridentSearcher
+   - For semantic search tasks, TridentSearcher may be the better choice

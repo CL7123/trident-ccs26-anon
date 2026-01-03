@@ -1,6 +1,6 @@
 """
-[CN]SHA-256calculate[CN]
-[CN]OpenSSL[CN]EVP[CN]
+Batch SHA-256 computation optimization
+Using OpenSSL EVP interface or hardware acceleration
 """
 import numpy as np
 import hashlib
@@ -9,17 +9,17 @@ import multiprocessing
 
 
 class BatchSHA256:
-    """[CN]SHA-256calculate[CN]"""
-    
+    """Batch SHA-256 calculator"""
+
     def __init__(self, num_threads=4):
         self.num_threads = num_threads
-        
+
     def compute_batch_parallel(self, inputs: list) -> list:
-        """[CN]calculate[CN]SHA-256"""
-        # [CN]
+        """Compute multiple SHA-256 in parallel"""
+        # Split input to multiple threads
         chunk_size = max(1, len(inputs) // self.num_threads)
         chunks = [inputs[i:i+chunk_size] for i in range(0, len(inputs), chunk_size)]
-        
+
         def compute_chunk(chunk):
             results = []
             for data in chunk:
@@ -27,49 +27,49 @@ class BatchSHA256:
                 h.update(data)
                 results.append(h.digest())
             return results
-        
-        # [CN]calculate
+
+        # Use thread pool for parallel computation
         with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
             chunk_results = list(executor.map(compute_chunk, chunks))
-        
-        # [CN]
+
+        # Merge results
         results = []
         for chunk_result in chunk_results:
             results.extend(chunk_result)
-        
+
         return results
-    
+
     def compute_batch_vectorized(self, seeds: list, suffixes: list) -> list:
-        """[CN]calculate（[CN]）"""
-        # [CN]
+        """Vectorized batch computation (simulated)"""
+        # Prepare all inputs
         inputs = []
         for seed in seeds:
             for suffix in suffixes:
                 inputs.append(seed + suffix)
-        
-        # [CN]calculate
+
+        # Batch computation
         return self.compute_batch_parallel(inputs)
 
 
-# [CN]SHA[CN]
+# Try to import faster SHA implementation
 try:
     import cryptography.hazmat.primitives.hashes as crypto_hashes
     from cryptography.hazmat.backends import default_backend
-    
+
     class FastBatchSHA256(BatchSHA256):
-        """[CN]cryptography[CN]SHA-256[CN]"""
-        
+        """Faster SHA-256 implementation using cryptography library"""
+
         def compute_single(self, data: bytes) -> bytes:
-            """[CN]cryptographycalculate[CN]SHA-256"""
+            """Compute single SHA-256 using cryptography"""
             digest = crypto_hashes.Hash(crypto_hashes.SHA256(), backend=default_backend())
             digest.update(data)
             return digest.finalize()
-        
+
         def compute_batch_parallel(self, inputs: list) -> list:
-            """[CN]cryptography[CN]calculate"""
+            """Parallel batch computation using cryptography"""
             chunk_size = max(1, len(inputs) // self.num_threads)
             chunks = [inputs[i:i+chunk_size] for i in range(0, len(inputs), chunk_size)]
-            
+
             def compute_chunk(chunk):
                 results = []
                 backend = default_backend()
@@ -78,15 +78,15 @@ try:
                     digest.update(data)
                     results.append(digest.finalize())
                 return results
-            
+
             with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
                 chunk_results = list(executor.map(compute_chunk, chunks))
-            
+
             results = []
             for chunk_result in chunk_results:
                 results.extend(chunk_result)
-            
+
             return results
-            
+
 except ImportError:
-    FastBatchSHA256 = BatchSHA256  # [CN]
+    FastBatchSHA256 = BatchSHA256  # Fallback to standard implementation

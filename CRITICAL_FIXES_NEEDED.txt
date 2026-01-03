@@ -1,0 +1,121 @@
+================================================================================
+TRIDENT CCS26 ANONYMITY - CRITICAL ISSUES TO FIX
+================================================================================
+
+OVERVIEW:
+---------
+Total Chinese Characters: 2,461 across 10 files
+Risk Level: HIGH - Must fix before publication
+Git Author: CL7123 (identifiable username)
+
+================================================================================
+PRIORITY 1: REMOVE CHINESE CHARACTERS (CRITICAL)
+================================================================================
+
+Top 5 files by Chinese character count:
+
+1. query_debug/vector-server.py                       565 chars (23.0%)
+2. distributed-deploy-optimized/server.py             511 chars (20.8%)
+3. distributed-deploy-optimized/server_optimized.py   457 chars (18.6%)
+4. distributed-deploy-optimized/client.py             224 chars (9.1%)
+5. distributed-nl/server.py                           221 chars (9.0%)
+
+Other affected files:
+6. distributed-deploy-optimized/distributed_result.md  114 chars
+7. query_debug/vector-client.py                        108 chars
+8. query_debug/memory_analysis.py                      103 chars
+9. query/vector-client.py                               98 chars
+10. distributed-nl/nl_result.md                         60 chars
+
+ACTION REQUIRED:
+- Replace ALL Chinese comments with English
+- Replace ALL Chinese print/log messages with English
+- Fix mixed-language strings (e.g., "Reconstruction shares" -> "Reconstruction shares")
+
+================================================================================
+PRIORITY 2: CLEAN GIT HISTORY (CRITICAL)
+================================================================================
+
+Current git config:
+  user.name: CL7123
+  user.email: your-email@example.com
+
+Git commit authors include:
+  - CL7123 <your-email@example.com>
+  - Anonymous <anonymous@anonymous.com>
+
+OPTIONS:
+  Option A: Remove .git directory entirely
+    cd /home/cuilei/sp-trident/trident-ccs26-anon
+    rm -rf .git
+    
+  Option B: Rewrite git history (if you need to keep git)
+    git filter-branch --env-filter '
+      export GIT_AUTHOR_NAME="Anonymous"
+      export GIT_AUTHOR_EMAIL="anonymous@anonymous.com"
+      export GIT_COMMITTER_NAME="Anonymous"
+      export GIT_COMMITTER_EMAIL="anonymous@anonymous.com"
+    ' -- --all
+
+================================================================================
+PRIORITY 3: REVIEW DEBUG DIRECTORIES (MEDIUM)
+================================================================================
+
+query_debug/ contains 776 Chinese characters total
+  - Consider removing this directory if not needed for submission
+  - OR thoroughly clean all Chinese content
+
+================================================================================
+VERIFICATION STEPS (After Fixes)
+================================================================================
+
+1. Run Chinese character scan:
+   cd /home/cuilei/sp-trident/trident-ccs26-anon
+   find . -type f \( -name "*.py" -o -name "*.md" -o -name "*.sh" \) -exec grep -l -P '[\x{4e00}-\x{9fff}]' {} \;
+   
+   Expected result: No files listed
+
+2. Check git config:
+   git config user.name
+   git log --pretty=format:"%an <%ae>" | sort -u
+   
+   Expected result: No "CL7123" or identifiable usernames
+
+3. Verify Python files:
+   find . -name "*.py" -type f | head -10 | xargs -I {} python3 -m py_compile {}
+   
+   Expected result: No errors
+
+4. Final scan for personal info:
+   grep -r "CL7123\|cuilei\|Lei\|Cui" . --include="*.py" --include="*.md"
+   
+   Expected result: No matches
+
+================================================================================
+POSITIVE FINDINGS (No Action Needed)
+================================================================================
+
+✅ No real email addresses found
+✅ No institution names found
+✅ All IPs are example/private ranges (192.168.x.x, 10.0.x.x)
+✅ All paths use generic usernames (/home/anonymous/, /home/ubuntu/)
+✅ No AWS credentials or API keys
+✅ .gitignore properly configured
+✅ All Python files syntactically valid
+
+================================================================================
+ESTIMATED TIME TO FIX
+================================================================================
+
+Day 1: Remove Chinese characters (4-6 hours)
+Day 2: Clean git history (1 hour)
+Day 3: Final verification (2 hours)
+Day 4: Ready for submission
+
+================================================================================
+CONTACT FOR QUESTIONS
+================================================================================
+
+See full report: ANONYMITY_REVIEW_REPORT.md
+
+================================================================================

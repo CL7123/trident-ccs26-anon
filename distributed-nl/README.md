@@ -1,82 +1,82 @@
-# distributedneighbor listquerysystem (Distributed-NL)
+# Distributed Neighbor List Query System (Distributed-NL)
 
-[CN]yes[CN]MPC[CN]distributedneighbor list[CN]system,[CN]security[CN]queryvector[CN]K[CN]neighborindex.
+This is an MPC-based distributed neighbor list retrieval system specifically designed for securely querying K-nearest neighbor indices of vectors.
 
-## systemarchitecture
+## System Architecture
 
-### [CN]distributed-deploy[CN]
+### Differences from distributed-deploy
 
-| attribute | distributed-deploy | distributed-nl |
-|------|-------------------|----------------|
-| **functionality** | queryvectorcontent | queryneighbor list |
-| **input** | nodeindex | querynodeindex |
-| **output** | [CN]vectorvalue | K[CN]neighborindex |
-| **port** | 8001-8003 | 9001-9003 |
-| **data** | nodes_shares.npy | neighbors_shares.npy |
+| Feature | distributed-deploy | distributed-nl |
+|---------|-------------------|----------------|
+| **Function** | Query vector content | Query neighbor list |
+| **Input** | Node index | Query node index |
+| **Output** | Complete vector values | K neighbor indices |
+| **Port** | 8001-8003 | 9001-9003 |
+| **Data** | nodes_shares.npy | neighbors_shares.npy |
 
-## networkconfiguration
+## Network Configuration
 
-- **client → server**: usage[CN]IP[CN]
+- **Client → Server**: Using public IP communication
   - Server1: `192.168.1.101:9001`
   - Server2: `192.168.1.102:9002`
   - Server3: `192.168.1.103:9003`
 
-- **server ↔ server**: usage[CN]IP[CN]
+- **Server ↔ Server**: Using private IP communication
   - Server1: `10.0.1.101:9001`
   - Server2: `10.0.1.102:9002`
   - Server3: `10.0.1.103:9003`
 
-## faststart
+## Quick Start
 
-### 1. startserver
+### 1. Start Servers
 
-[CN]serveronrun:
+Run on each server:
 
 ```bash
-# server1
+# Server 1
 python server.py --server-id 1 --dataset siftsmall --vdpf-processes 4
 
-# server2
+# Server 2
 python server.py --server-id 2 --dataset siftsmall --vdpf-processes 4
 
-# server3
+# Server 3
 python server.py --server-id 3 --dataset siftsmall --vdpf-processes 4
 ```
 
-### 2. runclienttest
+### 2. Run Client Tests
 
 ```bash
-# basictest
+# Basic test
 python client.py --dataset siftsmall --num-queries 10
 
-# test[CN]dataset
+# Test with other datasets
 python client.py --dataset laion --num-queries 5
 
-# [CN]serverstate
+# Check server status only
 python client.py --status-only
 ```
 
-## deployment[CN]
+## Deployment Scripts
 
-### synchronous[CN]server
+### Sync to All Servers
 
 ```bash
 ./deploy.sh
 ```
 
-### [CN]serveronstartservice
+### Start Services on All Servers
 
 ```bash
-# start[CN]neighbor listserver
+# Start all neighbor list servers
 ./start-servers.sh
 
-# stop[CN]server
+# Stop all servers
 ./stop-servers.sh
 ```
 
-## performanceoptimization
+## Performance Optimization
 
-### 1. TCPparametersoptimization([CN]serverexecute)
+### 1. TCP Parameter Optimization (Execute on all servers)
 
 ```bash
 sudo sysctl -w net.core.rmem_max=268435456
@@ -85,58 +85,58 @@ sudo sysctl -w net.ipv4.tcp_rmem="4096 87380 268435456"
 sudo sysctl -w net.ipv4.tcp_wmem="4096 65536 268435456"
 ```
 
-### 2. process[CN]optimization
+### 2. Process Number Optimization
 
-root[CN]CPU[CN]:
+Adjust based on CPU core count:
 ```bash
-python server.py --server-id 1 --vdpf-processes 32  # [CN]64[CN]
+python server.py --server-id 1 --vdpf-processes 32  # For 64-core machines
 ```
 
-## datasetsupport
+## Dataset Support
 
-| dataset | neighbor[CN](K) | node[CN] | state |
-|--------|-----------|--------|------|
-| siftsmall | 100 | 10,000 | ✅ [CN]support |
-| laion | 36 | 100,000 | ✅ [CN]support |
-| nfcorpus | 10 | 3,633 | ✅ [CN]support |
-| tripclick | 36 | 1.5M | 🟡 [CN]data[CN] |
+| Dataset | Neighbors (K) | Nodes | Status |
+|---------|-----------|--------|--------|
+| siftsmall | 100 | 10,000 | ✅ Fully Supported |
+| laion | 36 | 100,000 | ✅ Fully Supported |
+| nfcorpus | 10 | 3,633 | ✅ Fully Supported |
+| tripclick | 36 | 1.5M | 🟡 Requires Data Preparation |
 
-## monitorfunctionality
+## Monitoring Features
 
-system[CN]automatic[CN]display:
-- [CN]stage[CN]executetime
-- network[CN]size[CN]velocity
-- neighbor listqueryaccuracy
-- detailed[CN]performancestatistics
+The system automatically records and displays:
+- Execution time for each phase
+- Network transfer size and speed
+- Neighbor list query accuracy
+- Detailed performance statistics
 
-## testreport
+## Test Reports
 
-testresult[CN]automaticsave[CN] `nl_result.md`,package[CN]:
-- detailed[CN]querytimefactorization
-- network[CN]statistics
-- accuracyassess
-- performance analysis
+Test results are automatically saved to `nl_result.md`, containing:
+- Detailed query time breakdown
+- Network transfer statistics
+- Accuracy assessment
+- Performance analysis
 
-## [CN]
+## Troubleshooting
 
-### connectfailure
-- checksecurity[CN]yesno[CN]9001-9003port
-- acknowledgmentserverpositive[CN]listencorrect[CN]port
-- verificationnetworkconnected[CN]
+### Connection Failed
+- Check if security group rules allow ports 9001-9003
+- Confirm servers are listening on correct ports
+- Verify network connectivity
 
-### data[CN]error
-- system[CN]usageMSG_WAITALLoptimization,[CN]issue
-- [CN]issue,checknetworkstable[CN]
+### Incomplete Data Error
+- System has been optimized with MSG_WAITALL, should not occur
+- If problem persists, check network stability
 
-### accuracyissue
-- [CN]neighbors_shares.npydatacorrectgenerate
-- verificationgroundtruthdataformatmatch
+### Accuracy Issues
+- Ensure neighbors_shares.npy data is generated correctly
+- Verify groundtruth data format matches
 
-## advancedfunctionality
+## Advanced Features
 
-### customserverconfiguration
+### Custom Server Configuration
 
-create `custom_servers.json`:
+Create `custom_servers.json`:
 ```json
 {
   "1": {"host": "192.168.1.101", "port": 9001},
@@ -145,16 +145,16 @@ create `custom_servers.json`:
 }
 ```
 
-usagecustomconfiguration:
+Use custom configuration:
 ```bash
 python client.py --config custom_servers.json
 ```
 
-## [CN]vectorquerysystem[CN]
+## Integration with Vector Query System
 
-[CN]vectorsearchstream[CN]:
-1. usage `distributed-nl` queryK[CN]neighborindex
-2. usage `distributed-deploy` [CN]neighbor[CN]vectorcontent
-3. [CN]clientcomputationexactsimilarity[CN]sort
+Complete vector search workflow:
+1. Use `distributed-nl` to query K nearest neighbor indices
+2. Use `distributed-deploy` to retrieve vector content of these neighbors
+3. Calculate exact similarity and sort on client side
 
-[CN]minute[CN]flexibility[CN]performanceoptimizationnull[CN].
+This separation design provides better flexibility and performance optimization opportunities.

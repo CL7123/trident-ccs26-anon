@@ -1,44 +1,44 @@
-# 阶段1优化部署指南
+# Phase 1 Optimization Deployment Guide
 
-## 优化内容
+## Optimization Content
 
-**阶段1：临时连接替换共享连接**
-- 每个查询创建独立的socket连接到其他服务器
-- 避免多线程竞争同一socket（消除并发瓶颈）
-- 发送完成后立即关闭连接
-- 预期性能提升：4-5倍吞吐量（从~2 qps提升到~8-10 qps）
+**Phase 1: Replace shared connections with temporary connections**
+- Create independent socket connections for each query to other servers
+- Avoid multiple thread contention on the same socket (eliminate concurrency bottleneck)
+- Close connections immediately after sending
+- Expected performance improvement: 4-5x throughput increase (from ~2 qps to ~8-10 qps)
 
-## 部署步骤
+## Deployment Steps
 
-### 1. 在3台服务器上部署优化后的代码
+### 1. Deploy optimized code on 3 servers
 
-**服务器1 (192.168.1.103):**
+**Server 1 (192.168.1.103):**
 ```bash
-# SSH登录
+# SSH login
 ssh -i ~/trident/your-key.pem ubuntu@192.168.1.103
 
-# 停止旧服务器（如果在运行）
+# Stop old server (if running)
 pkill -f "python.*server.py"
 
-# 备份原始代码
+# Backup original code
 cd ~/trident
 cp -r distributed-deploy distributed-deploy-backup-$(date +%Y%m%d_%H%M%S)
 
-# 同步优化后的代码（在本地机器运行）
-# 退出SSH后在本地运行：
+# Sync optimized code (run on local machine)
+# After exiting SSH, run on local:
 scp -i ~/trident/your-key.pem ~/trident/distributed-deploy-optimized/server.py ubuntu@192.168.1.103:~/trident/distributed-deploy/
 
-# 重新登录并启动优化后的服务器
+# Re-login and start optimized server
 ssh -i ~/trident/your-key.pem ubuntu@192.168.1.103
 cd ~/trident/distributed-deploy
 source venv/bin/activate
 nohup python server.py --server-id 1 --dataset siftsmall > server1.log 2>&1 &
 
-# 检查启动状态
+# Check startup status
 tail -f server1.log
 ```
 
-**服务器2 (192.168.1.101):**
+**Server 2 (192.168.1.101):**
 ```bash
 ssh -i ~/trident/your-key.pem ubuntu@192.168.1.101
 pkill -f "python.*server.py"
@@ -46,10 +46,10 @@ pkill -f "python.*server.py"
 cd ~/trident
 cp -r distributed-deploy distributed-deploy-backup-$(date +%Y%m%d_%H%M%S)
 
-# 在本地运行：
+# Run on local:
 scp -i ~/trident/your-key.pem ~/trident/distributed-deploy-optimized/server.py ubuntu@192.168.1.101:~/trident/distributed-deploy/
 
-# 重新登录启动
+# Re-login and start
 ssh -i ~/trident/your-key.pem ubuntu@192.168.1.101
 cd ~/trident/distributed-deploy
 source venv/bin/activate
@@ -57,7 +57,7 @@ nohup python server.py --server-id 2 --dataset siftsmall > server2.log 2>&1 &
 tail -f server2.log
 ```
 
-**服务器3 (192.168.1.103):**
+**Server 3 (192.168.1.103):**
 ```bash
 ssh -i ~/trident/your-key.pem ubuntu@192.168.1.103
 pkill -f "python.*server.py"
@@ -65,10 +65,10 @@ pkill -f "python.*server.py"
 cd ~/trident
 cp -r distributed-deploy distributed-deploy-backup-$(date +%Y%m%d_%H%M%S)
 
-# 在本地运行：
+# Run on local:
 scp -i ~/trident/your-key.pem ~/trident/distributed-deploy-optimized/server.py ubuntu@192.168.1.103:~/trident/distributed-deploy/
 
-# 重新登录启动
+# Re-login and start
 ssh -i ~/trident/your-key.pem ubuntu@192.168.1.103
 cd ~/trident/distributed-deploy
 source venv/bin/activate
@@ -76,90 +76,90 @@ nohup python server.py --server-id 3 --dataset siftsmall > server3.log 2>&1 &
 tail -f server3.log
 ```
 
-### 2. 运行并发性能测试
+### 2. Run concurrent performance tests
 
 ```bash
 cd ~/trident/concurrent-test
 source /home/ubuntu/venv/bin/activate
 
-# 运行测试
+# Run test
 python concurrent_benchmark.py \
   --dataset siftsmall \
   --concurrent-levels "1,2,4,8,16" \
   --queries-per-level 50
 ```
 
-### 3. 预期结果对比
+### 3. Expected results comparison
 
-**优化前（共享连接）：**
+**Before optimization (shared connections):**
 ```
-并发级别     成功率      吞吐量(qps)      平均延迟(s)      P95延迟(s)      P99延迟(s)
-1            100.0       1.30            0.769           0.850           0.900
-2            100.0       2.21            0.904           1.020           1.080
-4            100.0       2.17            1.842           2.150           2.250
-8            100.0       2.11            3.790           4.200           4.450
-```
-
-**优化后（临时连接）预期：**
-```
-并发级别     成功率      吞吐量(qps)      平均延迟(s)      P95延迟(s)      P99延迟(s)
-1            100.0       1.30            0.769           0.850           0.900
-2            100.0       2.50            0.800           0.880           0.920
-4            100.0       4.80            0.833           0.950           1.000
-8            100.0       8.50            0.941           1.100           1.180
-16           100.0       12.00           1.333           1.600           1.750
+Concurrency Level   Success Rate   Throughput (qps)   Avg Latency (s)   P95 Latency (s)   P99 Latency (s)
+1                   100.0          1.30               0.769             0.850             0.900
+2                   100.0          2.21               0.904             1.020             1.080
+4                   100.0          2.17               1.842             2.150             2.250
+8                   100.0          2.11               3.790             4.200             4.450
 ```
 
-主要改进：
-- ✅ 吞吐量接近线性扩展（不再受共享连接限制）
-- ✅ 延迟保持稳定（轻微增长）
-- ✅ 并发级别8时吞吐量从2.11提升到~8.5（4倍提升）
+**After optimization (temporary connections) expected:**
+```
+Concurrency Level   Success Rate   Throughput (qps)   Avg Latency (s)   P95 Latency (s)   P99 Latency (s)
+1                   100.0          1.30               0.769             0.850             0.900
+2                   100.0          2.50               0.800             0.880             0.920
+4                   100.0          4.80               0.833             0.950             1.000
+8                   100.0          8.50               0.941             1.100             1.180
+16                  100.0          12.00              1.333             1.600             1.750
+```
 
-### 4. 如果测试失败需要回滚
+Main improvements:
+- ✅ Throughput scales nearly linearly (no longer limited by shared connections)
+- ✅ Latency remains stable (slight increase)
+- ✅ At concurrency level 8, throughput increases from 2.11 to ~8.5 (4x improvement)
+
+### 4. Rollback if test fails
 
 ```bash
-# 在每台服务器上
+# On each server
 pkill -f "python.*server.py"
 cd ~/trident
-# 找到最新的备份
+# Find latest backup
 ls -lt | grep distributed-deploy-backup
-# 恢复备份（替换下面的时间戳）
+# Restore backup (replace timestamp below)
 cp distributed-deploy-backup-TIMESTAMP/server.py distributed-deploy/
-# 重启服务器
+# Restart server
 cd distributed-deploy
 source venv/bin/activate
 nohup python server.py --server-id [1/2/3] --dataset siftsmall > server.log 2>&1 &
 ```
 
-## 技术细节
+## Technical Details
 
-### 关键修改
+### Key Changes
 
-在 `server.py:490` 的 `_send_binary_exchange_data` 方法：
+In `server.py:490` `_send_binary_exchange_data` method:
 
-**优化前（有问题）：**
+**Before optimization (problematic):**
 ```python
-# 使用共享连接
+# Use shared connections
 sock = self.server_connections[target_server_id]
-sock.sendall(...)  # 多个线程竞争同一socket
+sock.sendall(...)  # Multiple threads compete for same socket
 ```
 
-**优化后（阶段1）：**
+**After optimization (Phase 1):**
 ```python
 try:
-    # 每个查询创建临时连接
+    # Create temporary connection for each query
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((server_info['host'], server_info['port']))
     sock.sendall(...)
     return response.get('status') == 'success'
 finally:
-    # 始终关闭连接
+    # Always close connection
     if sock:
         sock.close()
 ```
 
-### 后续优化方向
+### Future Optimization Directions
 
-如果阶段1效果不理想，还可以继续：
-- **阶段2：连接池** - 平衡连接开销和并发性（预期8-16x提升）
-- **阶段3：异步IO** - 使用asyncio实现非阻塞IO（预期20x+提升）
+If Phase 1 doesn't achieve desired results, further improvements possible:
+- **Phase 2: Connection pooling** - Balance connection overhead and concurrency (expected 8-16x improvement)
+- **Phase 3: Async IO** - Use asyncio for non-blocking IO (expected 20x+ improvement)
